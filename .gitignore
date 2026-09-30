@@ -1,0 +1,7 @@
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/
+
+# Variables de entorno (contienen secretos)
+.env

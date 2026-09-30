@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  /* Atkinson Hyperlegible: tipografía diseñada para máxima legibilidad */
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+
+  --color-marca-50: #ecfbf7;
+  --color-marca-100: #d0f5eb;
+  --color-marca-200: #a4ead8;
+  --color-marca-300: #6dd8c1;
+  --color-marca-400: #3bbfa6;
+  --color-marca-500: #1fa38c;
+  --color-marca-600: #148372;
+  --color-marca-700: #13695d;
+  --color-marca-800: #13544b;
+  --color-marca-900: #12463f;
+  --color-marca-950: #062824;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-stone-50 text-stone-900 antialiased;
+    font-size: 1.0625rem;
+  }
+  :focus-visible {
+    @apply outline-3 outline-offset-2 outline-marca-500;
+  }
+}
