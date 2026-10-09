@@ -1,3 +1,8 @@
+# PRUEBAS DE LA API DE USUARIOS
+# Recorren el CRUD completo (crear, leer, listar, buscar, editar, eliminar) contra MongoDB
+# y verifican las reglas: correo duplicado, validaciones, cambio de contraseña, permisos
+# (un usuario normal no puede administrar) y que un admin no pueda bloquearse a sí mismo.
+
 def cabeceras(admin):
     return {"Authorization": admin["Authorization"]}
 

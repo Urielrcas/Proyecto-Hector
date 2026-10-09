@@ -1,5 +1,22 @@
+/*
+ * COMPONENTE: DIBUJO DE LA MANO (SVG)
+ * Dibuja una mano esquemática a partir de la forma de una letra:
+ *   - dedos verde oscuro = estirados, verde claro = curvos, gris = doblados,
+ *   - el pulgar en su posición, la mano girada si hace falta,
+ *   - flechas naranjas si la letra lleva movimiento.
+ * Con "tonos" colorea cada dedo en verde (bien) o rojo (corregir) al comparar con la cámara.
+ */
+
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useId → genera un identificador único (para unir una etiqueta con su campo)
 import { useId } from 'react'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     EstadoDedo → tipo: 'estirado' | 'curvo' | 'doblado'
+//     FormaMano → tipo: descripción de la forma de la mano
+//     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
 import type { EstadoDedo, FormaMano, Movimiento } from '../lib/aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     Dedo → tipo: nombre de un dedo
 import type { Dedo } from '../lib/vision/postura'
 
 type Tono = 'objetivo' | 'ok' | 'mal'

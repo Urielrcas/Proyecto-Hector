@@ -1,5 +1,22 @@
+/*
+ * CONTENIDO DEL ALFABETO (LSM y ASL)
+ *   - LSM: textos del Diccionario de Lengua de Señas Mexicana «Manos con Voz».
+ *   - ASL: tabla del alfabeto manual de «American Sign Language For Dummies».
+ *   - FORMAS_LSM / FORMAS_ASL: la forma de la mano de cada letra (para dibujarla y evaluarla).
+ * alfabeto('LSM') devuelve la lista de letras con sus pasos, forma y objetivo de evaluación.
+ * Para cambiar la descripción de una letra, edita sus "pasos".
+ */
+
+// ▸ Desde nuestro proyecto: src/lib/tipos.ts:
+//     Lengua → tipo: 'LSM' o 'ASL'
 import type { Lengua } from '../tipos'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     objetivoDesdeForma → convierte la forma de una letra en lo que la cámara debe reconocer
+//     Objetivo → tipo: lo que se espera ver para una letra
 import { objetivoDesdeForma, type Objetivo } from '../vision/postura'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     mano → atajo para describir la forma de una mano: mano('EDDD', 'estirado')
+//     FormaMano → tipo: descripción de la forma de la mano
 import { mano, type FormaMano } from './forma'
 
 export interface Letra {

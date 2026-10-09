@@ -8,9 +8,15 @@ Las fórmulas se escriben con operadores de Python:
     p.sii(q)  bicondicional   p ↔ q
 """
 
+# ▸ Desde Python (activa funciones de versiones nuevas de Python):
+#     annotations → permite usar tipos que se definen más adelante en el archivo
 from __future__ import annotations
 
+# ▸ Desde Python, módulo dataclasses (clases simples de datos):
+#     dataclass → crea clases de datos simples
 from dataclasses import dataclass
+# ▸ Desde Python, módulo itertools (combinaciones):
+#     product → genera todas las combinaciones V/F (para las tablas de verdad)
 from itertools import product
 
 Valuacion = dict[str, bool]

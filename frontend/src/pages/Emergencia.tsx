@@ -1,4 +1,17 @@
+/*
+ * PANTALLA: FRASES DE EMERGENCIA
+ * Frases rápidas que se muestran en pantalla completa y se leen en voz alta.
+ *   - PRINCIPALES y OTRAS: listas de frases (título, subtítulo, mensaje, ícono y color).
+ *   - hablar(): lee el mensaje con la voz del navegador en español de México.
+ * Disponible siempre, incluso sin iniciar sesión.
+ */
+
+// ▸ Desde Framer Motion (librería de animaciones):
+//     AnimatePresence → permite animar elementos cuando aparecen y desaparecen
+//     motion → versiones animables de las etiquetas (motion.div, motion.li...)
 import { AnimatePresence, motion } from 'framer-motion'
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: ArrowLeft (flecha ←), ChevronDown (flechita ▾), ChevronRight (flechita ›), Ear (oreja), HeartPulse (corazón con pulso), LifeBuoy (salvavidas), MapPin (pin de mapa), MessageSquareText (mensaje de texto), Phone (teléfono), Pill (pastilla), Siren (sirena), Volume2 (bocina), X (tache ✕), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   ArrowLeft,
   ChevronDown,
@@ -15,20 +28,31 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react'
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useEffect → ejecuta código después de dibujar (cargar datos, escuchar teclas, encender la cámara...)
+//     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useEffect, useState } from 'react'
+// ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
+//     Link → enlace para ir a otra pantalla sin recargar la página
 import { Link } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     Boton → botón que ejecuta una acción al presionarlo
 import { Boton } from '../components/Boton'
+// ▸ Desde nuestro proyecto: src/context/AppContext.tsx:
+//     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { useApp } from '../context/AppContext'
 
+// Datos de cada frase.
 interface Frase {
-  titulo: string
-  subtitulo: string
+  titulo: string // texto grande en la lista
+  subtitulo: string // texto pequeño en la lista
   /** Lo que se muestra en grande y se lee en voz alta. */
   mensaje: string
-  icono: LucideIcon
-  color: string
+  icono: LucideIcon // ícono de lucide-react
+  color: string // color del cuadrito del ícono y del fondo de la pantalla completa
 }
 
+// Frases principales (siempre visibles). Para agregar una, copia una línea y cambia sus datos.
 const PRINCIPALES: Frase[] = [
   { titulo: 'Llamar ayuda', subtitulo: 'Necesito asistencia inmediata', mensaje: 'Necesito ayuda urgente. Por favor, llame al 911.', icono: Phone, color: 'bg-red-600' },
   { titulo: 'Tengo dolor', subtitulo: 'Me siento mal', mensaje: 'Tengo dolor y me siento mal. Necesito atención médica.', icono: HeartPulse, color: 'bg-orange-600' },
@@ -36,6 +60,7 @@ const PRINCIPALES: Frase[] = [
   { titulo: 'Dirección', subtitulo: '¿Dónde está…?', mensaje: 'Estoy perdido. ¿Me puede indicar dónde estoy o cómo llegar?', icono: MapPin, color: 'bg-blue-600' },
 ]
 
+// Frases que aparecen al abrir "Otras frases".
 const OTRAS: Frase[] = [
   { titulo: 'Soy sordo', subtitulo: 'No puedo oír', mensaje: 'Soy una persona sorda. No puedo oírle. Por favor, escríbame o hable despacio de frente.', icono: Ear, color: 'bg-violet-600' },
   { titulo: 'Necesito un intérprete', subtitulo: 'Lengua de señas', mensaje: 'Necesito un intérprete de lengua de señas.', icono: MessageSquareText, color: 'bg-violet-600' },
@@ -43,15 +68,17 @@ const OTRAS: Frase[] = [
   { titulo: 'Llame a una ambulancia', subtitulo: 'Urgencia médica', mensaje: 'Por favor, llame a una ambulancia.', icono: Siren, color: 'bg-violet-600' },
 ]
 
+// Lee el texto en voz alta con la voz sintética del navegador (Web Speech API).
 function hablar(texto: string) {
-  if (!('speechSynthesis' in window)) return
-  speechSynthesis.cancel()
+  if (!('speechSynthesis' in window)) return // navegador sin soporte de voz
+  speechSynthesis.cancel() // detener cualquier frase que se esté leyendo
   const voz = new SpeechSynthesisUtterance(texto)
-  voz.lang = 'es-MX'
-  voz.rate = 0.95
+  voz.lang = 'es-MX' // español de México
+  voz.rate = 0.95 // velocidad (1 = normal)
   speechSynthesis.speak(voz)
 }
 
+// Una fila de la lista: cuadrito de color con ícono, título, subtítulo y flecha.
 function FilaFrase({ frase, onElegir }: { frase: Frase; onElegir: () => void }) {
   return (
     <li>
@@ -74,14 +101,16 @@ function FilaFrase({ frase, onElegir }: { frase: Frase; onElegir: () => void }) 
 
 export default function Emergencia() {
   const { tieneSesion } = useApp()
-  const [elegida, setElegida] = useState<Frase | null>(null)
-  const [verOtras, setVerOtras] = useState(false)
+  const [elegida, setElegida] = useState<Frase | null>(null) // frase abierta en pantalla completa (null = ninguna)
+  const [verOtras, setVerOtras] = useState(false) // ¿está abierta la sección "Otras frases"?
 
+  // Al abrir una frase, leerla en voz alta; al cerrarla, callar.
   useEffect(() => {
     if (elegida) hablar(elegida.mensaje)
     else if ('speechSynthesis' in window) speechSynthesis.cancel()
   }, [elegida])
 
+  // Cerrar la frase con la tecla Esc.
   useEffect(() => {
     if (!elegida) return
     const alPresionar = (e: KeyboardEvent) => e.key === 'Escape' && setElegida(null)
@@ -89,6 +118,7 @@ export default function Emergencia() {
     return () => window.removeEventListener('keydown', alPresionar)
   }, [elegida])
 
+  // Contenido de la pantalla (lista de frases + número 911 + frase en pantalla completa).
   const contenido = (
     <div className="mx-auto max-w-2xl">
       <div className="mb-6 flex items-center gap-3">
@@ -138,6 +168,7 @@ export default function Emergencia() {
         </a>
       </p>
 
+      {/* Frase en pantalla completa: fondo del color de la frase, texto enorme y botón para repetir la voz */}
       <AnimatePresence>
         {elegida && (
           <motion.div

@@ -12,7 +12,20 @@
  *  - u: posición a lo ancho (0 = nudillo del índice, positivo hacia el meñique)
  * Ambas en unidades de "palma" (distancia muñeca → nudillo del medio).
  */
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     EstadoDedo → tipo: 'estirado' | 'curvo' | 'doblado'
+//     FormaMano → tipo: descripción de la forma de la mano
+//     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
+//     PosicionPulgar → tipo: dónde está el pulgar
 import type { EstadoDedo, FormaMano, Movimiento, PosicionPulgar } from '../aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/logica/proposicional.ts:
+//     evaluar → evalúa (en postura: la seña de la mano; en proposicional: una fórmula lógica)
+//     no → conectivo ¬ (negación)
+//     o → conectivo ∨ (disyunción)
+//     variable → crea una proposición (p, q, indice_estirado...)
+//     y → conectivo ∧ (conjunción)
+//     Formula → tipo: una fórmula de lógica proposicional
+//     Valuacion → tipo: valores V/F de cada proposición
 import { evaluar as evaluarFormula, no, o, variable, y, type Formula, type Valuacion } from '../logica/proposicional'
 
 export interface Punto {

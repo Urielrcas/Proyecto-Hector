@@ -1,3 +1,13 @@
+/*
+ * FORMA DE LA MANO
+ * Describe cómo es una seña: estado de cada dedo (estirado, curvo o doblado), dónde está
+ * el pulgar, si índice y medio van separados o cruzados, hacia dónde apunta la mano
+ * y si lleva movimiento. Con esta descripción se DIBUJA la mano (ManoIlustrada.tsx)
+ * y se EVALÚA con la cámara (postura.ts).
+ */
+
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     Dedo → tipo: nombre de un dedo
 import type { Dedo } from '../vision/postura'
 
 export type EstadoDedo = 'estirado' | 'curvo' | 'doblado'

@@ -1,5 +1,23 @@
+/*
+ * HOOK DE LA CÁMARA + DETECCIÓN DE MANOS
+ * Enciende la cámara frontal y, en cada cuadro del video:
+ *   1) le pasa la imagen a MediaPipe, que devuelve los 21 puntos de la mano,
+ *   2) dibuja esos puntos y sus líneas sobre el video (función dibujarMano),
+ *   3) entrega los puntos a quien lo usa (la pantalla de práctica los evalúa).
+ * Si no hay permiso o no hay cámara, informa el problema en "estado".
+ */
+
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useEffect → ejecuta código después de dibujar (cargar datos, escuchar teclas, encender la cámara...)
+//     useRef → guarda un valor o un elemento de la página SIN volver a dibujar la pantalla
+//     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useEffect, useRef, useState } from 'react'
+// ▸ Desde nuestro proyecto: src/lib/vision/detectorManos.ts:
+//     CONEXIONES_MANO → qué puntos de la mano se unen con líneas al dibujarla
+//     obtenerDetectorManos → carga (una sola vez) el detector de manos de MediaPipe
 import { CONEXIONES_MANO, obtenerDetectorManos } from '../lib/vision/detectorManos'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     Punto → tipo: un punto de la mano (x, y)
 import type { Punto } from '../lib/vision/postura'
 
 export type EstadoCamara = 'iniciando' | 'activa' | 'sin-permiso' | 'sin-camara' | 'error'
@@ -59,6 +77,7 @@ export function useCamaraManos(alDetectar: (puntos: Punto[] | null, tiempo: numb
     const iniciar = async () => {
       try {
         if (!navigator.mediaDevices?.getUserMedia) throw new DOMException('', 'NotFoundError')
+        // Cargar el modelo de MediaPipe y encender la cámara frontal al mismo tiempo.
         const [detector, stream] = await Promise.all([
           obtenerDetectorManos(),
           navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } }),
@@ -71,21 +90,24 @@ export function useCamaraManos(alDetectar: (puntos: Punto[] | null, tiempo: numb
         if (cancelado) return
         setEstado('activa')
 
+        // Ciclo que se repite en cada cuadro del video:
         let ultimoTiempo = -1
         const procesar = () => {
           if (cancelado) return
+          // Solo procesar si hay un cuadro nuevo (no repetir el mismo).
           if (video.readyState >= 2 && video.currentTime !== ultimoTiempo) {
             ultimoTiempo = video.currentTime
             const tiempo = performance.now()
-            const resultado = detector.detectForVideo(video, tiempo)
-            const puntos = resultado.landmarks[0] ?? null
-            if (canvasRef.current) dibujarMano(canvasRef.current, video, puntos)
-            alDetectarRef.current(puntos, tiempo)
+            const resultado = detector.detectForVideo(video, tiempo) // ← MediaPipe busca la mano
+            const puntos = resultado.landmarks[0] ?? null // 21 puntos de la primera mano, o null
+            if (canvasRef.current) dibujarMano(canvasRef.current, video, puntos) // dibujar sobre el video
+            alDetectarRef.current(puntos, tiempo) // entregar los puntos a la pantalla
           }
-          cuadro = requestAnimationFrame(procesar)
+          cuadro = requestAnimationFrame(procesar) // volver a ejecutar en el siguiente cuadro
         }
         procesar()
       } catch (e) {
+        // Traducir el error del navegador a un estado que la pantalla sabe mostrar.
         if (cancelado) return
         const nombre = e instanceof DOMException ? e.name : ''
         if (nombre === 'NotAllowedError' || nombre === 'SecurityError') setEstado('sin-permiso')
@@ -98,6 +120,7 @@ export function useCamaraManos(alDetectar: (puntos: Punto[] | null, tiempo: numb
     }
 
     iniciar()
+    // Al salir de la pantalla: detener el ciclo y apagar la cámara (se apaga la luz de la cámara).
     return () => {
       cancelado = true
       cancelAnimationFrame(cuadro)

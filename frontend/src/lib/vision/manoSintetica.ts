@@ -2,7 +2,12 @@
  * Solo para pruebas: genera los 21 puntos de MediaPipe de una mano con la forma pedida,
  * de frente a la cámara (coordenadas normalizadas 0-1, y crece hacia abajo).
  */
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     FormaMano → tipo: descripción de la forma de la mano
 import type { FormaMano } from '../aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     DEDOS_LARGOS → lista de los 4 dedos sin el pulgar
+//     Punto → tipo: un punto de la mano (x, y)
 import { DEDOS_LARGOS, type Punto } from './postura'
 
 const MUNECA = { x: 0.5, y: 0.9 }

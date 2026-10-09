@@ -1,6 +1,19 @@
+// ▸ Desde Vitest (herramienta de pruebas automáticas):
+//     describe → agrupa varias pruebas
+//     expect → comprueba que un resultado sea el esperado
+//     it → define una prueba
 import { describe, expect, it } from 'vitest'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     mano → atajo para describir la forma de una mano: mano('EDDD', 'estirado')
+//     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
 import { mano, type Movimiento } from '../aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/vision/manoSintetica.ts:
+//     manoSintetica → crea una mano falsa (solo para pruebas)
+//     mover → mueve o agranda una mano falsa (solo para pruebas)
 import { manoSintetica, mover } from './manoSintetica'
+// ▸ Desde nuestro proyecto: src/lib/vision/movimiento.ts:
+//     cambiosDeSentido → cuenta cuántas veces cambia de dirección un movimiento
+//     DetectorMovimiento → sigue la mano unos segundos y reconoce movimientos (J, Z, Ñ...)
 import { cambiosDeSentido, DetectorMovimiento } from './movimiento'
 
 // Una "palma" en las manos sintéticas mide ~0.3 de la imagen.

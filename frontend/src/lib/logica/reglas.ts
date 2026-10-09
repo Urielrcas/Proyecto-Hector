@@ -9,6 +9,12 @@
  * `verificarRegla` genera la tabla de verdad de la fórmula y la compara con la especificación,
  * así una fórmula mal escrita se detecta de inmediato (al cargar en desarrollo y en las pruebas).
  */
+// ▸ Desde nuestro proyecto: src/lib/logica/proposicional.ts:
+//     analizar → convierte texto como 'p ∧ q' en una fórmula
+//     evaluar → evalúa (en postura: la seña de la mano; en proposicional: una fórmula lógica)
+//     tablaDeVerdad → genera la tabla de verdad de una fórmula
+//     variables → lista las proposiciones de una fórmula
+//     Formula → tipo: una fórmula de lógica proposicional
 import { analizar, evaluar, tablaDeVerdad, variables, type Formula } from './proposicional'
 
 export interface Regla {

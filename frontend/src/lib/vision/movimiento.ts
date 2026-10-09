@@ -5,7 +5,11 @@
  * Las distancias se miden en "palmas" (muñeca → nudillo del medio), así que no
  * importa qué tan cerca de la cámara esté la mano.
  */
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
 import type { Movimiento } from '../aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     Punto → tipo: un punto de la mano (x, y)
 import type { Punto } from './postura'
 
 interface Muestra {

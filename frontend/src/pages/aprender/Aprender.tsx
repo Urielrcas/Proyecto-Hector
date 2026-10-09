@@ -1,10 +1,31 @@
+/*
+ * PANTALLA: APRENDIZAJE (lista de letras)
+ * Muestra el alfabeto de la lengua elegida (LSM o ASL) en una cuadrícula, la barra de progreso
+ * y la sección "Palabras y frases" (próximamente). Al tocar una letra abre /aprender/LETRA.
+ */
+
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: BookOpen (libro abierto), Check (palomita ✓), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
 import { BookOpen, Check, HeartHandshake, MessageCircle, Move, Siren, type LucideIcon } from 'lucide-react'
+// ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
+//     Link → enlace para ir a otra pantalla sin recargar la página
 import { Link } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
+//     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/context/AppContext.tsx:
+//     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { useApp } from '../../context/AppContext'
+// ▸ Desde nuestro proyecto: src/hooks/useProgresoAprendizaje.ts:
+//     useProgresoAprendizaje → hook con las letras logradas por el usuario
 import { useProgresoAprendizaje } from '../../hooks/useProgresoAprendizaje'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
+//     alfabeto → devuelve las letras de LSM o ASL con sus pasos y forma
+//     FUENTE_ASL → nombre de la fuente de ASL
+//     FUENTE_LSM → nombre del diccionario de LSM (para citar la fuente)
 import { alfabeto, FUENTE_ASL, FUENTE_LSM } from '../../lib/aprendizaje/alfabeto'
 
+// Módulos de "Palabras y frases" que se mostrarán como "Próximamente".
 const PROXIMOS: { titulo: string; descripcion: string; icono: LucideIcon }[] = [
   { titulo: 'Saludos', descripcion: 'Hola, gracias, por favor…', icono: MessageCircle },
   { titulo: 'Necesidades básicas', descripcion: 'Agua, baño, comer…', icono: HeartHandshake },
@@ -12,16 +33,17 @@ const PROXIMOS: { titulo: string; descripcion: string; icono: LucideIcon }[] = [
 ]
 
 export default function Aprender() {
-  const { lengua } = useApp()
-  const { logradas } = useProgresoAprendizaje()
-  const letras = alfabeto(lengua ?? 'LSM')
-  const logradasAqui = letras.filter((l) => logradas.includes(l.letra)).length
-  const porcentaje = Math.round((logradasAqui / letras.length) * 100)
+  const { lengua } = useApp() // LSM o ASL (se cambia en el menú lateral)
+  const { logradas } = useProgresoAprendizaje() // letras ya logradas
+  const letras = alfabeto(lengua ?? 'LSM') // las 27 letras de LSM o las 26 de ASL
+  const logradasAqui = letras.filter((l) => logradas.includes(l.letra)).length // cuántas lleva
+  const porcentaje = Math.round((logradasAqui / letras.length) * 100) // para la barra de progreso
 
   return (
     <>
       <EncabezadoPagina titulo="Aprendizaje" descripcion="Practica la lengua de señas con tu cámara." icono={BookOpen} />
 
+      {/* Tarjeta blanca del alfabeto: título, barra de progreso y cuadrícula de letras */}
       <section aria-labelledby="titulo-alfabeto" className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -30,6 +52,7 @@ export default function Aprender() {
             </h2>
             <p className="mt-1 text-stone-600">Elige una letra, mira cómo se hace y practícala: la cámara te dice si la hiciste bien.</p>
           </div>
+          {/* Barra de progreso: el ancho de la parte verde es el porcentaje logrado */}
           <div className="w-full sm:w-64">
             <div className="flex justify-between text-sm">
               <span className="font-bold">Tu progreso</span>
@@ -50,9 +73,12 @@ export default function Aprender() {
           </div>
         </div>
 
+        {/* Cuadrícula de letras: 4 columnas en celular, 6 en tableta, 8-10 en computadora.
+            Cada letra es un enlace a /aprender/LETRA. Las logradas se ven en verde con ✓. */}
         <ul className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-6 sm:gap-3 lg:grid-cols-8 xl:grid-cols-10">
           {letras.map((l) => {
             const lograda = logradas.includes(l.letra)
+            // Texto para lectores de pantalla y al pasar el mouse (ej.: "lograda, con movimiento").
             const descripcion = [
               lograda && 'lograda',
               l.movimiento && 'con movimiento',
@@ -84,6 +110,7 @@ export default function Aprender() {
           })}
         </ul>
 
+        {/* Leyenda: qué significa cada ícono/color */}
         <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-stone-600">
           <span className="inline-flex items-center gap-2">
             <Move className="size-4 text-stone-400" aria-hidden /> Con movimiento
@@ -93,9 +120,11 @@ export default function Aprender() {
           </span>
         </div>
 
+        {/* Fuente de las descripciones según la lengua */}
         <p className="mt-4 text-sm text-stone-500">Fuente de las descripciones: {lengua === 'ASL' ? FUENTE_ASL : FUENTE_LSM}.</p>
       </section>
 
+      {/* "Palabras y frases": tarjetas con borde punteado que dicen "Próximamente" */}
       <section aria-labelledby="titulo-proximos" className="mt-8">
         <h2 id="titulo-proximos" className="text-xl font-bold">
           Palabras y frases

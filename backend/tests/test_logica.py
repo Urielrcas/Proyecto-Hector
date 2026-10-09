@@ -1,5 +1,19 @@
+# PRUEBAS DEL MOTOR DE LÓGICA PROPOSICIONAL (backend)
+# Comprueban las tablas de verdad de los conectivos, tautologías (modus ponens y tollens),
+# equivalencias (De Morgan, contrarrecíproca, distributiva) y que cada regla del servidor
+# (reglas.py) cumpla la tabla de verdad que tiene especificada.
+# Ejecutar con:  .venv\Scripts\python -m pytest
+
+# ▸ Desde pytest (herramienta de pruebas automáticas)
 import pytest
 
+# ▸ Desde nuestro proyecto (app/logica.py):
+#     columna_de_resultados → columna final de la tabla de verdad (app/logica.py)
+#     equivalentes → compara dos fórmulas (app/logica.py)
+#     es_contradiccion → ¿siempre falsa? (app/logica.py)
+#     es_tautologia → ¿siempre verdadera? (app/logica.py)
+#     proposiciones → crea proposiciones p, q, r... (app/logica.py)
+#     tabla_de_verdad → genera la tabla de verdad (app/logica.py)
 from app.logica import (
     columna_de_resultados,
     equivalentes,
@@ -8,6 +22,14 @@ from app.logica import (
     proposiciones,
     tabla_de_verdad,
 )
+# ▸ Desde nuestro proyecto (app/reglas.py):
+#     ES_ADMINISTRADOR → regla c ∧ a (app/reglas.py)
+#     PUEDE_ACTUALIZAR_USUARIO → regla a ∧ (y → (r ∧ t)) (app/reglas.py)
+#     PUEDE_ELIMINAR_USUARIO → regla a ∧ ¬y (app/reglas.py)
+#     PUEDE_INICIAR_SESION → regla e ∧ k ∧ v (app/reglas.py)
+#     REGLAS → lista de reglas del servidor (app/reglas.py)
+#     Regla → clase de una regla (app/reglas.py)
+#     verificar → compara la tabla de una regla con la esperada (app/reglas.py)
 from app.reglas import (
     ES_ADMINISTRADOR,
     PUEDE_ACTUALIZAR_USUARIO,

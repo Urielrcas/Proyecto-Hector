@@ -1,31 +1,44 @@
+/*
+ * ESTILOS GLOBALES Y COLORES DE LA APLICACIÓN
+ * Tailwind CSS genera las clases (bg-..., text-..., p-4, rounded-xl...) que se usan en los componentes.
+ * Aquí se define la fuente y el color "marca" (el verde de la app).
+ */
+
 @import "tailwindcss";
 
 @theme {
   /* Atkinson Hyperlegible: tipografía diseñada para máxima legibilidad */
   --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
 
-  --color-marca-50: #ecfbf7;
-  --color-marca-100: #d0f5eb;
+  /*
+   * COLOR "marca" (verde azulado de la app), del más claro (50) al más oscuro (950).
+   * Se usa en toda la app con clases como bg-marca-700, text-marca-800, border-marca-200...
+   * Cambiando estos valores cambia el color de TODA la aplicación.
+   */
+  --color-marca-50: #ecfbf7; /* fondos muy claros (sección activa del menú) */
+  --color-marca-100: #d0f5eb; /* fondo de íconos de "Más funciones" */
   --color-marca-200: #a4ead8;
   --color-marca-300: #6dd8c1;
   --color-marca-400: #3bbfa6;
   --color-marca-500: #1fa38c;
   --color-marca-600: #148372;
-  --color-marca-700: #13695d;
-  --color-marca-800: #13544b;
+  --color-marca-700: #13695d; /* color principal: botones, tarjetas grandes, logo */
+  --color-marca-800: #13544b; /* al pasar el mouse sobre botones */
   --color-marca-900: #12463f;
   --color-marca-950: #062824;
 }
 
 @layer base {
   html {
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; /* quita el destello gris al tocar en celular */
   }
   body {
+    /* Fondo gris muy claro y texto casi negro para toda la app */
     @apply bg-stone-50 text-stone-900 antialiased;
-    font-size: 1.0625rem;
+    font-size: 1.0625rem; /* letra un poco más grande que lo normal (17 px) para mejor lectura */
   }
   :focus-visible {
+    /* Contorno verde visible al navegar con el teclado (accesibilidad) */
     @apply outline-3 outline-offset-2 outline-marca-500;
   }
 }

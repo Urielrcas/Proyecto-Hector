@@ -5,8 +5,14 @@ esperada como especificación. Al importar el módulo se genera la tabla de cada
 se compara con la especificación: si alguna regla está mal escrita, el servidor no arranca.
 """
 
+# ▸ Desde Python, módulo dataclasses (clases simples de datos):
+#     dataclass → crea clases de datos simples
 from dataclasses import dataclass
 
+# ▸ Desde nuestro proyecto (carpeta app/logica):
+#     Formula → fórmula lógica (app/logica.py)
+#     columna_de_resultados → columna final de la tabla de verdad (app/logica.py)
+#     proposiciones → crea proposiciones p, q, r... (app/logica.py)
 from .logica import Formula, columna_de_resultados, proposiciones
 
 

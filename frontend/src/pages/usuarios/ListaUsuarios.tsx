@@ -1,17 +1,55 @@
+/*
+ * PANTALLA: LISTA DE USUARIOS (solo administradores)
+ * Tabla con búsqueda, paginación (10 por página) y botones de editar y eliminar.
+ * En celular se muestra como tarjetas en lugar de tabla.
+ * Eliminar abre una ventana de confirmación (Dialogo) antes de borrar.
+ */
+
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: ChevronLeft (flechita ‹), ChevronRight (flechita ›), Pencil (lápiz), Plus (más +), Search (lupa), Trash2 (bote de basura), UserCog (usuario con engrane), X (tache ✕)
 import { ChevronLeft, ChevronRight, Pencil, Plus, Search, Trash2, UserCog, X } from 'lucide-react'
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useEffect → ejecuta código después de dibujar (cargar datos, escuchar teclas, encender la cámara...)
+//     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useEffect, useState } from 'react'
+// ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
+//     Link → enlace para ir a otra pantalla sin recargar la página
+//     useLocation → información de la dirección actual
+//     useNavigate → función para cambiar de pantalla desde el código
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/Aviso.tsx:
+//     Aviso → mensaje verde (éxito) o rojo (error)
 import { Aviso } from '../../components/Aviso'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     Boton → botón que ejecuta una acción al presionarlo
+//     BotonEnlace → botón que lleva a otra pantalla (como un enlace)
 import { Boton, BotonEnlace } from '../../components/Boton'
+// ▸ Desde nuestro proyecto: src/components/Dialogo.tsx:
+//     Dialogo → ventana emergente (modal)
 import { Dialogo } from '../../components/Dialogo'
+// ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
+//     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/context/AppContext.tsx:
+//     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { useApp } from '../../context/AppContext'
+// ▸ Desde nuestro proyecto: src/lib/api.ts:
+//     ErrorApi → tipo de error que devuelve el backend (con mensaje y código)
 import { ErrorApi } from '../../lib/api'
+// ▸ Desde nuestro proyecto: src/lib/tipos.ts:
+//     ESTADOS → textos de cada estado (activo → "Activo")
+//     ROLES → textos de cada rol (admin → "Administrador")
+//     Pagina → tipo: resultado paginado (items, total, página)
+//     Usuario → tipo: datos de un usuario
 import { ESTADOS, ROLES, type Pagina, type Usuario } from '../../lib/tipos'
+// ▸ Desde nuestro proyecto: src/services/usuarios.ts:
+//     eliminarUsuario → pide al servidor eliminar un usuario
+//     listarUsuarios → pide al servidor la lista de usuarios
 import { eliminarUsuario, listarUsuarios } from '../../services/usuarios'
 
-const POR_PAGINA = 10
+const POR_PAGINA = 10 // usuarios por página
 
+// Etiqueta de estado: verde "Activo" o roja "Inactivo".
 function Insignia({ activo, children }: { activo: boolean; children: string }) {
   return (
     <span
@@ -25,6 +63,8 @@ function Insignia({ activo, children }: { activo: boolean; children: string }) {
   )
 }
 
+// Botones de cada fila: lápiz azul (editar) y bote rojo (eliminar).
+// El de eliminar se desactiva en tu propia cuenta (esYo).
 function BotonesAccion({ usuario, esYo, onEliminar }: { usuario: Usuario; esYo: boolean; onEliminar: () => void }) {
   return (
     <div className="flex justify-end gap-2">
@@ -49,26 +89,30 @@ function BotonesAccion({ usuario, esYo, onEliminar }: { usuario: Usuario; esYo: 
   )
 }
 
+// Qué números de página mostrar abajo (máximo 5, alrededor de la página actual).
 function numerosDePagina(actual: number, total: number): number[] {
   const inicio = Math.max(1, Math.min(actual - 2, total - 4))
   return Array.from({ length: Math.min(5, total) }, (_, i) => inicio + i)
 }
 
 export default function ListaUsuarios() {
-  const { usuario: yo } = useApp()
+  const { usuario: yo } = useApp() // el administrador que está viendo la lista
   const location = useLocation()
   const navegar = useNavigate()
 
-  const [busqueda, setBusqueda] = useState('')
-  const [busquedaAplicada, setBusquedaAplicada] = useState('')
-  const [pagina, setPagina] = useState(1)
-  const [datos, setDatos] = useState<Pagina<Usuario> | null>(null)
+  // ── Estado de la lista ──
+  const [busqueda, setBusqueda] = useState('') // lo que se escribe en el buscador
+  const [busquedaAplicada, setBusquedaAplicada] = useState('') // la búsqueda que ya se envió al servidor
+  const [pagina, setPagina] = useState(1) // página actual
+  const [datos, setDatos] = useState<Pagina<Usuario> | null>(null) // usuarios recibidos del servidor
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [recargar, setRecargar] = useState(0)
+  const [recargar, setRecargar] = useState(0) // al sumarle 1, la lista se vuelve a pedir al servidor
 
+  // ── Avisos y eliminación ──
+  // "aviso" puede venir del formulario (p. ej. "Se creó el usuario...") a través de la navegación.
   const [aviso, setAviso] = useState<string | null>((location.state as { aviso?: string } | null)?.aviso ?? null)
-  const [aEliminar, setAEliminar] = useState<Usuario | null>(null)
+  const [aEliminar, setAEliminar] = useState<Usuario | null>(null) // usuario del diálogo de confirmación (null = cerrado)
   const [eliminando, setEliminando] = useState(false)
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null)
 
@@ -86,8 +130,9 @@ export default function ListaUsuarios() {
     return () => clearTimeout(t)
   }, [busqueda])
 
+  // Pedir la lista al servidor cada vez que cambia la búsqueda, la página o se pide recargar.
   useEffect(() => {
-    let vigente = true
+    let vigente = true // evita usar una respuesta vieja si llegó otra más nueva
     setCargando(true)
     setError(null)
     listarUsuarios({ buscar: busquedaAplicada, pagina, porPagina: POR_PAGINA })
@@ -104,6 +149,7 @@ export default function ListaUsuarios() {
     }
   }, [busquedaAplicada, pagina, recargar])
 
+  // Botón "Eliminar" del diálogo: borra en el servidor, muestra el aviso y recarga la lista.
   const confirmarEliminar = async () => {
     if (!aEliminar) return
     setEliminando(true)
@@ -120,12 +166,14 @@ export default function ListaUsuarios() {
     }
   }
 
+  // Datos para el texto "Mostrando 1–10 de 25 usuarios" y la paginación.
   const totalPaginas = datos ? Math.max(1, Math.ceil(datos.total / datos.por_pagina)) : 1
   const desde = datos && datos.total > 0 ? (datos.pagina - 1) * datos.por_pagina + 1 : 0
   const hasta = datos ? desde + datos.items.length - 1 : 0
 
   return (
     <>
+      {/* Título "Usuarios" con el botón "Nuevo usuario" a la derecha */}
       <EncabezadoPagina
         titulo="Usuarios"
         descripcion="Administra las cuentas de la aplicación."
@@ -138,6 +186,7 @@ export default function ListaUsuarios() {
         }
       />
 
+      {/* Aviso verde de éxito con botón X para cerrarlo */}
       {aviso && (
         <div className="mb-4 flex items-start gap-2">
           <div className="flex-1">
@@ -165,6 +214,7 @@ export default function ListaUsuarios() {
           />
         </div>
 
+        {/* Contenido según el caso: error → cargando (barras grises) → sin resultados → tabla */}
         <div className="mt-5" aria-live="polite" aria-busy={cargando}>
           {error ? (
             <div className="space-y-3">
@@ -185,7 +235,8 @@ export default function ListaUsuarios() {
             </p>
           ) : (
             <div className={`transition-opacity ${cargando ? 'opacity-50' : ''}`}>
-              {/* Escritorio: tabla */}
+              {/* Escritorio: tabla (hidden md:block = solo en pantallas medianas o más grandes).
+                  Para agregar una columna: un <th> en el encabezado y un <td> en cada fila. */}
               <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-left">
                   <thead>
@@ -220,7 +271,7 @@ export default function ListaUsuarios() {
                 </table>
               </div>
 
-              {/* Celular: tarjetas */}
+              {/* Celular: tarjetas en lugar de tabla (md:hidden = se oculta en pantallas medianas o más) */}
               <ul className="space-y-3 md:hidden">
                 {datos.items.map((u) => (
                   <li key={u.id} className="rounded-2xl border-2 border-stone-100 p-4">
@@ -245,6 +296,7 @@ export default function ListaUsuarios() {
           )}
         </div>
 
+        {/* Pie: "Mostrando 1–10 de N usuarios" y botones de página (solo si hay más de una página) */}
         {datos && datos.total > 0 && (
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-4">
             <p className="text-stone-600">
@@ -287,6 +339,7 @@ export default function ListaUsuarios() {
         )}
       </div>
 
+      {/* Ventana de confirmación para eliminar (se abre al presionar el bote rojo de una fila) */}
       <Dialogo
         abierto={aEliminar !== null}
         onCerrar={() => {

@@ -1,7 +1,24 @@
+/*
+ * COMPONENTE: RECUADRO DE LA CÁMARA
+ * Muestra el video de la cámara (en espejo) con la mano dibujada encima,
+ * la etiqueta "Cámara activa / Mano detectada" y los mensajes si falta permiso o cámara.
+ * Usa el hook useCamaraManos. Lo usa la pantalla de práctica de Aprendizaje.
+ */
+
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: CameraOff (cámara tachada), Hand (mano), LoaderCircle (círculo de carga), RotateCcw (flecha de reintentar)
 import { CameraOff, Hand, LoaderCircle, RotateCcw } from 'lucide-react'
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useState } from 'react'
+// ▸ Desde nuestro proyecto: src/hooks/useCamaraManos.ts:
+//     useCamaraManos → hook que enciende la cámara y detecta la mano
 import { useCamaraManos } from '../hooks/useCamaraManos'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     Punto → tipo: un punto de la mano (x, y)
 import type { Punto } from '../lib/vision/postura'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     Boton → botón que ejecuta una acción al presionarlo
 import { Boton } from './Boton'
 
 const MENSAJES = {

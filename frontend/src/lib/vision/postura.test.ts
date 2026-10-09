@@ -1,7 +1,20 @@
+// ▸ Desde Vitest (herramienta de pruebas automáticas):
+//     describe → agrupa varias pruebas
+//     expect → comprueba que un resultado sea el esperado
+//     it → define una prueba
 import { describe, expect, it } from 'vitest'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
+//     alfabeto → devuelve las letras de LSM o ASL con sus pasos y forma
 import { alfabeto } from '../aprendizaje/alfabeto'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/forma.ts:
+//     mano → atajo para describir la forma de una mano: mano('EDDD', 'estirado')
 import { mano } from '../aprendizaje/forma'
+// ▸ Desde nuestro proyecto: src/lib/vision/manoSintetica.ts:
+//     manoSintetica → crea una mano falsa (solo para pruebas)
 import { manoSintetica } from './manoSintetica'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     evaluar → evalúa (en postura: la seña de la mano; en proposicional: una fórmula lógica)
+//     leerMano → convierte los 21 puntos en: dedos estirados/curvos/doblados, pulgar, orientación
 import { evaluar, leerMano } from './postura'
 
 describe('leerMano', () => {

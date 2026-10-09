@@ -1,3 +1,13 @@
+/*
+ * SECCIONES DEL MENÚ
+ * Cada sección tiene: ruta, título, descripción e ícono (de la librería lucide-react).
+ *   - MENU (al final) define qué aparece en el menú lateral y en qué orden.
+ *   - soloAdmin: true oculta la sección a quien no es administrador.
+ * Para cambiar el nombre o el ícono de una sección del menú, edítalo aquí.
+ */
+
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: BookOpen (libro abierto), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   BookOpen,
   CircleHelp,

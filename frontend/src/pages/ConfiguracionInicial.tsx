@@ -1,26 +1,55 @@
+/*
+ * PANTALLA: LENGUA DE SEÑAS Y PERMISOS
+ * El usuario elige LSM o ASL y da permiso a la cámara y al micrófono.
+ * pedirPermiso() solicita el permiso al navegador y apaga el dispositivo de inmediato
+ * (solo queremos el permiso, no grabar). Al continuar va al login (o al inicio si ya hay sesión).
+ */
+
+// ▸ Desde Framer Motion (librería de animaciones):
+//     motion → versiones animables de las etiquetas (motion.div, motion.li...)
 import { motion } from 'framer-motion'
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: ArrowRight (flecha →), Camera (cámara), Check (palomita ✓), CircleAlert (círculo con !), Mic (micrófono), LucideIcon (tipo: cualquier ícono de Lucide)
 import { ArrowRight, Camera, Check, CircleAlert, Mic, type LucideIcon } from 'lucide-react'
+// ▸ Desde React (librería para construir la interfaz con componentes):
+//     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useState } from 'react'
+// ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
+//     useNavigate → función para cambiar de pantalla desde el código
 import { useNavigate } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     Boton → botón que ejecuta una acción al presionarlo
 import { Boton } from '../components/Boton'
+// ▸ Desde nuestro proyecto: src/components/Logo.tsx:
+//     Logo → logo de la app (ícono + nombre)
 import { Logo } from '../components/Logo'
+// ▸ Desde nuestro proyecto: src/context/AppContext.tsx:
+//     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { useApp } from '../context/AppContext'
+// ▸ Desde nuestro proyecto: src/lib/tipos.ts:
+//     LENGUAS → nombres y regiones de LSM y ASL
+//     Lengua → tipo: 'LSM' o 'ASL'
 import { LENGUAS, type Lengua } from '../lib/tipos'
 
+// Estados posibles de cada permiso (cámara o micrófono).
 type EstadoPermiso = 'pendiente' | 'solicitando' | 'concedido' | 'denegado' | 'no-disponible'
 
+// Pide un permiso al navegador. El navegador muestra su propio aviso "¿Permitir…?".
 async function pedirPermiso(tipo: 'camara' | 'microfono'): Promise<EstadoPermiso> {
-  if (!navigator.mediaDevices?.getUserMedia) return 'no-disponible'
+  if (!navigator.mediaDevices?.getUserMedia) return 'no-disponible' // navegador sin soporte
   try {
+    // getUserMedia enciende la cámara ({ video: true }) o el micrófono ({ audio: true }).
     const flujo = await navigator.mediaDevices.getUserMedia(tipo === 'camara' ? { video: true } : { audio: true })
     // Solo queríamos el permiso: apagar el dispositivo de inmediato.
     flujo.getTracks().forEach((t) => t.stop())
     return 'concedido'
   } catch (e) {
+    // NotFoundError = no hay cámara/micrófono; cualquier otro error = el usuario lo bloqueó.
     return e instanceof DOMException && e.name === 'NotFoundError' ? 'no-disponible' : 'denegado'
   }
 }
 
+// Texto del botón según el estado del permiso.
 const TEXTO_ESTADO: Record<EstadoPermiso, string> = {
   pendiente: 'Permitir',
   solicitando: 'Esperando…',
@@ -29,6 +58,8 @@ const TEXTO_ESTADO: Record<EstadoPermiso, string> = {
   'no-disponible': 'No encontrado',
 }
 
+// Tarjeta de un permiso: ícono, título, descripción y botón "Permitir".
+// Al concederse, el ícono cambia a una palomita verde.
 function TarjetaPermiso({
   icono: Icono,
   titulo,
@@ -63,6 +94,7 @@ function TarjetaPermiso({
           {TEXTO_ESTADO[estado]}
         </Boton>
       </div>
+      {/* Si lo bloqueó, explicar cómo desbloquearlo */}
       {estado === 'denegado' && (
         <p role="alert" className="mt-3 flex gap-2 text-sm text-red-800">
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -75,19 +107,21 @@ function TarjetaPermiso({
 
 export default function ConfiguracionInicial() {
   const { lengua, elegirLengua, tieneSesion } = useApp()
-  const [seleccion, setSeleccion] = useState<Lengua | null>(lengua)
-  const [camara, setCamara] = useState<EstadoPermiso>('pendiente')
-  const [microfono, setMicrofono] = useState<EstadoPermiso>('pendiente')
+  const [seleccion, setSeleccion] = useState<Lengua | null>(lengua) // LSM o ASL elegida en la pantalla
+  const [camara, setCamara] = useState<EstadoPermiso>('pendiente') // estado del permiso de cámara
+  const [microfono, setMicrofono] = useState<EstadoPermiso>('pendiente') // estado del permiso de micrófono
   const navegar = useNavigate()
 
+  // Botón "Permitir" de una tarjeta.
   const solicitar = async (tipo: 'camara' | 'microfono') => {
     const set = tipo === 'camara' ? setCamara : setMicrofono
     set('solicitando')
     set(await pedirPermiso(tipo))
   }
 
+  // Botón "Continuar": guarda la lengua y va al login (o al inicio si ya hay sesión).
   const continuar = () => {
-    if (!seleccion) return
+    if (!seleccion) return // sin lengua no se puede continuar (el botón está desactivado)
     elegirLengua(seleccion)
     navegar(tieneSesion ? '/inicio' : '/login')
   }
@@ -107,6 +141,7 @@ export default function ConfiguracionInicial() {
         <h1 className="text-3xl font-bold tracking-tight">Prepara tu experiencia</h1>
         <p className="mt-2 text-stone-600">Puedes cambiar esto más tarde en Perfil y configuración.</p>
 
+        {/* Sección 1: tarjetas LSM y ASL. La elegida tiene borde verde y una palomita. */}
         <section className="mt-8" aria-labelledby="titulo-lengua">
           <h2 id="titulo-lengua" className="text-xl font-bold">
             1. ¿Qué lengua de señas usas?
@@ -138,6 +173,7 @@ export default function ConfiguracionInicial() {
           </div>
         </section>
 
+        {/* Sección 2: tarjetas de permisos de cámara y micrófono */}
         <section className="mt-10" aria-labelledby="titulo-permisos">
           <h2 id="titulo-permisos" className="text-xl font-bold">
             2. Permisos
@@ -164,6 +200,7 @@ export default function ConfiguracionInicial() {
         </section>
       </motion.main>
 
+      {/* Botón "Continuar" (desactivado hasta elegir una lengua) */}
       <footer className="mx-auto w-full max-w-xl px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-8">
         <Boton className="w-full" onClick={continuar} disabled={!seleccion}>
           Continuar

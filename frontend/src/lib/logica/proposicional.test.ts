@@ -1,8 +1,33 @@
+// ▸ Desde Vitest (herramienta de pruebas automáticas):
+//     describe → agrupa varias pruebas
+//     expect → comprueba que un resultado sea el esperado
+//     it → define una prueba
 import { describe, expect, it } from 'vitest'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
+//     alfabeto → devuelve las letras de LSM o ASL con sus pasos y forma
 import { alfabeto } from '../aprendizaje/alfabeto'
+// ▸ Desde nuestro proyecto: src/lib/vision/manoSintetica.ts:
+//     manoSintetica → crea una mano falsa (solo para pruebas)
 import { manoSintetica } from '../vision/manoSintetica'
+// ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     formulaDeObjetivo → la fórmula lógica de una letra
+//     leerMano → convierte los 21 puntos en: dedos estirados/curvos/doblados, pulgar, orientación
+//     proposicionesDeLectura → convierte lo que ve la cámara en proposiciones V/F
 import { formulaDeObjetivo, leerMano, proposicionesDeLectura } from '../vision/postura'
+// ▸ Desde nuestro proyecto: src/lib/logica/proposicional.ts:
+//     analizar → convierte texto como 'p ∧ q' en una fórmula
+//     aTexto → convierte una fórmula en texto
+//     clasificar → dice si una fórmula es tautología, contradicción o contingencia
+//     equivalentes → dice si dos fórmulas son equivalentes
+//     ErrorSintaxis → error al escribir mal una fórmula
+//     evaluar → evalúa (en postura: la seña de la mano; en proposicional: una fórmula lógica)
+//     tablaDeVerdad → genera la tabla de verdad de una fórmula
+//     variables → lista las proposiciones de una fórmula
 import { analizar, aTexto, clasificar, equivalentes, ErrorSintaxis, evaluar, tablaDeVerdad, variables } from './proposicional'
+// ▸ Desde nuestro proyecto: src/lib/logica/reglas.ts:
+//     cumple → evalúa una regla de lógica proposicional con valores V/F
+//     REGLAS → todas las reglas lógicas de la app
+//     verificarRegla → compara la tabla de verdad de una regla con la esperada
 import { cumple, REGLAS, verificarRegla } from './reglas'
 
 const tabla = (texto: string) => tablaDeVerdad(analizar(texto))

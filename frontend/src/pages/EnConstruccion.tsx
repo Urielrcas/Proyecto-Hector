@@ -1,4 +1,13 @@
+/*
+ * PANTALLA: MÓDULO EN DESARROLLO
+ * Se muestra en los módulos que todavía no están hechos (traductores, historial, etc.).
+ */
+
+// ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
+//     íconos: ArrowLeft (flecha ←), Construction (señal de obra)
 import { ArrowLeft, Construction } from 'lucide-react'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     BotonEnlace → botón que lleva a otra pantalla (como un enlace)
 import { BotonEnlace } from '../components/Boton'
 
 /** Pantalla temporal para los módulos que aún no se desarrollan. */

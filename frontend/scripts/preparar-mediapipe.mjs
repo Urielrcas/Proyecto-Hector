@@ -1,5 +1,11 @@
 // Copia los archivos WebAssembly de MediaPipe a public/ y descarga el modelo de manos,
 // para que la detección funcione sin depender de CDNs externos.
+// ▸ Desde Node.js, módulo fs (leer y escribir archivos del disco):
+//     copyFileSync → copia un archivo
+//     existsSync → revisa si un archivo existe
+//     mkdirSync → crea una carpeta
+//     readdirSync → lista los archivos de una carpeta
+//     writeFileSync → escribe un archivo
 import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 
 const DESTINO = 'public/mediapipe'
