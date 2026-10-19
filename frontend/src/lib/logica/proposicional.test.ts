@@ -153,7 +153,7 @@ describe('letras como fórmulas (evaluador de señas)', () => {
 
   it('la D es una conjunción de condiciones con variantes en disyunción', () => {
     expect(aTexto(formulaDeObjetivo(lsm.D.objetivo))).toBe(
-      'apunta_arriba ∧ indice_estirado ∧ (medio_curvo ∨ medio_doblado) ∧ (anular_curvo ∨ anular_doblado) ∧ ' +
+      'apunta_arriba ∧ (palma_frente ∨ palma_lado) ∧ indice_estirado ∧ (medio_curvo ∨ medio_doblado) ∧ (anular_curvo ∨ anular_doblado) ∧ ' +
         '(menique_curvo ∨ menique_doblado) ∧ pulgar_toca',
     )
   })

@@ -1,15 +1,19 @@
 /*
  * PANTALLA: APRENDIZAJE (lista de letras)
  * Muestra el alfabeto de la lengua elegida (LSM o ASL) en una cuadrícula, la barra de progreso
- * y la sección "Palabras y frases" (próximamente). Al tocar una letra abre /aprender/LETRA.
+ * el acceso a la «Ruta de aprendizaje» (/aprender/ruta, búsqueda DFS/BFS) y la sección
+ * "Palabras y frases" (próximamente). Al tocar una letra abre /aprender/LETRA.
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: BookOpen (libro abierto), Check (palomita ✓), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
-import { BookOpen, Check, HeartHandshake, MessageCircle, Move, Siren, type LucideIcon } from 'lucide-react'
+//     íconos: BookOpen (libro abierto), Check (palomita ✓), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Route (ruta), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
+import { BookOpen, Check, HeartHandshake, MessageCircle, Move, Route, Siren, type LucideIcon } from 'lucide-react'
 // ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
 //     Link → enlace para ir a otra pantalla sin recargar la página
 import { Link } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/Boton.tsx:
+//     BotonEnlace → botón que lleva a otra pantalla (como un enlace)
+import { BotonEnlace } from '../../components/Boton'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
@@ -122,6 +126,20 @@ export default function Aprender() {
 
         {/* Fuente de las descripciones según la lengua */}
         <p className="mt-4 text-sm text-stone-500">Fuente de las descripciones: {lengua === 'ASL' ? FUENTE_ASL : FUENTE_LSM}.</p>
+      </section>
+
+      {/* Acceso a la «Ruta de aprendizaje»: busca con DFS/BFS un camino de letras parecidas */}
+      <section aria-labelledby="titulo-ruta" className="mt-6 flex flex-wrap items-center gap-4 rounded-3xl border border-marca-200 bg-marca-50/60 p-5 sm:p-6">
+        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-marca-100 text-marca-800">
+          <Route className="size-6" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="titulo-ruta" className="text-lg font-bold">
+            Ruta de aprendizaje
+          </h2>
+          <p className="text-stone-600">¿Quieres aprender una letra nueva? Te armamos un camino de letras parecidas para llegar a ella poco a poco.</p>
+        </div>
+        <BotonEnlace to="/aprender/ruta">Armar mi ruta</BotonEnlace>
       </section>
 
       {/* "Palabras y frases": tarjetas con borde punteado que dicen "Próximamente" */}

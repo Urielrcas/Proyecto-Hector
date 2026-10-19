@@ -17,8 +17,9 @@ import { useEffect, useRef, useState } from 'react'
 //     obtenerDetectorManos → carga (una sola vez) el detector de manos de MediaPipe
 import { CONEXIONES_MANO, obtenerDetectorManos } from '../lib/vision/detectorManos'
 // ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
+//     normalizarMano → deja derecha e izquierda como la misma mano (para leer frente / dorso)
 //     Punto → tipo: un punto de la mano (x, y)
-import type { Punto } from '../lib/vision/postura'
+import { normalizarMano, type Punto } from '../lib/vision/postura'
 
 export type EstadoCamara = 'iniciando' | 'activa' | 'sin-permiso' | 'sin-camara' | 'error'
 
@@ -101,7 +102,8 @@ export function useCamaraManos(alDetectar: (puntos: Punto[] | null, tiempo: numb
             const resultado = detector.detectForVideo(video, tiempo) // ← MediaPipe busca la mano
             const puntos = resultado.landmarks[0] ?? null // 21 puntos de la primera mano, o null
             if (canvasRef.current) dibujarMano(canvasRef.current, video, puntos) // dibujar sobre el video
-            alDetectarRef.current(puntos, tiempo) // entregar los puntos a la pantalla
+            const etiqueta = resultado.handedness[0]?.[0]?.categoryName // "Left" / "Right" según MediaPipe
+            alDetectarRef.current(puntos && normalizarMano(puntos, etiqueta), tiempo) // entregar los puntos a la pantalla
           }
           cuadro = requestAnimationFrame(procesar) // volver a ejecutar en el siguiente cuadro
         }

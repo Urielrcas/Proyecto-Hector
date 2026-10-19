@@ -16,8 +16,9 @@
 //     EstadoDedo → tipo: 'estirado' | 'curvo' | 'doblado'
 //     FormaMano → tipo: descripción de la forma de la mano
 //     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
+//     Palma → tipo: hacia dónde mira la palma (frente, dorso, lado)
 //     PosicionPulgar → tipo: dónde está el pulgar
-import type { EstadoDedo, FormaMano, Movimiento, PosicionPulgar } from '../aprendizaje/forma'
+import type { EstadoDedo, FormaMano, Movimiento, Palma, PosicionPulgar } from '../aprendizaje/forma'
 // ▸ Desde nuestro proyecto: src/lib/logica/proposicional.ts:
 //     evaluar → evalúa (en postura: la seña de la mano; en proposicional: una fórmula lógica)
 //     no → conectivo ¬ (negación)
@@ -31,6 +32,8 @@ import { evaluar as evaluarFormula, no, o, variable, y, type Formula, type Valua
 export interface Punto {
   x: number
   y: number
+  /** Profundidad que da MediaPipe (más negativo = más cerca de la cámara). Puede faltar. */
+  z?: number
 }
 
 export type Dedo = 'pulgar' | 'indice' | 'medio' | 'anular' | 'menique'
@@ -57,6 +60,8 @@ export interface Lectura {
   separados: boolean
   cruzados: boolean
   orientacion: Orientacion
+  /** Hacia dónde mira la palma; `undefined` si las pistas no coinciden (no se puede saber). */
+  palma?: Palma
 }
 
 /** Lo que se espera ver para una letra (con las variantes aceptadas). */
@@ -67,6 +72,7 @@ export interface Objetivo {
   separacion?: 'juntos' | 'separados'
   cruzados?: boolean
   orientacion?: Orientacion[]
+  palma?: Palma[]
   movimiento?: Movimiento
 }
 
@@ -108,6 +114,60 @@ function marcoDeMano(p: Punto[]) {
   }
 }
 
+/**
+ * ¿El pulgar asoma ENTRE los dedos (T, M, N) o va cruzado POR ENCIMA de ellos (S)?
+ * Con la mano real la punta del pulgar queda a la misma altura en los dos casos, así que
+ * se juntan tres pistas y gana la mayoría:
+ *   1. Altura: la punta llega a los nudillos de los dedos doblados → "entre".
+ *   2. Dirección: la última falange apunta hacia arriba → "entre"; acostada a lo ancho → "encima".
+ *   3. Profundidad (si MediaPipe la da): la punta queda detrás de los dedos → "entre"; delante → "encima".
+ */
+function pulgarAsomaEntreDedos(p: Punto[], m: ReturnType<typeof marcoDeMano>, dedos: Record<DedoLargo, EstadoDedo>) {
+  const t = p[4]
+  const alta = m.v(t) > 1.05
+  const subida = m.v(t) - m.v(p[3])
+  const ancho = Math.abs(m.u(t) - m.u(p[3]))
+  const haciaArriba = subida > ancho
+
+  // Nudillo doblado (PIP) más cercano a la punta del pulgar, para comparar profundidad.
+  const pips = DEDOS_LARGOS.filter((d) => dedos[d] !== 'estirado').map((d) => p[FALANGES[d][1]])
+  const pip = pips.sort((a, b) => distancia(a, t) - distancia(b, t))[0]
+  const detras = t.z !== undefined && pip?.z !== undefined ? t.z > pip.z : undefined
+
+  const votos = [alta, haciaArriba, detras].filter((x) => x !== undefined)
+  const aFavor = votos.filter(Boolean).length
+  return aFavor * 2 > votos.length // mayoría (sin profundidad: hacen falta las dos pistas)
+}
+
+/**
+ * Deja todas las manos "como la misma mano" antes de leerlas: la mano derecha se refleja como en
+ * un espejo, así una derecha y una izquierda con la palma al frente dan los mismos puntos y la
+ * lectura de frente / dorso funciona para diestros y zurdos.
+ * `etiqueta` es lo que dice MediaPipe. Ojo: MediaPipe supone que la imagen viene en espejo; como
+ * le pasamos el video tal cual sale de la cámara, a una mano derecha la llama "Left".
+ */
+export function normalizarMano(puntos: Punto[], etiqueta: string | undefined): Punto[] {
+  const esDerecha = etiqueta === ETIQUETA_MANO_DERECHA
+  return esDerecha ? puntos.map((q) => ({ ...q, x: 1 - q.x })) : puntos
+}
+/** Cómo llama MediaPipe a la mano derecha cuando el video NO viene en espejo. */
+const ETIQUETA_MANO_DERECHA = 'Left'
+
+/**
+ * Frente o dorso según la profundidad (z) que da MediaPipe: ¿los dedos doblados y el pulgar quedan
+ * más cerca de la cámara que los nudillos (palma al frente) o más lejos (dorso)?
+ * Devuelve `undefined` si no hay profundidad o la diferencia es muy pequeña para decidir.
+ */
+function palmaPorProfundidad(p: Punto[], dedos: Record<DedoLargo, EstadoDedo>): Palma | undefined {
+  const nudillos = [5, 9, 13, 17].map((i) => p[i].z)
+  if (nudillos.some((z) => z === undefined) || p[4].z === undefined) return undefined
+  const zNudillos = (nudillos as number[]).reduce((s, z) => s + z, 0) / 4
+  const puntas = [p[4], ...DEDOS_LARGOS.filter((d) => dedos[d] !== 'estirado').map((d) => p[FALANGES[d][3]])]
+  const zPuntas = puntas.reduce((s, q) => s + (q.z ?? 0), 0) / puntas.length
+  const diferencia = (zPuntas - zNudillos) / (distancia(p[0], p[9]) || 1)
+  return diferencia < -0.08 ? 'frente' : diferencia > 0.08 ? 'dorso' : undefined
+}
+
 export function leerMano(p: Punto[]): Lectura {
   const m = marcoDeMano(p)
 
@@ -123,22 +183,40 @@ export function leerMano(p: Punto[]): Lectura {
 
   // Pulgar
   const t = p[4]
+  // Toca: la punta del pulgar junto a la punta de un dedo curvo. En la O real los dedos bajan tanto
+  // que se leen "doblados", pero su punta queda lejos de la palma (en un puño queda pegada a ella).
   const tocaUnDedo = DEDOS_LARGOS.some((d) => {
     const punta = p[FALANGES[d][3]]
-    return dedos[d] === 'curvo' && distancia(t, punta) < m.palma * 0.3
+    const cerrandoLaO = dedos[d] === 'doblado' && distancia(punta, p[0]) > m.palma
+    return (dedos[d] === 'curvo' || cerrandoLaO) && distancia(t, punta) < m.palma * 0.3
   })
   let pulgar: PulgarLeido
   let entre: 1 | 2 | 3 | undefined
   if (tocaUnDedo) pulgar = 'toca'
-  else if (distancia(t, p[5]) > m.palma * 0.6 && angulo(p[2], p[3], t) > 140) pulgar = 'estirado'
+  // Estirado: lejos del índice, recto y POR FUERA de la mano (si cruza la palma no cuenta, como en la S).
+  else if (distancia(t, p[5]) > m.palma * 0.6 && angulo(p[2], p[3], t) > 140 && m.u(t) < -0.15) pulgar = 'estirado'
   else if (m.u(t) < 0.02) pulgar = 'lado' // pegado al costado del índice
-  else if (m.v(t) > 1.05) {
-    pulgar = 'entre' // asoma entre los dedos
+  else if (m.v(t) >= 0.75 && pulgarAsomaEntreDedos(p, m, dedos)) {
+    pulgar = 'entre' // asoma entre los dedos (T, M, N)
     entre = m.u(t) < 0.2 ? 1 : m.u(t) < 0.4 ? 2 : 3
   } else if (m.v(t) >= 0.75) pulgar = 'sobre'
   else pulgar = 'doblado'
 
   const orientacion: Orientacion = -m.arriba.y > 0.64 ? 'arriba' : m.arriba.y > 0.64 ? 'abajo' : 'lado'
+
+  // Hacia dónde mira la palma: se mira el triángulo muñeca → nudillo del índice → nudillo del meñique.
+  // De frente se ve "abierto" en un sentido, de dorso en el sentido contrario, y de lado casi se
+  // aplana (los nudillos quedan uno detrás del otro). `giroTriangulo` va de -1 a 1.
+  const a = { x: p[5].x - p[0].x, y: p[5].y - p[0].y }
+  const b = { x: p[17].x - p[0].x, y: p[17].y - p[0].y }
+  const giroTriangulo = (a.x * b.y - a.y * b.x) / (Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y) || 1)
+  const porTriangulo: Palma = giroTriangulo > 0.2 ? 'frente' : giroTriangulo < -0.2 ? 'dorso' : 'lado'
+  // Segunda pista, la profundidad: con la palma al frente los dedos doblados y el pulgar vienen hacia
+  // la cámara; de dorso se alejan. Solo se decide "frente" o "dorso" si las dos pistas coinciden;
+  // si no, no se sabe (y no se le exige nada al usuario: mejor no marcar un error que no es).
+  const porProfundidad = palmaPorProfundidad(p, dedos)
+  const palma: Palma | undefined =
+    porTriangulo === 'lado' || porProfundidad === undefined || porProfundidad === porTriangulo ? porTriangulo : undefined
 
   return {
     dedos,
@@ -147,20 +225,43 @@ export function leerMano(p: Punto[]): Lectura {
     separados: distancia(p[8], p[12]) > m.palma * 0.35,
     cruzados: m.u(p[8]) > m.u(p[12]) + 0.03,
     orientacion,
+    palma,
   }
+}
+
+/**
+ * Hacia dónde puede mirar la palma. Lo que se exige es no confundir PALMA con DORSO: entre "de
+ * frente" y "de lado" la cámara no siempre distingue (casi todas las señas se hacen de tres cuartos).
+ *   - palma al frente o de lado (A, B, C, O…): vale frente o lado, no el dorso,
+ *   - dorso (M, N, Ñ, Q, G, H): solo el dorso; si la mano apunta a un lado (G, H) los nudillos
+ *     se ven casi alineados y también vale "de lado".
+ */
+function palmasAceptadas(palma: Palma, giro: number): Palma[] {
+  if (palma !== 'dorso') return palma === 'lado' ? ['lado', 'frente'] : ['frente', 'lado']
+  return giro === 90 || giro === 270 ? ['dorso', 'lado'] : ['dorso']
 }
 
 /** Traduce la forma dibujada de una letra en lo que la cámara debe reconocer. */
 export function objetivoDesdeForma(forma: FormaMano): Objetivo {
   const puno = DEDOS_LARGOS.every((d) => forma.dedos[d] !== 'estirado')
   const todosCurvos = DEDOS_LARGOS.every((d) => forma.dedos[d] === 'curvo')
+  const dorso = forma.palma === 'dorso'
+  // De dorso, un pulgar metido bajo los dedos (doblado, sobre, entre) no se ve: la cámara adivina
+  // dónde está y puede leerlo en cualquiera de esas posiciones o pegado al costado.
+  const pulgarEscondido = dorso && (forma.pulgar === 'doblado' || forma.pulgar === 'sobre' || forma.pulgar === 'entre')
 
   const dedos = {} as Record<DedoLargo, EstadoDedo[]>
   for (const d of DEDOS_LARGOS) {
     const e = forma.dedos[d]
     // Junto a un dedo estirado (D, F), un dedo "curvo" también puede verse doblado.
     // En C, O, Q y X la curva es justo lo que distingue la letra: se exige.
-    dedos[d] = e === 'curvo' && !puno ? ['curvo', 'doblado'] : [e]
+    // En la O los dedos se cierran hasta tocar el pulgar: pueden verse doblados (lo que distingue
+    // a la O es que el pulgar toca la punta de un dedo curvo).
+    dedos[d] = e === 'curvo' && (!puno || forma.pulgar === 'toca') ? ['curvo', 'doblado'] : [e]
+    // De dorso (M, N, Ñ, Q) la punta de un dedo doblado queda escondida detrás de la mano y la
+    // cámara solo la adivina: a veces lo lee "curvo". Se acepta (lo que separa M de N es cuáles
+    // dedos van estirados, no cuánto se doblan los otros).
+    if (e === 'doblado' && dorso) dedos[d] = ['doblado', 'curvo']
   }
 
   // En puño (A, E, S, T…) el pulgar es lo único que distingue la letra: se exige exacto.
@@ -180,8 +281,8 @@ export function objetivoDesdeForma(forma: FormaMano): Objetivo {
 
   return {
     dedos,
-    pulgar: PULGAR[forma.pulgar],
-    entre: forma.pulgar === 'entre' && puno ? (forma.entre ?? 1) : undefined,
+    pulgar: pulgarEscondido ? ['doblado', 'sobre', 'entre', 'lado'] : PULGAR[forma.pulgar],
+    entre: forma.pulgar === 'entre' && puno && !pulgarEscondido ? (forma.entre ?? 1) : undefined,
     separacion: indiceYMedio && !forma.cruzados ? (forma.separados ? 'separados' : 'juntos') : undefined,
     cruzados: indiceYMedio ? !!forma.cruzados : undefined,
     orientacion: forma.orientacionLibre
@@ -193,6 +294,7 @@ export function objetivoDesdeForma(forma: FormaMano): Objetivo {
           : giro === 90 || giro === 270
             ? ['lado']
             : ['lado', 'abajo'],
+    palma: palmasAceptadas(forma.palma ?? 'frente', giro),
     movimiento: forma.movimiento,
   }
 }
@@ -212,6 +314,12 @@ const CONSEJO_PULGAR: Record<PulgarLeido, string> = {
   doblado: 'Dobla el pulgar hacia la palma.',
 }
 
+const CONSEJO_PALMA: Record<Palma, string> = {
+  frente: 'Voltea la mano: debe verse la palma, no el dorso.',
+  dorso: 'Voltea la mano: debe verse el dorso (no la palma).',
+  lado: 'Gira la mano de lado: no enseñes el dorso.',
+}
+
 const CONSEJO_ORIENTACION: Record<Orientacion, string> = {
   arriba: 'Apunta los dedos hacia arriba.',
   lado: 'Gira la mano: los dedos deben apuntar hacia un lado.',
@@ -226,6 +334,7 @@ const CONSEJO_ORIENTACION: Record<Orientacion, string> = {
 //   pulgar_entre_1, pulgar_entre_2, pulgar_entre_3   (entre qué dedos asoma el pulgar)
 //   separados, cruzados                             (índice y medio)
 //   apunta_arriba, apunta_lado, apunta_abajo
+//   palma_frente, palma_dorso, palma_lado            (hacia dónde mira la palma)
 //
 // Cada letra es una fórmula: la conjunción de sus condiciones, y cada condición admite
 // variantes con disyunciones. Ej. la D:
@@ -239,6 +348,8 @@ export function proposicionesDeLectura(l: Lectura): Valuacion {
   for (const x of ['estirado', 'lado', 'toca', 'entre', 'sobre', 'doblado'] as const) v[`pulgar_${x}`] = l.pulgar === x
   for (const n of [1, 2, 3] as const) v[`pulgar_entre_${n}`] = l.entre === n
   for (const o of ['arriba', 'lado', 'abajo'] as const) v[`apunta_${o}`] = l.orientacion === o
+  // Si no se sabe hacia dónde mira la palma, no se cuenta como error.
+  for (const x of ['frente', 'dorso', 'lado'] as const) v[`palma_${x}`] = l.palma === undefined || l.palma === x
   v.separados = l.separados
   v.cruzados = l.cruzados
   return v
@@ -265,6 +376,12 @@ export function condicionesDeObjetivo(objetivo: Objetivo): Condicion[] {
     c.push({
       formula: o(...objetivo.orientacion.map((x) => variable(`apunta_${x}`))),
       consejo: CONSEJO_ORIENTACION[objetivo.orientacion[0]],
+    })
+  }
+  if (objetivo.palma) {
+    c.push({
+      formula: o(...objetivo.palma.map((x) => variable(`palma_${x}`))),
+      consejo: CONSEJO_PALMA[objetivo.palma[0]],
     })
   }
   for (const d of DEDOS_LARGOS) {

@@ -13,6 +13,8 @@ import type { Dedo } from '../vision/postura'
 export type EstadoDedo = 'estirado' | 'curvo' | 'doblado'
 export type PosicionPulgar = 'doblado' | 'sobre' | 'lado' | 'estirado' | 'curvo' | 'toca' | 'entre'
 export type Movimiento = 'j' | 'z' | 'arriba' | 'lados' | 'frente'
+/** Qué ve quien te mira: la palma (frente), el dorso de la mano o el canto (de lado). */
+export type Palma = 'frente' | 'dorso' | 'lado'
 
 /** Descripción de la forma de la mano, para dibujarla. */
 export interface FormaMano {
@@ -24,6 +26,8 @@ export interface FormaMano {
   cruzados?: boolean
   /** Giro de toda la mano en grados: 90 = dedos hacia un lado, 180 = hacia abajo. */
   giro?: number
+  /** Hacia dónde mira la palma. Si no se indica: 'frente' (la palma mira a quien te ve). */
+  palma?: Palma
   /** No revisar hacia dónde apunta la mano (p. ej. Y, que se hace vertical u horizontal). */
   orientacionLibre?: boolean
   movimiento?: Movimiento

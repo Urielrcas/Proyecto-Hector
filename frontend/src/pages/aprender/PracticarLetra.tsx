@@ -191,8 +191,15 @@ export default function PracticarLetra() {
             </ol>
           </div>
           <p className="mt-3 text-sm text-stone-600">
-            En el dibujo, los dedos <strong className="text-marca-700">verde oscuro</strong> van estirados, los{' '}
-            <strong className="text-marca-500">verde claro</strong> curvos y los grises, doblados.
+            El dibujo es tu mano derecha como la ve quien te mira:{' '}
+            <strong>
+              {letra.forma.palma === 'dorso'
+                ? 'se ve el dorso de la mano'
+                : letra.forma.palma === 'lado'
+                  ? 'la mano va de lado'
+                  : 'la palma va al frente'}
+            </strong>
+            .
             {letra.movimiento && (
               <>
                 {' '}

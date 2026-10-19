@@ -1,7 +1,7 @@
 # PUNTO DE ARRANQUE DEL SERVIDOR (FastAPI)
 # Se ejecuta con:  uvicorn app.main:app --reload --port 8000
 # Al arrancar: se conecta a MongoDB y crea el administrador inicial si no existe ninguno.
-# Registra las rutas (auth y usuarios), permite que el navegador llame a la API (CORS)
+# Registra las rutas (auth, usuarios, progreso, estadísticas y búsqueda), permite que el navegador llame a la API (CORS)
 # y redirige la dirección raíz "/" a la documentación interactiva "/docs".
 
 # ▸ Desde Python, módulo logging (mensajes en la consola del servidor)
@@ -33,8 +33,11 @@ from .config import config
 from .db import conectar, desconectar
 # ▸ Desde nuestro proyecto (carpeta app/rutas):
 #     auth → rutas de autenticación (app/rutas/auth.py)
+#     busqueda → ruta de aprendizaje con DFS/BFS (app/rutas/busqueda.py)
+#     estadisticas → gráficas del administrador (app/rutas/estadisticas.py)
+#     progreso → letras logradas por cada usuario (app/rutas/progreso.py)
 #     usuarios → rutas del CRUD de usuarios (app/rutas/usuarios.py)
-from .rutas import auth, usuarios
+from .rutas import auth, busqueda, estadisticas, progreso, usuarios
 # ▸ Desde nuestro proyecto (carpeta app/seguridad):
 #     hashear_contrasena → cifra una contraseña con bcrypt (app/seguridad.py)
 from .seguridad import hashear_contrasena
@@ -86,9 +89,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registrar los grupos de rutas: /api/auth/... y /api/usuarios/...
+# Registrar los grupos de rutas: /api/auth/..., /api/usuarios/..., /api/progreso, /api/estadisticas/... y /api/busqueda/...
 app.include_router(auth.router)
 app.include_router(usuarios.router)
+app.include_router(progreso.router)
+app.include_router(estadisticas.router)
+app.include_router(busqueda.router)
 
 
 @app.get("/", include_in_schema=False)

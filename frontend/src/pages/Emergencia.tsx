@@ -2,7 +2,7 @@
  * PANTALLA: FRASES DE EMERGENCIA
  * Frases rápidas que se muestran en pantalla completa y se leen en voz alta.
  *   - PRINCIPALES y OTRAS: listas de frases (título, subtítulo, mensaje, ícono y color).
- *   - hablar(): lee el mensaje con la voz del navegador en español de México.
+ *   - hablar() (lib/voz.ts): lee el mensaje con la voz del navegador en español de México.
  * Disponible siempre, incluso sin iniciar sesión.
  */
 
@@ -41,6 +41,10 @@ import { Boton } from '../components/Boton'
 // ▸ Desde nuestro proyecto: src/context/AppContext.tsx:
 //     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { useApp } from '../context/AppContext'
+// ▸ Desde nuestro proyecto: src/lib/voz.ts:
+//     callar → detiene la voz
+//     hablar → lee un texto en voz alta (voz sintética del navegador)
+import { callar, hablar } from '../lib/voz'
 
 // Datos de cada frase.
 interface Frase {
@@ -67,16 +71,6 @@ const OTRAS: Frase[] = [
   { titulo: 'Soy alérgico', subtitulo: 'Medicamentos', mensaje: 'Soy alérgico a algunos medicamentos. Por favor, pregúnteme antes de darme alguno.', icono: Pill, color: 'bg-violet-600' },
   { titulo: 'Llame a una ambulancia', subtitulo: 'Urgencia médica', mensaje: 'Por favor, llame a una ambulancia.', icono: Siren, color: 'bg-violet-600' },
 ]
-
-// Lee el texto en voz alta con la voz sintética del navegador (Web Speech API).
-function hablar(texto: string) {
-  if (!('speechSynthesis' in window)) return // navegador sin soporte de voz
-  speechSynthesis.cancel() // detener cualquier frase que se esté leyendo
-  const voz = new SpeechSynthesisUtterance(texto)
-  voz.lang = 'es-MX' // español de México
-  voz.rate = 0.95 // velocidad (1 = normal)
-  speechSynthesis.speak(voz)
-}
 
 // Una fila de la lista: cuadrito de color con ícono, título, subtítulo y flecha.
 function FilaFrase({ frase, onElegir }: { frase: Frase; onElegir: () => void }) {
@@ -107,7 +101,7 @@ export default function Emergencia() {
   // Al abrir una frase, leerla en voz alta; al cerrarla, callar.
   useEffect(() => {
     if (elegida) hablar(elegida.mensaje)
-    else if ('speechSynthesis' in window) speechSynthesis.cancel()
+    else callar()
   }, [elegida])
 
   // Cerrar la frase con la tecla Esc.

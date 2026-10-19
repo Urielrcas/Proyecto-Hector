@@ -83,6 +83,33 @@ export const REGLAS = {
     formula: 'f ∧ (m → d)',
     tablaEsperada: 'VFVVFFFF',
   }),
+  /** Usado por el traductor Señas → Texto (lib/vision/reconocedor.ts): cuándo se acepta una letra deletreada. */
+  letraReconocida: regla({
+    descripcion:
+      'La forma de la letra se sostiene; si lleva movimiento, el movimiento debe detectarse, y si no lleva, la mano debe estar quieta.',
+    proposiciones: {
+      f: 'la forma de la letra se sostiene varios cuadros',
+      m: 'la letra lleva movimiento',
+      d: 'se detectó el movimiento',
+      q: 'la mano está quieta',
+    },
+    formula: 'f ∧ (m → d) ∧ (¬m → q)',
+    tablaEsperada: 'VVFFVFVF' + 'F'.repeat(8),
+  }),
+  /** Usado por el traductor Señas → Texto: cuándo termina una palabra (se agrega un espacio). */
+  espacioPalabra: regla({
+    descripcion: 'Se cierra la palabra cuando la mano desaparece un momento después de haber deletreado al menos una letra.',
+    proposiciones: { s: 'no se ve la mano desde hace 1.5 segundos', u: 'se agregó una letra después del último espacio' },
+    formula: 's ∧ u',
+    tablaEsperada: 'VFFF',
+  }),
+  /** Usado por el Modo conversación: cuándo se envía solo el mensaje deletreado por la persona sorda. */
+  envioAutomatico: regla({
+    descripcion: 'El mensaje se envía solo si la opción está activada, la mano lleva 3 segundos abajo y hay algo escrito.',
+    proposiciones: { a: 'el envío automático está activado', s: 'no se ve la mano desde hace 3 segundos', t: 'hay un mensaje escrito' },
+    formula: 'a ∧ s ∧ t',
+    tablaEsperada: 'VFFFFFFF',
+  }),
 } satisfies Record<string, Regla>
 
 export type NombreRegla = keyof typeof REGLAS

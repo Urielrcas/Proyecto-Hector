@@ -170,4 +170,6 @@ async def eliminar(id_usuario: str, db: AsyncDatabase = Depends(get_db), admin: 
     resultado = await db.usuarios.delete_one({"_id": oid})
     if resultado.deleted_count == 0:  # no se borró nada: ese id no existe
         raise NO_ENCONTRADO
+    # Borrar también su progreso de aprendizaje (ya no debe contar en las estadísticas).
+    await db.progreso.delete_many({"usuario_id": oid})
     return Response(status_code=status.HTTP_204_NO_CONTENT)

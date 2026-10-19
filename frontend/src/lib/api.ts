@@ -1,6 +1,7 @@
 /*
  * CLIENTE DE LA API (todas las peticiones al backend pasan por aquí)
  * api('/usuarios') hace la petición a /api/usuarios, agrega el token de sesión,
+ * (apiArchivo hace lo mismo pero devuelve un archivo, p. ej. las gráficas PNG),
  * convierte la respuesta de JSON y, si hay error, lanza un ErrorApi con un mensaje
  * en español listo para mostrar. Si el servidor responde 401 (sesión vencida), cierra la sesión.
  */
@@ -47,6 +48,23 @@ function mensajeDeError(estado: number, cuerpo: unknown): string {
 //   cuerpo  → los datos a enviar (se convierten a JSON)
 //   <T>     → el tipo de dato que se espera recibir
 export async function api<T>(ruta: string, opciones: { metodo?: string; cuerpo?: unknown } = {}): Promise<T> {
+  const respuesta = await peticion(ruta, opciones)
+  // 204 = "todo bien, sin contenido" (por ejemplo al eliminar): no hay nada que leer.
+  if (respuesta.status === 204) return undefined as T
+  // Convertir la respuesta de JSON a objeto (si falla, null).
+  return (await respuesta.json().catch(() => null)) as T
+}
+
+/** Descarga un archivo de la API (p. ej. una gráfica PNG) como Blob, con el token de la sesión. */
+// Un <img src="/api/..."> no puede mandar el token; por eso se descarga aquí y se muestra con
+// URL.createObjectURL(blob). Ej.: const blob = await apiArchivo('/estadisticas/graficas/registros.png')
+export async function apiArchivo(ruta: string): Promise<Blob> {
+  const respuesta = await peticion(ruta)
+  return respuesta.blob()
+}
+
+// Hace la petición, agrega el token y, si el servidor responde con error, lanza un ErrorApi.
+async function peticion(ruta: string, opciones: { metodo?: string; cuerpo?: unknown } = {}): Promise<Response> {
   // El token de la sesión guardada (si hay), para que el servidor sepa quién hace la petición.
   const token = leer<Sesion | null>('sesion', null)?.token
   let respuesta: Response
@@ -67,15 +85,12 @@ export async function api<T>(ruta: string, opciones: { metodo?: string; cuerpo?:
     throw new ErrorApi(0, 'No hay conexión con el servidor. Verifica que el backend esté encendido.')
   }
 
-  // 204 = "todo bien, sin contenido" (por ejemplo al eliminar): no hay nada que leer.
-  if (respuesta.status === 204) return undefined as T
-  // Convertir la respuesta de JSON a objeto (si falla, null).
-  const cuerpo = await respuesta.json().catch(() => null)
   // respuesta.ok es true para los códigos 200-299 (éxito).
   if (!respuesta.ok) {
+    const cuerpo = await respuesta.json().catch(() => null)
     // 401 con token = la sesión venció o es inválida → cerrar la sesión automáticamente.
     if (respuesta.status === 401 && token) alExpirarSesion()
     throw new ErrorApi(respuesta.status, mensajeDeError(respuesta.status, cuerpo))
   }
-  return cuerpo as T
+  return respuesta
 }

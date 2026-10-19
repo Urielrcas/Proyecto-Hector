@@ -73,7 +73,20 @@ export function manoSintetica(forma: FormaMano): Punto[] {
   p[3] = { x: p[1].x + ((punta.x - p[1].x) * 2) / 3, y: p[1].y + ((punta.y - p[1].y) * 2) / 3 }
   p[4] = punta
 
-  return girar(p, forma.giro ?? 0)
+  return girar(orientarPalma(p, forma.palma ?? 'frente'), forma.giro ?? 0)
+}
+
+/**
+ * Dorso: la mano se refleja (como darle la vuelta). De lado: el meñique (con su base) se pone
+ * detrás del índice, así los nudillos quedan alineados como cuando se ve el canto de la mano.
+ */
+function orientarPalma(p: Punto[], palma: 'frente' | 'dorso' | 'lado'): Punto[] {
+  if (palma === 'dorso') return p.map((q) => ({ x: 2 * MUNECA.x - q.x, y: q.y }))
+  if (palma === 'lado') {
+    const dx = p[5].x - p[17].x
+    return p.map((q, i) => (i >= 17 ? { x: q.x + dx, y: q.y } : q))
+  }
+  return p
 }
 
 /** Gira la mano `grados` alrededor de la muñeca (sentido horario en pantalla). */

@@ -2,7 +2,7 @@
  * RUTAS DE LA APLICACIÓN (qué pantalla se muestra en cada dirección)
  *   - Rutas públicas: bienvenida, configuración inicial, login, registro, recuperar.
  *   - Rutas con menú lateral (dentro de <DisenoApp />): requieren sesión (cuenta o invitado).
- *   - /usuarios...: además requieren ser administrador (<RequiereAdmin>).
+ *   - /usuarios... y /estadisticas: además requieren ser administrador (<RequiereAdmin>).
  *   - /emergencia: siempre disponible, con o sin sesión.
  * Para agregar una pantalla nueva: créala en pages/ y agrega aquí su <Route path="..." />.
  */
@@ -56,6 +56,9 @@ import Emergencia from './pages/Emergencia'
 // ▸ Desde nuestro proyecto: src/pages/EnConstruccion.tsx:
 //     EnConstruccion → pantalla de "módulo en desarrollo"
 import EnConstruccion from './pages/EnConstruccion'
+// ▸ Desde nuestro proyecto: src/pages/estadisticas/Estadisticas.tsx:
+//     Estadisticas → pantalla de gráficas para el administrador
+import Estadisticas from './pages/estadisticas/Estadisticas'
 // ▸ Desde nuestro proyecto: src/pages/Inicio.tsx:
 //     Inicio → pantalla de inicio
 import Inicio from './pages/Inicio'
@@ -78,6 +81,11 @@ import ListaUsuarios from './pages/usuarios/ListaUsuarios'
 // Carga diferida: MediaPipe solo se descarga al entrar a Aprendizaje.
 const Aprender = lazy(() => import('./pages/aprender/Aprender'))
 const PracticarLetra = lazy(() => import('./pages/aprender/PracticarLetra'))
+const RutaAprendizaje = lazy(() => import('./pages/aprender/RutaAprendizaje'))
+// El traductor también usa la cámara y MediaPipe: se carga solo al abrirlo.
+const SenasTexto = lazy(() => import('./pages/traductor/SenasTexto'))
+const VozSenas = lazy(() => import('./pages/traductor/VozSenas'))
+const Conversacion = lazy(() => import('./pages/conversacion/Conversacion'))
 
 // Círculo girando que se muestra mientras se descarga una pantalla con carga diferida.
 function Cargando() {
@@ -89,7 +97,7 @@ function Cargando() {
 }
 
 // Módulos pendientes: se reemplazan por su pantalla real conforme se desarrollen.
-const PENDIENTES = [SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, CONFIGURACION, AYUDA]
+const PENDIENTES = [HISTORIAL, CONFIGURACION, AYUDA]
 
 function Rutas() {
   const { tieneSesion } = useApp()
@@ -111,14 +119,20 @@ function Rutas() {
       {/* ── Pantallas internas: requieren sesión y se muestran dentro del menú (DisenoApp) ── */}
       <Route element={<RequiereSesion><DisenoApp /></RequiereSesion>}>
         <Route path="/inicio" element={<Inicio />} />
+        <Route path={SENAS_TEXTO.ruta} element={<Suspense fallback={<Cargando />}><SenasTexto /></Suspense>} />
+        <Route path={VOZ_SENAS.ruta} element={<Suspense fallback={<Cargando />}><VozSenas /></Suspense>} />
+        <Route path={CONVERSACION.ruta} element={<Suspense fallback={<Cargando />}><Conversacion /></Suspense>} />
         <Route path="/emergencia" element={<Emergencia />} />
         <Route path="/aprender" element={<Suspense fallback={<Cargando />}><Aprender /></Suspense>} />
+        {/* "/aprender/ruta" va antes que "/aprender/:letra" para que "ruta" no se lea como una letra */}
+        <Route path="/aprender/ruta" element={<Suspense fallback={<Cargando />}><RutaAprendizaje /></Suspense>} />
         <Route path="/aprender/:letra" element={<Suspense fallback={<Cargando />}><PracticarLetra /></Suspense>} />
 
         {/* Solo administradores */}
         <Route path="/usuarios" element={<RequiereAdmin><ListaUsuarios /></RequiereAdmin>} />
         <Route path="/usuarios/nuevo" element={<RequiereAdmin><FormularioUsuario /></RequiereAdmin>} />
         <Route path="/usuarios/:id/editar" element={<RequiereAdmin><FormularioUsuario /></RequiereAdmin>} />
+        <Route path="/estadisticas" element={<RequiereAdmin><Estadisticas /></RequiereAdmin>} />
 
         {/* Módulos pendientes: muestran "Este módulo está en desarrollo" */}
         {PENDIENTES.map(({ ruta, titulo }) => (

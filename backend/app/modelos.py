@@ -20,7 +20,8 @@ from typing import Annotated, Any, Literal
 #     BaseModel → clase base de los modelos de datos
 #     EmailStr → tipo: correo con formato válido
 #     Field → reglas de un campo (mínimo, máximo...)
-from pydantic import AfterValidator, BaseModel, EmailStr, Field
+#     model_validator → validación que revisa varios campos juntos
+from pydantic import AfterValidator, BaseModel, EmailStr, Field, model_validator
 
 # Literal = solo se aceptan esos valores exactos (cualquier otro da error 422).
 Rol = Literal["admin", "usuario"]
@@ -114,3 +115,135 @@ class PaginaUsuarios(BaseModel):
     total: int
     pagina: int
     por_pagina: int
+
+
+# ── Progreso de aprendizaje (rutas/progreso.py) ──
+
+
+# Lo que manda el frontend al lograr letras: POST /api/progreso
+class ProgresoEntrada(BaseModel):
+    lengua: Lengua
+    letras: list[Annotated[str, Field(min_length=1, max_length=2)]] = Field(min_length=1, max_length=30)
+
+
+# Letras logradas por el usuario en una lengua (GET y POST /api/progreso)
+class ProgresoSalida(BaseModel):
+    lengua: Lengua
+    letras: list[str]
+
+
+# ── Búsqueda DFS/BFS de la ruta de aprendizaje (rutas/busqueda.py) ──
+
+# Letra o nombre de un nodo (corto: es una letra del alfabeto, o "A".."F" en las pruebas).
+Nodo = Annotated[str, Field(min_length=1, max_length=3)]
+
+
+# POST /api/busqueda/ruta
+class BusquedaEntrada(BaseModel):
+    # Grafo: cada letra → sus letras vecinas. Lo arma el frontend con las formas de mano
+    # (src/lib/aprendizaje/grafoLetras.ts). Máximo 60 nodos para que la búsqueda sea rápida.
+    grafo: dict[Nodo, list[Nodo]] = Field(min_length=1, max_length=60)
+    inicio: Nodo
+    objetivo: Nodo
+    algoritmo: Literal["dfs-todas", "dfs-primera", "bfs"] = "dfs-todas"
+    # Límite de profundidad (pasos). None = sin límite. Máximo 6: con más, las rutas son miles.
+    limite: int | None = Field(4, ge=1, le=6)
+
+    # Revisa que el inicio, el objetivo y todos los vecinos sean nodos del grafo.
+    @model_validator(mode="after")
+    def _nodos_existentes(self):
+        nodos = set(self.grafo)
+        if self.inicio not in nodos or self.objetivo not in nodos:
+            raise ValueError("El inicio y el objetivo deben ser nodos del grafo.")
+        if any(v not in nodos for vecinos in self.grafo.values() for v in vecinos):
+            raise ValueError("Todos los vecinos deben ser nodos del grafo.")
+        return self
+
+
+# Un renglón del orden de exploración.
+class PasoSalida(BaseModel):
+    nodo: str
+    profundidad: int
+
+
+# Resultado de la búsqueda (es el ResultadoBusqueda de app/busqueda.py convertido a JSON).
+class BusquedaSalida(BaseModel):
+    algoritmo: str
+    inicio: str
+    objetivo: str
+    limite: int | None
+    orden_exploracion: list[PasoSalida]
+    visitados: list[str]
+    rutas: list[list[str]]
+    ciclos_evitados: list[list[str]]
+    repetidos_evitados: int
+    cortes_por_limite: list[str]
+    ramas_cortadas: int
+    truncado: bool
+
+
+# ── Estadísticas para el administrador (rutas/estadisticas.py) ──
+
+
+# Números de las tarjetas de arriba de la pantalla «Estadísticas».
+class ResumenEstadisticas(BaseModel):
+    usuarios: int  # cuentas registradas
+    activos: int
+    inactivos: int
+    por_lengua: dict[str, int]  # {"LSM": 8, "ASL": 3} según la lengua de cada cuenta
+    letras_logradas: int  # total de letras logradas sumando a todos
+    avance_promedio: dict[str, float]  # % promedio de avance por lengua, entre quienes ya empezaron
+
+
+# ── Comparación de los 5 algoritmos: BFS, DFS, UCS, Greedy y A* (rutas/busqueda.py) ──
+
+# Costo de una conexión: positivo (UCS y A* necesitan costos mayores que 0).
+Costo = Annotated[float, Field(gt=0, le=100)]
+
+
+# POST /api/busqueda/comparar
+class ComparacionEntrada(BaseModel):
+    # Grafo con costos: cada letra → {vecina: costo}. En la ruta de aprendizaje el costo es
+    # cuántos detalles de la mano cambian (lo arma src/lib/aprendizaje/grafoLetras.ts).
+    grafo: dict[Nodo, dict[Nodo, Costo]] = Field(min_length=1, max_length=60)
+    # Heurística h(n) de cada letra hacia la meta (≥ 0).
+    heuristica: dict[Nodo, Annotated[float, Field(ge=0)]]
+    inicio: Nodo
+    objetivo: Nodo
+
+    @model_validator(mode="after")
+    def _nodos_existentes(self):
+        nodos = set(self.grafo)
+        if self.inicio not in nodos or self.objetivo not in nodos:
+            raise ValueError("El inicio y el objetivo deben ser nodos del grafo.")
+        if any(v not in nodos for vecinos in self.grafo.values() for v in vecinos):
+            raise ValueError("Todos los vecinos deben ser nodos del grafo.")
+        if set(self.heuristica) != nodos:
+            raise ValueError("La heurística debe tener un valor para cada nodo del grafo.")
+        return self
+
+
+# Un nodo expandido con sus valores (g, h, f o profundidad, según el algoritmo).
+class ExpansionSalida(BaseModel):
+    nodo: str
+    g: float | None
+    h: float | None
+    f: float | None
+    profundidad: int | None
+
+
+# Resultado de un algoritmo (ResultadoComparado de app/busqueda_costo.py).
+class ResultadoComparadoSalida(BaseModel):
+    algoritmo: str
+    nombre: str
+    camino: list[str] | None
+    costo: float | None
+    pasos: int
+    expandidos: list[ExpansionSalida]
+    registro: list[str]
+
+
+class ComparacionSalida(BaseModel):
+    resultados: list[ResultadoComparadoSalida]  # en orden: BFS, DFS, UCS, Greedy, A*
+    heuristica_consistente: bool  # h(meta) = 0 y h(n) ≤ c(n, m) + h(m) en cada conexión
+    fallas_heuristica: list[str]  # conexiones donde no se cumple (vacía si es consistente)

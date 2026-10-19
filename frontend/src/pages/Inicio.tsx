@@ -24,6 +24,7 @@ import { useApp } from '../context/AppContext'
 //     CONFIGURACION → sección del menú «Configuración» (ruta, título, descripción e ícono)
 //     CONVERSACION → sección del menú «Modo conversación» (ruta, título, descripción e ícono)
 //     EMERGENCIA → sección del menú «Frases de emergencia» (ruta, título, descripción e ícono)
+//     ESTADISTICAS → sección del menú «Estadísticas» (ruta, título, descripción e ícono)
 //     HISTORIAL → sección del menú «Historial» (ruta, título, descripción e ícono)
 //     SENAS_TEXTO → sección del menú «Señas → Texto» (ruta, título, descripción e ícono)
 //     USUARIOS → sección del menú «Usuarios» (ruta, título, descripción e ícono)
@@ -35,6 +36,7 @@ import {
   CONFIGURACION,
   CONVERSACION,
   EMERGENCIA,
+  ESTADISTICAS,
   HISTORIAL,
   SENAS_TEXTO,
   USUARIOS,
@@ -45,7 +47,7 @@ import {
 // Tarjetas grandes verdes (en este orden).
 const TRADUCTORES: Seccion[] = [SENAS_TEXTO, VOZ_SENAS]
 // Tarjetas blancas de "Más funciones" (en este orden). Para quitar o reordenar una, edita esta lista.
-const OTRAS: Seccion[] = [CONVERSACION, APRENDIZAJE, HISTORIAL, USUARIOS, CONFIGURACION, AYUDA]
+const OTRAS: Seccion[] = [CONVERSACION, APRENDIZAJE, HISTORIAL, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]
 
 // Animación de entrada: cada tarjeta aparece subiendo un poco, una después de otra.
 const aparecer = {

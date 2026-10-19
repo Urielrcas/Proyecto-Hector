@@ -42,3 +42,24 @@
     @apply outline-3 outline-offset-2 outline-marca-500;
   }
 }
+
+/* Animación corta con la que aparece cada seña en el traductor Voz / Texto → Señas.
+   Se usa con la clase animate-aparecer (Tailwind la toma de --animate-aparecer). */
+@theme {
+  --animate-aparecer: aparecer 0.25s ease-out;
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-aparecer {
+    animation: none;
+  }
+}

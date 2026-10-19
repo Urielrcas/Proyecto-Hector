@@ -7,9 +7,10 @@
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: BookOpen (libro abierto), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
+//     íconos: BookOpen (libro abierto), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   BookOpen,
+  ChartColumn,
   CircleHelp,
   Hand,
   History,
@@ -75,6 +76,14 @@ export const USUARIOS: Seccion = {
   soloAdmin: true,
 }
 
+export const ESTADISTICAS: Seccion = {
+  ruta: '/estadisticas',
+  titulo: 'Estadísticas',
+  descripcion: 'Gráficas del avance de los usuarios.',
+  icono: ChartColumn,
+  soloAdmin: true,
+}
+
 export const CONFIGURACION: Seccion = {
   ruta: '/configuracion',
   titulo: 'Configuración',
@@ -97,4 +106,4 @@ export const EMERGENCIA: Seccion = {
 }
 
 /** Orden del menú lateral. */
-export const MENU: Seccion[] = [INICIO, SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, APRENDIZAJE, USUARIOS, CONFIGURACION, AYUDA]
+export const MENU: Seccion[] = [INICIO, SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, APRENDIZAJE, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]

@@ -1,7 +1,8 @@
 # CONEXIÓN A MONGODB
 # Abre la conexión con la base de datos al arrancar el servidor y la cierra al apagarlo.
 # get_db() entrega la base de datos a las rutas que la necesitan (auth.py, usuarios.py).
-# También crea el índice único del correo: MongoDB rechaza dos usuarios con el mismo correo.
+# También crea los índices únicos: MongoDB rechaza dos usuarios con el mismo correo
+# y que una misma letra lograda se guarde dos veces para el mismo usuario.
 
 # ▸ Desde PyMongo (conexión con MongoDB):
 #     AsyncMongoClient → cliente asíncrono de MongoDB
@@ -29,6 +30,8 @@ async def conectar(uri: str, nombre_db: str) -> AsyncDatabase:
     await _conexion.db.command("ping")  # falla pronto si MongoDB no está disponible
     # Índice único: MongoDB no permitirá dos documentos con el mismo correo en "usuarios".
     await _conexion.db.usuarios.create_index("correo", unique=True)
+    # Índice único del progreso: una letra se guarda una sola vez por usuario y lengua.
+    await _conexion.db.progreso.create_index([("usuario_id", 1), ("lengua", 1), ("letra", 1)], unique=True)
     return _conexion.db
 
 
