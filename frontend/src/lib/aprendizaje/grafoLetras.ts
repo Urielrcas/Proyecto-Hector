@@ -51,21 +51,59 @@ const PALMA: Record<Palma, string> = {
   lado: 'Pon la mano de lado',
 }
 
+// Los detalles de la mano que se comparan entre dos letras (11 en total). Cada uno sabe si cambia
+// de "a" a "b" y cómo explicarle el cambio al usuario.
+const DETALLES: { distinto: (a: FormaMano, b: FormaMano) => boolean; texto: (b: FormaMano) => string }[] = [
+  ...DEDOS_LARGOS.map((dedo) => ({
+    distinto: (a: FormaMano, b: FormaMano) => a.dedos[dedo] !== b.dedos[dedo],
+    texto: (b: FormaMano) => `${VERBO_DEDO[b.dedos[dedo]]} el ${NOMBRE_DEDO[dedo]}`,
+  })),
+  { distinto: (a, b) => a.pulgar !== b.pulgar, texto: (b) => `Pulgar: ${PULGAR[b.pulgar]}` },
+  { distinto: (a, b) => (a.entre ?? 0) !== (b.entre ?? 0), texto: () => 'Mueve el pulgar a otro hueco entre los dedos' },
+  { distinto: (a, b) => !!a.separados !== !!b.separados, texto: (b) => (b.separados ? 'Separa índice y medio' : 'Junta índice y medio') },
+  { distinto: (a, b) => !!a.cruzados !== !!b.cruzados, texto: (b) => (b.cruzados ? 'Cruza índice y medio' : 'Descruza índice y medio') },
+  { distinto: (a, b) => (a.giro ?? 0) !== (b.giro ?? 0), texto: (b) => (b.giro ? `Gira la mano ${b.giro}°` : 'Endereza la mano') },
+  { distinto: (a, b) => (a.palma ?? 'frente') !== (b.palma ?? 'frente'), texto: (b) => PALMA[b.palma ?? 'frente'] },
+  { distinto: (a, b) => (a.movimiento ?? '') !== (b.movimiento ?? ''), texto: (b) => (b.movimiento ? 'Agrega el movimiento' : 'Sin movimiento') },
+]
+
 /** Qué hay que cambiar para pasar de la forma "a" a la forma "b". Lista vacía = misma forma. */
 export function diferencias(a: FormaMano, b: FormaMano): string[] {
-  const cambios: string[] = []
-  for (const dedo of DEDOS_LARGOS) {
-    if (a.dedos[dedo] !== b.dedos[dedo]) cambios.push(`${VERBO_DEDO[b.dedos[dedo]]} el ${NOMBRE_DEDO[dedo]}`)
-  }
-  if (a.pulgar !== b.pulgar) cambios.push(`Pulgar: ${PULGAR[b.pulgar]}`)
-  if ((a.entre ?? 0) !== (b.entre ?? 0)) cambios.push('Mueve el pulgar a otro hueco entre los dedos')
-  if (!!a.separados !== !!b.separados) cambios.push(b.separados ? 'Separa índice y medio' : 'Junta índice y medio')
-  if (!!a.cruzados !== !!b.cruzados) cambios.push(b.cruzados ? 'Cruza índice y medio' : 'Descruza índice y medio')
-  if ((a.giro ?? 0) !== (b.giro ?? 0)) cambios.push(b.giro ? `Gira la mano ${b.giro}°` : 'Endereza la mano')
-  if ((a.palma ?? 'frente') !== (b.palma ?? 'frente')) cambios.push(PALMA[b.palma ?? 'frente'])
-  if ((a.movimiento ?? '') !== (b.movimiento ?? '')) cambios.push(b.movimiento ? 'Agrega el movimiento' : 'Sin movimiento')
-  return cambios
+  return DETALLES.filter((d) => d.distinto(a, b)).map((d) => d.texto(b))
 }
+
+/**
+ * La letra como un PUNTO en un plano con una coordenada por detalle de la mano, puesto de modo
+ * que la meta queda en el origen (0, 0, 0…): cada coordenada vale 1 si ese detalle todavía es
+ * distinto al de la meta y 0 si ya es igual.
+ * Ej.: si a la letra solo le falta cambiar el índice y el pulgar, su punto es (1, 0, 0, 0, 1, 0…).
+ */
+export function puntoHaciaMeta(forma: FormaMano, meta: FormaMano): number[] {
+  return DETALLES.map((d) => (d.distinto(forma, meta) ? 1 : 0))
+}
+
+/** Distancia Manhattan: |x1 − x2| + |y1 − y2| + …  (como la viborita: cuadro por cuadro). */
+export function distanciaManhattan(p: number[], q: number[]): number {
+  let suma = 0
+  for (let i = 0; i < p.length; i++) {
+    const resta = p[i] - q[i]
+    suma += resta < 0 ? -resta : resta // valor absoluto: nunca negativo
+  }
+  return suma
+}
+
+/** Distancia Euclidiana: √((x1 − x2)² + (y1 − y2)² + …)  (en línea recta, sin importar los cuadros). */
+export function distanciaEuclidiana(p: number[], q: number[]): number {
+  let suma = 0
+  for (let i = 0; i < p.length; i++) {
+    const resta = p[i] - q[i]
+    suma += resta * resta // al cuadrado: nunca negativo
+  }
+  return Math.sqrt(suma)
+}
+
+/** Con qué distancia se calcula la heurística h(n) de A* y Greedy. */
+export type Distancia = 'manhattan' | 'euclidiana'
 
 export interface GrafoLetras {
   letras: Letra[] // las letras de la lengua, en orden del alfabeto
@@ -112,19 +150,25 @@ export interface GrafoConCostos {
 /**
  * Datos para UCS, Greedy y A* (comparación de algoritmos, backend/app/busqueda_costo.py):
  *   - costo de un paso c(n, m): cuántos detalles de la mano cambian de la letra n a la m (1 o 2).
- *   - heurística h(n): cuántos detalles le faltan a la letra n para ser la meta.
- * h(n) nunca sobreestima (es admisible): cada detalle distinto tiene que cambiar al menos una vez
- * y cada cambio cuesta 1. Además es consistente, h(n) ≤ c(n, m) + h(m), porque cambiar de n a m
- * no puede acercar a la meta más detalles de los que cambia.
+ *   - heurística h(n): qué tan lejos está la letra n de la meta, midiendo la distancia entre su
+ *     punto (puntoHaciaMeta) y el origen con una de dos fórmulas:
+ *       · Manhattan: cuenta los detalles que faltan. Si faltan 4, h = 4.
+ *       · Euclidiana: la línea recta. Si faltan 4, h = √4 = 2 (siempre igual o menor que Manhattan).
+ * Las dos nunca sobreestiman (son admisibles): cada detalle distinto tiene que cambiar al menos una
+ * vez y cada cambio cuesta 1. Además son consistentes, h(n) ≤ c(n, m) + h(m), así que A* da la ruta
+ * más barata con cualquiera; con Euclidiana la pista es más débil y A* suele revisar más letras.
  */
-export function grafoConCostos(lengua: Lengua, objetivo: string): GrafoConCostos {
+export function grafoConCostos(lengua: Lengua, objetivo: string, distancia: Distancia = 'manhattan'): GrafoConCostos {
   const { letras, grafo: vecinas } = grafoLetras(lengua)
   const forma = Object.fromEntries(letras.map((l) => [l.letra, l.forma]))
+  const medir = distancia === 'manhattan' ? distanciaManhattan : distanciaEuclidiana
   const grafo: Record<string, Record<string, number>> = {}
   const heuristica: Record<string, number> = {}
   for (const { letra } of letras) {
     grafo[letra] = Object.fromEntries(vecinas[letra].map((v) => [v, diferencias(forma[letra], forma[v]).length]))
-    heuristica[letra] = diferencias(forma[letra], forma[objetivo]).length
+    const punto = puntoHaciaMeta(forma[letra], forma[objetivo])
+    const origen = punto.map(() => 0) // la meta
+    heuristica[letra] = Math.round(medir(punto, origen) * 100) / 100 // 2 decimales (√2 = 1.41)
   }
   return { grafo, heuristica }
 }

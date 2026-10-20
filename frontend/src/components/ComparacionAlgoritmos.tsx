@@ -2,8 +2,10 @@
  * COMPONENTE: COMPARACIÓN DE LOS 5 ALGORITMOS DE BÚSQUEDA (BFS, DFS, UCS, Greedy y A*)
  * Basado en la práctica p30algoritmosbusquedacompara.py, aplicado a la ruta de aprendizaje:
  *   - costo de un paso = cuántos detalles de la mano cambian entre dos letras,
- *   - heurística h(n) = cuántos detalles le faltan a la letra para ser la meta.
+ *   - heurística h(n) = qué tan lejos está la letra de la meta, medido con distancia Manhattan
+ *     (cuenta los detalles que faltan) o Euclidiana (línea recta: la raíz de esa cuenta).
  * Muestra:
+ *   0. Un selector Manhattan / Euclidiana y cuántas letras revisan A* y Greedy con cada una.
  *   1. Tabla comparativa: ruta, pasos, costo y letras expandidas de cada algoritmo.
  *   2. Dos gráficas de barras (SVG propio): letras expandidas y costo de la ruta.
  *   3. El algoritmo elegido en detalle: su ruta en el grafo y cada expansión con g, h y f.
@@ -23,6 +25,9 @@ import { Aviso } from './Aviso'
 // ▸ Desde nuestro proyecto: src/components/GrafoBusqueda.tsx:
 //     GrafoBusqueda → dibujo del grafo de letras con el recorrido de la búsqueda
 import { GrafoBusqueda } from './GrafoBusqueda'
+// ▸ Desde nuestro proyecto: src/lib/aprendizaje/grafoLetras.ts:
+//     Distancia → tipo: 'manhattan' | 'euclidiana'
+import type { Distancia } from '../lib/aprendizaje/grafoLetras'
 // ▸ Desde nuestro proyecto: src/services/busqueda.ts:
 //     ClaveAlgoritmo → tipo: 'bfs' | 'dfs' | 'ucs' | 'greedy' | 'astar'
 //     Comparacion → tipo: resultado de los 5 algoritmos
@@ -38,6 +43,12 @@ const DECIDE_CON: Record<ClaveAlgoritmo, string> = {
   greedy: 'Menor heurística h(n)',
   astar: 'Menor f(n) = g(n) + h(n)',
 }
+
+// Las dos formas de medir la heurística, con su fórmula para mostrarla.
+const DISTANCIAS: { valor: Distancia; nombre: string; formula: string }[] = [
+  { valor: 'manhattan', nombre: 'Manhattan', formula: '|x1 − x2| + |y1 − y2| + …' },
+  { valor: 'euclidiana', nombre: 'Euclidiana', formula: '√((x1 − x2)² + (y1 − y2)² + …)' },
+]
 
 const flechas = (letras: string[] | null) => (letras ? letras.join(' → ') : 'Sin ruta')
 
@@ -95,19 +106,21 @@ function Barras({
 }
 
 export function ComparacionAlgoritmos({
-  comparacion,
+  comparaciones,
   letras,
   grafo,
   inicio,
   objetivo,
 }: {
-  comparacion: Comparacion
+  comparaciones: Record<Distancia, Comparacion> // la misma comparación con cada distancia
   letras: string[]
   grafo: Record<string, string[]>
   inicio: string
   objetivo: string
 }) {
   const [seleccionado, setSeleccionado] = useState<ClaveAlgoritmo>('astar')
+  const [distancia, setDistancia] = useState<Distancia>('manhattan')
+  const comparacion = comparaciones[distancia]
   const { resultados } = comparacion
   const por = Object.fromEntries(resultados.map((r) => [r.algoritmo, r])) as Record<ClaveAlgoritmo, ResultadoComparado>
   const elegido = por[seleccionado]
@@ -146,6 +159,9 @@ export function ComparacionAlgoritmos({
 
   // Interpretación escrita a partir de los resultados.
   const { bfs, dfs, ucs, greedy, astar } = por
+  // Cuántas letras revisó A* con cada distancia.
+  const astarCon = (d: Distancia) => comparaciones[d].resultados.find((r) => r.algoritmo === 'astar')!.expandidos.length
+  const [conManhattan, conEuclidiana] = [astarCon('manhattan'), astarCon('euclidiana')]
   const interpretacion: string[] = hayRuta
     ? [
         `BFS buscó la ruta con menos pasos (${bfs.pasos}): ${flechas(bfs.camino)}, que cuesta ${bfs.costo} cambios de la mano.`,
@@ -159,6 +175,9 @@ export function ComparacionAlgoritmos({
           ? `Greedy solo siguió la heurística, revisó ${greedy.expandidos.length} letras y esta vez también dio una ruta de costo mínimo.`
           : `Greedy solo siguió la heurística: revisó ${greedy.expandidos.length} letras, pero su ruta cuesta ${greedy.costo} (no es la más barata).`,
         `DFS devolvió la primera ruta que encontró al profundizar: ${flechas(dfs.camino)} (${dfs.pasos} pasos, costo ${dfs.costo}).`,
+        conManhattan < conEuclidiana
+          ? `A* con Manhattan revisó ${conManhattan} letras y con Euclidiana ${conEuclidiana}: las dos llegan a la ruta más barata, pero Manhattan da una pista más fuerte (por eso la usa «Armar mi ruta»).`
+          : `A* revisó ${conManhattan} letras con Manhattan y ${conEuclidiana} con Euclidiana: con estas letras las dos pistas ayudaron igual.`,
       ]
     : []
 
@@ -170,8 +189,33 @@ export function ComparacionAlgoritmos({
         </h2>
         <p className="text-stone-600">
           Los cinco algoritmos buscan con el mismo grafo. El <strong>costo</strong> de un paso es cuántos detalles de la mano cambian; la{' '}
-          <strong>heurística h(n)</strong> es cuántos detalles le faltan a una letra para ser {objetivo}.
+          <strong>heurística h(n)</strong> es qué tan lejos está una letra de {objetivo}: cada detalle de la mano es una coordenada (1 si
+          todavía es distinto, 0 si ya es igual) y se mide la distancia hasta la meta.
         </p>
+
+        {/* ── 0. Distancia de la heurística: Manhattan o Euclidiana ── */}
+        <div className="mt-4 grid gap-3 sm:grid-cols-2" role="group" aria-label="Distancia para la heurística">
+          {DISTANCIAS.map((d) => {
+            const activa = d.valor === distancia
+            const r = Object.fromEntries(comparaciones[d.valor].resultados.map((x) => [x.algoritmo, x])) as Record<ClaveAlgoritmo, ResultadoComparado>
+            return (
+              <button
+                key={d.valor}
+                type="button"
+                onClick={() => setDistancia(d.valor)}
+                aria-pressed={activa}
+                className={`rounded-2xl border-2 p-4 text-left ${activa ? 'border-marca-700 bg-marca-50' : 'border-stone-200 hover:bg-stone-50'}`}
+              >
+                <span className="block font-bold">{d.nombre}</span>
+                <span className="block font-mono text-sm text-stone-600">{d.formula}</span>
+                <span className="mt-2 block text-sm text-stone-700">
+                  A* revisó <strong className="tabular-nums">{r.astar.expandidos.length}</strong> letras · Greedy{' '}
+                  <strong className="tabular-nums">{r.greedy.expandidos.length}</strong>
+                </span>
+              </button>
+            )
+          })}
+        </div>
         {comparacion.heuristica_consistente && (
           <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-marca-50 px-3 py-1 text-sm font-bold text-marca-800">
             <CircleCheck className="size-4" aria-hidden /> Heurística consistente: nunca sobreestima, así que A* garantiza la ruta más barata.

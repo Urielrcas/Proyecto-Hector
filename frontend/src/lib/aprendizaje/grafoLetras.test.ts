@@ -15,10 +15,11 @@ import { mano } from './forma'
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/grafoLetras.ts:
 //     alcanzables → letras a las que se llega desde una letra
 //     diferencias → qué cambia de una forma a otra
+//     distanciaEuclidiana, distanciaManhattan → las dos fórmulas de distancia
 //     grafoConCostos → grafo con costos y heurística (para UCS, Greedy y A*)
 //     grafoLetras → arma el grafo de una lengua
 //     MAX_DIFERENCIAS → máximo de cambios entre letras conectadas
-import { alcanzables, diferencias, grafoConCostos, grafoLetras, MAX_DIFERENCIAS } from './grafoLetras'
+import { alcanzables, diferencias, distanciaEuclidiana, distanciaManhattan, grafoConCostos, grafoLetras, MAX_DIFERENCIAS } from './grafoLetras'
 
 describe('grafoLetras', () => {
   for (const lengua of ['LSM', 'ASL'] as const) {
@@ -57,21 +58,43 @@ describe('alcanzables', () => {
 
 describe('grafoConCostos', () => {
   for (const lengua of ['LSM', 'ASL'] as const) {
-    it(`${lengua}: la heurística es consistente para cualquier meta (A* da la ruta más barata)`, () => {
-      const { letras } = grafoLetras(lengua)
-      for (const { letra: meta } of letras) {
-        const { grafo, heuristica } = grafoConCostos(lengua, meta)
-        expect(heuristica[meta]).toBe(0)
-        for (const [n, vecinas] of Object.entries(grafo)) {
-          for (const [m, costo] of Object.entries(vecinas)) {
-            expect(costo === 1 || costo === 2).toBe(true)
-            // Consistencia: h(n) ≤ c(n, m) + h(m)
-            expect(heuristica[n]).toBeLessThanOrEqual(costo + heuristica[m])
+    for (const distancia of ['manhattan', 'euclidiana'] as const) {
+      it(`${lengua} (${distancia}): la heurística es consistente para cualquier meta (A* da la ruta más barata)`, () => {
+        const { letras } = grafoLetras(lengua)
+        for (const { letra: meta } of letras) {
+          const { grafo, heuristica } = grafoConCostos(lengua, meta, distancia)
+          expect(heuristica[meta]).toBe(0)
+          for (const [n, vecinas] of Object.entries(grafo)) {
+            for (const [m, costo] of Object.entries(vecinas)) {
+              expect(costo === 1 || costo === 2).toBe(true)
+              // Consistencia: h(n) ≤ c(n, m) + h(m)
+              expect(heuristica[n]).toBeLessThanOrEqual(costo + heuristica[m])
+            }
           }
         }
-      }
-    })
+      })
+    }
   }
+
+  it('Euclidiana es la raíz de Manhattan: si faltan 4 detalles, 4 contra 2', () => {
+    const manhattan = grafoConCostos('LSM', 'U', 'manhattan').heuristica
+    const euclidiana = grafoConCostos('LSM', 'U', 'euclidiana').heuristica
+    for (const letra of Object.keys(manhattan)) {
+      expect(euclidiana[letra]).toBeCloseTo(Math.sqrt(manhattan[letra]), 2)
+      expect(euclidiana[letra]).toBeLessThanOrEqual(manhattan[letra])
+    }
+  })
+})
+
+describe('distancias', () => {
+  it('del punto A (1, 2) al punto B (4, 6): Manhattan 3 + 4 = 7, Euclidiana √(9 + 16) = 5', () => {
+    expect(distanciaManhattan([1, 2], [4, 6])).toBe(7)
+    expect(distanciaEuclidiana([1, 2], [4, 6])).toBe(5)
+    // Nunca son negativas, aunque el orden de los puntos cambie.
+    expect(distanciaManhattan([4, 6], [1, 2])).toBe(7)
+    expect(distanciaEuclidiana([4, 6], [1, 2])).toBe(5)
+    expect(distanciaManhattan([3, 3], [3, 3])).toBe(0)
+  })
 })
 
 describe('diferencias', () => {
