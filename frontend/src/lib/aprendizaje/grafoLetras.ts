@@ -52,20 +52,26 @@ const PALMA: Record<Palma, string> = {
 }
 
 // Los detalles de la mano que se comparan entre dos letras (11 en total). Cada uno sabe si cambia
-// de "a" a "b" y cómo explicarle el cambio al usuario.
-const DETALLES: { distinto: (a: FormaMano, b: FormaMano) => boolean; texto: (b: FormaMano) => string }[] = [
+// de "a" a "b", cómo explicarle el cambio al usuario y en qué eje del plano cartesiano cuenta:
+//   x = los dedos (los 4 largos y el pulgar: 5 detalles),
+//   y = la posición de la mano (hueco del pulgar, separar, cruzar, girar, palma y movimiento: 6 detalles).
+const DETALLES: { eje: 'x' | 'y'; distinto: (a: FormaMano, b: FormaMano) => boolean; texto: (b: FormaMano) => string }[] = [
   ...DEDOS_LARGOS.map((dedo) => ({
+    eje: 'x' as const,
     distinto: (a: FormaMano, b: FormaMano) => a.dedos[dedo] !== b.dedos[dedo],
     texto: (b: FormaMano) => `${VERBO_DEDO[b.dedos[dedo]]} el ${NOMBRE_DEDO[dedo]}`,
   })),
-  { distinto: (a, b) => a.pulgar !== b.pulgar, texto: (b) => `Pulgar: ${PULGAR[b.pulgar]}` },
-  { distinto: (a, b) => (a.entre ?? 0) !== (b.entre ?? 0), texto: () => 'Mueve el pulgar a otro hueco entre los dedos' },
-  { distinto: (a, b) => !!a.separados !== !!b.separados, texto: (b) => (b.separados ? 'Separa índice y medio' : 'Junta índice y medio') },
-  { distinto: (a, b) => !!a.cruzados !== !!b.cruzados, texto: (b) => (b.cruzados ? 'Cruza índice y medio' : 'Descruza índice y medio') },
-  { distinto: (a, b) => (a.giro ?? 0) !== (b.giro ?? 0), texto: (b) => (b.giro ? `Gira la mano ${b.giro}°` : 'Endereza la mano') },
-  { distinto: (a, b) => (a.palma ?? 'frente') !== (b.palma ?? 'frente'), texto: (b) => PALMA[b.palma ?? 'frente'] },
-  { distinto: (a, b) => (a.movimiento ?? '') !== (b.movimiento ?? ''), texto: (b) => (b.movimiento ? 'Agrega el movimiento' : 'Sin movimiento') },
+  { eje: 'x', distinto: (a, b) => a.pulgar !== b.pulgar, texto: (b) => `Pulgar: ${PULGAR[b.pulgar]}` },
+  { eje: 'y', distinto: (a, b) => (a.entre ?? 0) !== (b.entre ?? 0), texto: () => 'Mueve el pulgar a otro hueco entre los dedos' },
+  { eje: 'y', distinto: (a, b) => !!a.separados !== !!b.separados, texto: (b) => (b.separados ? 'Separa índice y medio' : 'Junta índice y medio') },
+  { eje: 'y', distinto: (a, b) => !!a.cruzados !== !!b.cruzados, texto: (b) => (b.cruzados ? 'Cruza índice y medio' : 'Descruza índice y medio') },
+  { eje: 'y', distinto: (a, b) => (a.giro ?? 0) !== (b.giro ?? 0), texto: (b) => (b.giro ? `Gira la mano ${b.giro}°` : 'Endereza la mano') },
+  { eje: 'y', distinto: (a, b) => (a.palma ?? 'frente') !== (b.palma ?? 'frente'), texto: (b) => PALMA[b.palma ?? 'frente'] },
+  { eje: 'y', distinto: (a, b) => (a.movimiento ?? '') !== (b.movimiento ?? ''), texto: (b) => (b.movimiento ? 'Agrega el movimiento' : 'Sin movimiento') },
 ]
+
+/** Lo más lejos que puede quedar una letra en cada eje (para dibujar el plano). */
+export const MAX_EJE = { x: DETALLES.filter((d) => d.eje === 'x').length, y: DETALLES.filter((d) => d.eje === 'y').length }
 
 /** Qué hay que cambiar para pasar de la forma "a" a la forma "b". Lista vacía = misma forma. */
 export function diferencias(a: FormaMano, b: FormaMano): string[] {
@@ -73,13 +79,20 @@ export function diferencias(a: FormaMano, b: FormaMano): string[] {
 }
 
 /**
- * La letra como un PUNTO en un plano con una coordenada por detalle de la mano, puesto de modo
- * que la meta queda en el origen (0, 0, 0…): cada coordenada vale 1 si ese detalle todavía es
- * distinto al de la meta y 0 si ya es igual.
- * Ej.: si a la letra solo le falta cambiar el índice y el pulgar, su punto es (1, 0, 0, 0, 1, 0…).
+ * La letra como un PUNTO (x, y) en un plano cartesiano donde la meta está en el origen (0, 0):
+ *   x = cuántos dedos le faltan cambiar para ser la meta,
+ *   y = cuántos otros detalles de la mano le faltan (girar, voltear la palma, cruzar dedos…).
+ * Ej.: si a la letra le faltan el índice, el pulgar y girar la mano, su punto es (2, 1).
  */
-export function puntoHaciaMeta(forma: FormaMano, meta: FormaMano): number[] {
-  return DETALLES.map((d) => (d.distinto(forma, meta) ? 1 : 0))
+export function puntoHaciaMeta(forma: FormaMano, meta: FormaMano): [number, number] {
+  const faltan = DETALLES.filter((d) => d.distinto(forma, meta))
+  return [faltan.filter((d) => d.eje === 'x').length, faltan.filter((d) => d.eje === 'y').length]
+}
+
+/** El punto (x, y) de una letra con la meta en el origen, para dibujarlo en el plano cartesiano. */
+export function puntoDeLetra(lengua: Lengua, letra: string, objetivo: string): [number, number] {
+  const forma = Object.fromEntries(alfabeto(lengua).map((l) => [l.letra, l.forma]))
+  return puntoHaciaMeta(forma[letra], forma[objetivo])
 }
 
 /** Distancia Manhattan: |x1 − x2| + |y1 − y2| + …  (como la viborita: cuadro por cuadro). */
@@ -151,12 +164,14 @@ export interface GrafoConCostos {
  * Datos para UCS, Greedy y A* (comparación de algoritmos, backend/app/busqueda_costo.py):
  *   - costo de un paso c(n, m): cuántos detalles de la mano cambian de la letra n a la m (1 o 2).
  *   - heurística h(n): qué tan lejos está la letra n de la meta, midiendo la distancia entre su
- *     punto (puntoHaciaMeta) y el origen con una de dos fórmulas:
- *       · Manhattan: cuenta los detalles que faltan. Si faltan 4, h = 4.
- *       · Euclidiana: la línea recta. Si faltan 4, h = √4 = 2 (siempre igual o menor que Manhattan).
+ *     punto (x, y) (puntoHaciaMeta) y el origen (0, 0) con una de dos fórmulas:
+ *       · Manhattan: |x| + |y|, cuadro por cuadro. En (3, 4), h = 3 + 4 = 7.
+ *       · Euclidiana: √(x² + y²), en línea recta. En (3, 4), h = √(9 + 16) = 5 (nunca mayor que Manhattan).
  * Las dos nunca sobreestiman (son admisibles): cada detalle distinto tiene que cambiar al menos una
- * vez y cada cambio cuesta 1. Además son consistentes, h(n) ≤ c(n, m) + h(m), así que A* da la ruta
- * más barata con cualquiera; con Euclidiana la pista es más débil y A* suele revisar más letras.
+ * vez y cada cambio cuesta 1. Además son consistentes, h(n) ≤ c(n, m) + h(m): un paso de costo c
+ * mueve el punto a lo más c cuadros, y la línea recta nunca es más larga que ir cuadro por cuadro.
+ * Así A* da la ruta más barata con cualquiera; con Euclidiana la pista es más débil y A* suele
+ * revisar más letras.
  */
 export function grafoConCostos(lengua: Lengua, objetivo: string, distancia: Distancia = 'manhattan'): GrafoConCostos {
   const { letras, grafo: vecinas } = grafoLetras(lengua)
@@ -167,7 +182,7 @@ export function grafoConCostos(lengua: Lengua, objetivo: string, distancia: Dist
   for (const { letra } of letras) {
     grafo[letra] = Object.fromEntries(vecinas[letra].map((v) => [v, diferencias(forma[letra], forma[v]).length]))
     const punto = puntoHaciaMeta(forma[letra], forma[objetivo])
-    const origen = punto.map(() => 0) // la meta
+    const origen = [0, 0] // la meta
     heuristica[letra] = Math.round(medir(punto, origen) * 100) / 100 // 2 decimales (√2 = 1.41)
   }
   return { grafo, heuristica }

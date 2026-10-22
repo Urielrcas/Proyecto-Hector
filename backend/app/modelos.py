@@ -247,3 +247,19 @@ class ComparacionSalida(BaseModel):
     resultados: list[ResultadoComparadoSalida]  # en orden: BFS, DFS, UCS, Greedy, A*
     heuristica_consistente: bool  # h(meta) = 0 y h(n) ≤ c(n, m) + h(m) en cada conexión
     fallas_heuristica: list[str]  # conexiones donde no se cumple (vacía si es consistente)
+
+
+# ── Corrector de frases deletreadas con Ollama (rutas/frase.py) ──
+
+
+# Lo que manda el frontend: POST /api/frase/corregir
+class FraseEntrada(BaseModel):
+    texto: Annotated[str, Field(min_length=1, max_length=300)]  # lo deletreado: "HOLACOMO ESTAS"
+    lengua: Lengua = "LSM"  # LSM → corrige en español; ASL → en inglés
+
+
+# Lo que responde: la frase corregida, o la original si la corrección no pasó la revisión.
+class FraseSalida(BaseModel):
+    frase: str  # "Hola, ¿cómo estás?"
+    corregida: bool  # False = Ollama propuso algo con letras muy distintas y se dejó el texto original
+    modelo: str  # modelo de Ollama que se usó (llama3.2)

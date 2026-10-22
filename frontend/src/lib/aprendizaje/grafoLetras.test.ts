@@ -18,8 +18,10 @@ import { mano } from './forma'
 //     distanciaEuclidiana, distanciaManhattan → las dos fórmulas de distancia
 //     grafoConCostos → grafo con costos y heurística (para UCS, Greedy y A*)
 //     grafoLetras → arma el grafo de una lengua
+//     MAX_EJE → lo más lejos que queda una letra en cada eje del plano
+//     puntoDeLetra → el punto (x, y) de una letra, con la meta en el origen
 //     MAX_DIFERENCIAS → máximo de cambios entre letras conectadas
-import { alcanzables, diferencias, distanciaEuclidiana, distanciaManhattan, grafoConCostos, grafoLetras, MAX_DIFERENCIAS } from './grafoLetras'
+import { alcanzables, diferencias, distanciaEuclidiana, distanciaManhattan, grafoConCostos, grafoLetras, MAX_DIFERENCIAS, MAX_EJE, puntoDeLetra } from './grafoLetras'
 
 describe('grafoLetras', () => {
   for (const lengua of ['LSM', 'ASL'] as const) {
@@ -76,13 +78,19 @@ describe('grafoConCostos', () => {
     }
   }
 
-  it('Euclidiana es la raíz de Manhattan: si faltan 4 detalles, 4 contra 2', () => {
+  it('la heurística es la distancia del punto (x, y) de la letra al origen (la meta)', () => {
     const manhattan = grafoConCostos('LSM', 'U', 'manhattan').heuristica
     const euclidiana = grafoConCostos('LSM', 'U', 'euclidiana').heuristica
     for (const letra of Object.keys(manhattan)) {
-      expect(euclidiana[letra]).toBeCloseTo(Math.sqrt(manhattan[letra]), 2)
+      const [x, y] = puntoDeLetra('LSM', letra, 'U')
+      expect(x).toBeLessThanOrEqual(MAX_EJE.x)
+      expect(y).toBeLessThanOrEqual(MAX_EJE.y)
+      expect(manhattan[letra]).toBe(x + y)
+      expect(euclidiana[letra]).toBeCloseTo(Math.sqrt(x * x + y * y), 2)
+      // La línea recta nunca es más larga que ir cuadro por cuadro.
       expect(euclidiana[letra]).toBeLessThanOrEqual(manhattan[letra])
     }
+    expect(puntoDeLetra('LSM', 'U', 'U')).toEqual([0, 0])
   })
 })
 

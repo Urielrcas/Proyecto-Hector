@@ -310,8 +310,9 @@ export default function Conversacion() {
               </p>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Boton onClick={() => enviarSorda()} disabled={!d.texto.trim()} className="col-span-2 sm:col-span-1">
+          {/* 4 botones en una fila; en computadora el panel es angosto: Enviar arriba y los otros 3 debajo (4 otra vez en pantallas muy anchas) */}
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4">
+            <Boton onClick={() => enviarSorda()} disabled={!d.texto.trim()} className="col-span-2 sm:col-span-1 xl:col-span-3 2xl:col-span-1">
               <Send className="size-5" aria-hidden />
               Enviar
             </Boton>

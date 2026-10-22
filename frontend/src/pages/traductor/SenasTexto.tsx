@@ -7,14 +7,19 @@
  * El reconocimiento lo hace hooks/useDeletreo.ts (con lib/vision/reconocedor.ts y las reglas lógicas «letra reconocida» y
  * «espacio de palabra»). Por ahora reconoce el deletreo; las palabras completas (HOLA, GRACIAS...)
  * llegarán con el modelo entrenado.
+ * «Corregir frase» manda lo deletreado al backend, que usa Ollama para separar palabras y poner acentos
+ * y signos ("HOLACOMO ESTAS" → "Hola, ¿cómo estás?"); «Reproducir voz» lee entonces la frase corregida.
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: Delete (borrar ⌫), Hand (mano), Plus (más +), Space (barra espaciadora), Trash2 (bote de basura), Volume2 (bocina)
-import { Delete, Hand, Plus, Space, Trash2, Volume2 } from 'lucide-react'
+//     íconos: Delete (borrar ⌫), Hand (mano), Plus (más +), Space (barra espaciadora), SpellCheck (revisar ortografía), Trash2 (bote de basura), Volume2 (bocina)
+import { Delete, Hand, Plus, Space, SpellCheck, Trash2, Volume2 } from 'lucide-react'
 // ▸ Desde React (librería para construir la interfaz con componentes):
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
 import { useState } from 'react'
+// ▸ Desde nuestro proyecto: src/components/Aviso.tsx:
+//     Aviso → mensaje verde (éxito) o rojo (error)
+import { Aviso } from '../../components/Aviso'
 // ▸ Desde nuestro proyecto: src/components/Boton.tsx:
 //     Boton → botón que ejecuta una acción al presionarlo
 import { Boton } from '../../components/Boton'
@@ -39,10 +44,17 @@ import { comoFrase, mensajeDeletreo, useDeletreo } from '../../hooks/useDeletreo
 //     guardar → guarda un dato en el navegador (localStorage)
 //     leer → lee un dato guardado en el navegador (localStorage)
 import { guardar, leer } from '../../lib/almacenamiento'
+// ▸ Desde nuestro proyecto: src/lib/api.ts:
+//     ErrorApi → tipo de error que devuelve el backend (con mensaje y código)
+import { ErrorApi } from '../../lib/api'
 // ▸ Desde nuestro proyecto: src/lib/voz.ts:
 //     hablar → lee un texto en voz alta
 //     hayVoz → ¿el navegador puede leer en voz alta?
 import { hablar, hayVoz } from '../../lib/voz'
+// ▸ Desde nuestro proyecto: src/services/frase.ts:
+//     corregirFrase → pide al backend (Ollama) la frase bien escrita
+//     FraseCorregida → tipo: la frase corregida que responde el backend
+import { corregirFrase, type FraseCorregida } from '../../services/frase'
 
 export default function SenasTexto() {
   const { lengua: lenguaElegida } = useApp()
@@ -64,6 +76,30 @@ export default function SenasTexto() {
 
   // Lo que se muestra en «Seña reconocida»: la letra recién escrita o la que se ve ahora.
   const mostrada = resaltada ?? candidata
+
+  // ── Corrector de frases (Ollama) ──
+  // Cada resultado recuerda para qué texto se pidió: si se sigue deletreando, deja de mostrarse.
+  const [correccion, setCorreccion] = useState<{ para: string; datos: FraseCorregida } | null>(null)
+  const [errorCorreccion, setErrorCorreccion] = useState<{ para: string; mensaje: string } | null>(null)
+  const [corrigiendo, setCorrigiendo] = useState(false)
+  const vigente = correccion?.para === texto ? correccion.datos : null
+  const errorVigente = errorCorreccion?.para === texto ? errorCorreccion.mensaje : null
+  // Lo que se lee en voz alta: la frase corregida si la hay; si no, lo deletreado.
+  const fraseFinal = vigente?.corregida ? vigente.frase : comoFrase(texto)
+
+  // Botón «Corregir frase»
+  const corregir = async () => {
+    const para = texto
+    setCorrigiendo(true)
+    setErrorCorreccion(null)
+    try {
+      setCorreccion({ para, datos: await corregirFrase(para, lengua) })
+    } catch (err) {
+      setErrorCorreccion({ para, mensaje: err instanceof ErrorApi ? err.message : 'No se pudo corregir la frase.' })
+    } finally {
+      setCorrigiendo(false)
+    }
+  }
 
   return (
     <>
@@ -134,6 +170,32 @@ export default function SenasTexto() {
             <span className="ml-0.5 inline-block h-8 w-0.5 animate-pulse bg-marca-700 align-middle" aria-hidden />
           </p>
 
+          {/* Corregir con Ollama: separa palabras y pone acentos y signos */}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Boton variante="secundario" onClick={corregir} cargando={corrigiendo} disabled={!texto.trim() || !!vigente}>
+              <SpellCheck className="size-5" aria-hidden />
+              Corregir frase
+            </Boton>
+            <span className="text-sm text-stone-600">Separa las palabras y pone acentos y signos.</span>
+          </div>
+          {vigente?.corregida && (
+            <div className="mt-3 rounded-2xl border-2 border-marca-200 bg-white p-4" aria-live="polite">
+              <p className="text-sm font-bold text-marca-800">Frase corregida</p>
+              <p className="mt-1 text-2xl font-bold break-words text-stone-900">{vigente.frase}</p>
+              <p className="mt-1 text-xs text-stone-500">Corregida con Ollama ({vigente.modelo}). Revisa que diga lo que quisiste decir.</p>
+            </div>
+          )}
+          {vigente && !vigente.corregida && (
+            <p className="mt-3 rounded-xl bg-stone-50 px-4 py-3 text-stone-700" aria-live="polite">
+              No se encontró una corrección segura: se deja el texto como lo deletreaste.
+            </p>
+          )}
+          {errorVigente && (
+            <div className="mt-3">
+              <Aviso tipo="error">{errorVigente}</Aviso>
+            </div>
+          )}
+
           <div className="mt-5 flex items-center justify-between text-sm">
             <h3 className="font-bold">Nivel de confianza</h3>
             <span className="font-bold tabular-nums">{confianza} %</span>
@@ -151,7 +213,7 @@ export default function SenasTexto() {
           <p className="mt-1 text-sm text-stone-600">Qué tan estable se ha visto la letra en el último medio segundo.</p>
 
           <div className="mt-auto pt-6">
-            <Boton className="w-full" onClick={() => hablar(comoFrase(texto), idiomaVoz)} disabled={!texto.trim() || !hayVoz()}>
+            <Boton className="w-full" onClick={() => hablar(fraseFinal, idiomaVoz)} disabled={!texto.trim() || !hayVoz()}>
               <Volume2 className="size-5" aria-hidden />
               Reproducir voz
             </Boton>
@@ -180,6 +242,9 @@ export default function SenasTexto() {
           <li>Para terminar una palabra, baja la mano un segundo y medio: se agrega el espacio y se lee en voz alta.</li>
           <li>Para repetir una letra (como la L de «calle»), baja la mano un instante y vuelve a hacerla.</li>
           <li>Si la app no escribe una letra, usa «Agregar» para escribir la que se ve en la cámara.</li>
+          <li>
+            Al terminar, «Corregir frase» separa las palabras pegadas y pone acentos y signos («HOLACOMO ESTAS» → «Hola, ¿cómo estás?»).
+          </li>
         </ul>
         <p className="mt-3 text-sm text-stone-600">
           El reconocimiento es aproximado y se basa en la posición de tus dedos. Las palabras completas (hola, gracias...) llegarán con el

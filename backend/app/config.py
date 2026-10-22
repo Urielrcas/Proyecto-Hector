@@ -32,6 +32,12 @@ class Config(BaseSettings):
     admin_correo: str = "admin@senas.app"
     admin_contrasena: str = "Admin12345"
 
+    # Ollama (modelo de lenguaje local) para corregir las frases deletreadas (app/corrector.py).
+    # Se instala aparte (ollama.com) y se descarga el modelo con: ollama pull llama3.2
+    ollama_url: str = "http://localhost:11434"
+    ollama_modelo: str = "llama3.2"
+    ollama_segundos: float = 60  # tiempo máximo de espera (la primera frase tarda más: carga el modelo)
+
     # Direcciones desde las que el navegador puede llamar a esta API (la del frontend).
     cors_origenes: list[str] = ["http://localhost:5173"]
 

@@ -65,8 +65,9 @@ import { ErrorApi } from '../../lib/api'
 //     grafoConCostos → grafo con costos y heurística hacia la meta (para UCS, Greedy y A*)
 //     grafoLetras → arma el grafo de letras de una lengua
 //     MAX_DIFERENCIAS → máximo de cambios entre letras conectadas
+//     puntoDeLetra → el punto (x, y) de una letra en el plano cartesiano, con la meta en (0, 0)
 //     Distancia → tipo: 'manhattan' | 'euclidiana' (cómo se mide la heurística)
-import { alcanzables, grafoConCostos, grafoLetras, MAX_DIFERENCIAS, type Distancia } from '../../lib/aprendizaje/grafoLetras'
+import { alcanzables, grafoConCostos, grafoLetras, MAX_DIFERENCIAS, puntoDeLetra, type Distancia } from '../../lib/aprendizaje/grafoLetras'
 // ▸ Desde nuestro proyecto: src/services/busqueda.ts:
 //     buscarRuta → pide al servidor buscar las rutas con DFS o BFS
 //     compararAlgoritmos → pide al servidor ejecutar y comparar BFS, DFS, UCS, Greedy y A*
@@ -135,7 +136,12 @@ export default function RutaAprendizaje() {
   const [cargando, setCargando] = useState(false)
   // ── Comparación de los 5 algoritmos (se muestra en lugar del resultado de una sola búsqueda) ──
   // Se compara dos veces: con la heurística medida con Manhattan y con Euclidiana.
-  const [comparacion, setComparacion] = useState<{ datos: Record<Distancia, Comparacion>; inicio: string; objetivo: string } | null>(null)
+  const [comparacion, setComparacion] = useState<{
+    datos: Record<Distancia, Comparacion>
+    punto: [number, number] // la letra de inicio en el plano cartesiano
+    inicio: string
+    objetivo: string
+  } | null>(null)
   const [comparando, setComparando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // ── Vista sencilla (todas las personas): solo el camino recomendado ──
@@ -203,7 +209,7 @@ export default function RutaAprendizaje() {
         (['manhattan', 'euclidiana'] as const).map((d) => compararAlgoritmos({ ...grafoConCostos(lengua, objetivo, d), inicio, objetivo })),
       )
       setResultado(null)
-      setComparacion({ datos: { manhattan, euclidiana }, inicio, objetivo })
+      setComparacion({ datos: { manhattan, euclidiana }, punto: puntoDeLetra(lengua, inicio, objetivo), inicio, objetivo })
     } catch (err) {
       setError(err instanceof ErrorApi ? err.message : 'No se pudieron comparar los algoritmos.')
     } finally {
@@ -320,8 +326,8 @@ export default function RutaAprendizaje() {
               </p>
               <p>
                 <strong>Costo:</strong> cuántos detalles de la mano cambian en cada paso. <strong>Heurística:</strong> cuántos detalles le faltan a
-                una letra para ser la meta, medido como distancia <strong>Manhattan</strong> (cuadro por cuadro: si faltan 4 detalles, 4)
-                o <strong>Euclidiana</strong> (en línea recta: √4 = 2). <strong>UCS</strong> busca el menor costo, <strong>Greedy</strong> sigue la heurística y{' '}
+                una letra para ser la meta, medido como distancia <strong>Manhattan</strong> (cuadro por cuadro: de (3, 4) a la meta, 3 + 4 = 7)
+                o <strong>Euclidiana</strong> (en línea recta: √(3² + 4²) = 5). <strong>UCS</strong> busca el menor costo, <strong>Greedy</strong> sigue la heurística y{' '}
                 <strong>A*</strong> combina ambas (es el que usa «Armar mi ruta»).
               </p>
             </div>
@@ -352,6 +358,7 @@ export default function RutaAprendizaje() {
       {comparacion && (
         <ComparacionAlgoritmos
           comparaciones={comparacion.datos}
+          punto={comparacion.punto}
           letras={nombres}
           grafo={grafo}
           inicio={comparacion.inicio}

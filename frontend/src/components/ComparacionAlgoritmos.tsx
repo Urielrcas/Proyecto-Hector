@@ -3,7 +3,8 @@
  * Basado en la práctica p30algoritmosbusquedacompara.py, aplicado a la ruta de aprendizaje:
  *   - costo de un paso = cuántos detalles de la mano cambian entre dos letras,
  *   - heurística h(n) = qué tan lejos está la letra de la meta, medido con distancia Manhattan
- *     (cuenta los detalles que faltan) o Euclidiana (línea recta: la raíz de esa cuenta).
+ *     (|x| + |y|, cuadro por cuadro) o Euclidiana (√(x² + y²), en línea recta), con la letra en el
+ *     punto (x, y) de un plano cartesiano y la meta en el origen (0, 0).
  * Muestra:
  *   0. Un selector Manhattan / Euclidiana y cuántas letras revisan A* y Greedy con cada una.
  *   1. Tabla comparativa: ruta, pasos, costo y letras expandidas de cada algoritmo.
@@ -26,8 +27,10 @@ import { Aviso } from './Aviso'
 //     GrafoBusqueda → dibujo del grafo de letras con el recorrido de la búsqueda
 import { GrafoBusqueda } from './GrafoBusqueda'
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/grafoLetras.ts:
+//     distanciaEuclidiana, distanciaManhattan → las dos fórmulas de distancia
+//     MAX_EJE → tamaño del plano cartesiano (cuántos detalles caben en cada eje)
 //     Distancia → tipo: 'manhattan' | 'euclidiana'
-import type { Distancia } from '../lib/aprendizaje/grafoLetras'
+import { distanciaEuclidiana, distanciaManhattan, MAX_EJE, type Distancia } from '../lib/aprendizaje/grafoLetras'
 // ▸ Desde nuestro proyecto: src/services/busqueda.ts:
 //     ClaveAlgoritmo → tipo: 'bfs' | 'dfs' | 'ucs' | 'greedy' | 'astar'
 //     Comparacion → tipo: resultado de los 5 algoritmos
@@ -105,14 +108,154 @@ function Barras({
   )
 }
 
+/**
+ * Plano cartesiano (SVG sin librerías) con la letra de inicio en (x, y) y la meta en el origen (0, 0):
+ *   - Manhattan: el camino en «L», cuadro por cuadro (primero los dedos, luego los demás detalles).
+ *   - Euclidiana: la línea recta de A a B.
+ * La distancia elegida en las tarjetas se dibuja más gruesa y oscura.
+ */
+function PlanoCartesiano({ punto, inicio, objetivo, distancia }: { punto: [number, number]; inicio: string; objetivo: string; distancia: Distancia }) {
+  const [x, y] = punto
+  const CUADRO = 44 // tamaño de cada cuadro: igual en ambos ejes para que la diagonal sea real
+  const IZQ = 84 // deja lugar a la etiqueta de la meta, a la izquierda del origen
+  const ARRIBA = 30 // lugar para la etiqueta de una letra en la fila de hasta arriba
+  const ABAJO = 52
+  const DER = 34
+  const ancho = IZQ + MAX_EJE.x * CUADRO + DER
+  const alto = ARRIBA + MAX_EJE.y * CUADRO + ABAJO
+  // Coordenadas del plano → pixeles del dibujo (en SVG la y crece hacia abajo).
+  const px = (cx: number) => IZQ + cx * CUADRO
+  const py = (cy: number) => ARRIBA + (MAX_EJE.y - cy) * CUADRO
+  const manhattan = distanciaManhattan(punto, [0, 0])
+  const euclidiana = Math.round(distanciaEuclidiana(punto, [0, 0]) * 100) / 100
+  const fuerte = { color: '#13695d', grosor: 3.5 } // la distancia elegida
+  const suave = { color: '#5fb3a3', grosor: 2 }
+  const estiloM = distancia === 'manhattan' ? fuerte : suave
+  const estiloE = distancia === 'euclidiana' ? fuerte : suave
+  // Puntitos en cada cuadro del camino Manhattan, para contarlo «cuadro por cuadro».
+  const pasos = [...Array.from({ length: y }, (_, i) => [x, y - i - 1]), ...Array.from({ length: x }, (_, i) => [x - i - 1, 0])].slice(0, -1)
+
+  return (
+    <figure className="rounded-2xl border border-stone-200 p-4">
+      <figcaption>
+        <span className="block font-bold">Plano cartesiano: de {inicio} a {objetivo}</span>
+        <span className="block text-sm text-stone-600">
+          La letra {inicio} está en ({x}, {y}) y la meta, {objetivo}, en el origen (0, 0)
+        </span>
+      </figcaption>
+      <svg
+        viewBox={`0 0 ${ancho} ${alto}`}
+        className="mx-auto mt-3 h-auto w-full max-w-sm"
+        role="img"
+        aria-label={`Plano cartesiano. La letra ${inicio} está en (${x}, ${y}) y la meta ${objetivo} en (0, 0). Distancia Manhattan ${manhattan}, distancia Euclidiana ${euclidiana}.`}
+      >
+        <defs>
+          <marker id="plano-flecha" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#78716c" />
+          </marker>
+        </defs>
+
+        {/* Cuadrícula y números de cada eje */}
+        {Array.from({ length: MAX_EJE.x + 1 }, (_, i) => (
+          <g key={`x${i}`}>
+            <line x1={px(i)} y1={py(0)} x2={px(i)} y2={py(MAX_EJE.y)} stroke="#e7e5e4" />
+            <text x={px(i)} y={py(0) + 18} textAnchor="middle" fontSize={12} fill="#57534e">
+              {i}
+            </text>
+          </g>
+        ))}
+        {Array.from({ length: MAX_EJE.y + 1 }, (_, i) => (
+          <g key={`y${i}`}>
+            <line x1={px(0)} y1={py(i)} x2={px(MAX_EJE.x)} y2={py(i)} stroke="#e7e5e4" />
+            {i > 0 && (
+              <text x={px(0) - 10} y={py(i) + 4} textAnchor="end" fontSize={12} fill="#57534e">
+                {i}
+              </text>
+            )}
+          </g>
+        ))}
+
+        {/* Ejes con flecha */}
+        <line x1={px(0)} y1={py(0)} x2={px(MAX_EJE.x) + 20} y2={py(0)} stroke="#78716c" strokeWidth={1.5} markerEnd="url(#plano-flecha)" />
+        <line x1={px(0)} y1={py(0)} x2={px(0)} y2={py(MAX_EJE.y) - 14} stroke="#78716c" strokeWidth={1.5} markerEnd="url(#plano-flecha)" />
+        <text x={px(MAX_EJE.x / 2)} y={alto - 8} textAnchor="middle" fontSize={12} fill="#44403c">
+          x: dedos que faltan
+        </text>
+        <text x={14} y={py(MAX_EJE.y / 2)} textAnchor="middle" fontSize={12} fill="#44403c" transform={`rotate(-90 14 ${py(MAX_EJE.y / 2)})`}>
+          y: otros detalles que faltan
+        </text>
+
+        {/* Manhattan: la «L» (baja por y, luego avanza por x) */}
+        <polyline
+          points={`${px(x)},${py(y)} ${px(x)},${py(0)} ${px(0)},${py(0)}`}
+          fill="none"
+          stroke={estiloM.color}
+          strokeWidth={estiloM.grosor}
+          strokeLinejoin="round"
+        >
+          <title>{`Manhattan: |${x}| + |${y}| = ${manhattan}`}</title>
+        </polyline>
+        {pasos.map(([cx, cy]) => (
+          <circle key={`${cx},${cy}`} cx={px(cx)} cy={py(cy)} r={3.5} fill="#fff" stroke={estiloM.color} strokeWidth={2} />
+        ))}
+
+        {/* Euclidiana: la línea recta, punteada */}
+        <line x1={px(x)} y1={py(y)} x2={px(0)} y2={py(0)} stroke={estiloE.color} strokeWidth={estiloE.grosor} strokeDasharray="9 6" strokeLinecap="round">
+          <title>{`Euclidiana: √(${x}² + ${y}²) = ${euclidiana}`}</title>
+        </line>
+
+        {/* Los dos puntos: A (inicio) y B (meta) */}
+        <circle cx={px(0)} cy={py(0)} r={8} fill="#13695d" stroke="#fff" strokeWidth={2}>
+          <title>{`${objetivo}, la meta, en (0, 0)`}</title>
+        </circle>
+        <circle cx={px(x)} cy={py(y)} r={8} fill="#fff" stroke="#13695d" strokeWidth={3}>
+          <title>{`${inicio}, la letra de inicio, en (${x}, ${y})`}</title>
+        </circle>
+        {/* Etiquetas: la de inicio arriba de su punto y la de la meta a la izquierda del origen, para que no se encimen */}
+        <text x={px(x)} y={py(y) - 16} textAnchor="middle" fontSize={14} fontWeight={700} fill="#1c1917">
+          {inicio} · inicio
+        </text>
+        <text x={px(0) - 12} y={py(0) - 12} textAnchor="end" fontSize={14} fontWeight={700} fill="#1c1917">
+          {objetivo} · meta
+        </text>
+      </svg>
+
+      {/* Leyenda con las dos fórmulas ya resueltas */}
+      <ul className="mt-3 space-y-1.5 text-sm text-stone-800">
+        <li className="flex items-center gap-3">
+          <svg width="34" height="10" aria-hidden>
+            <line x1="2" y1="5" x2="32" y2="5" stroke={estiloM.color} strokeWidth={estiloM.grosor} />
+          </svg>
+          <span>
+            <strong>Manhattan</strong> (cuadro por cuadro): |{x}| + |{y}| = <strong className="tabular-nums">{manhattan}</strong>
+          </span>
+        </li>
+        <li className="flex items-center gap-3">
+          <svg width="34" height="10" aria-hidden>
+            <line x1="2" y1="5" x2="32" y2="5" stroke={estiloE.color} strokeWidth={estiloE.grosor} strokeDasharray="9 6" />
+          </svg>
+          <span>
+            <strong>Euclidiana</strong> (línea recta): √({x}² + {y}²) = <strong className="tabular-nums">{euclidiana}</strong>
+          </span>
+        </li>
+      </ul>
+      {(x === 0 || y === 0) && (
+        <p className="mt-2 text-sm text-stone-600">Aquí la letra y la meta quedan en la misma línea, así que los dos caminos coinciden y miden lo mismo.</p>
+      )}
+    </figure>
+  )
+}
+
 export function ComparacionAlgoritmos({
   comparaciones,
+  punto,
   letras,
   grafo,
   inicio,
   objetivo,
 }: {
   comparaciones: Record<Distancia, Comparacion> // la misma comparación con cada distancia
+  punto: [number, number] // la letra de inicio en el plano, con la meta en (0, 0)
   letras: string[]
   grafo: Record<string, string[]>
   inicio: string
@@ -189,8 +332,8 @@ export function ComparacionAlgoritmos({
         </h2>
         <p className="text-stone-600">
           Los cinco algoritmos buscan con el mismo grafo. El <strong>costo</strong> de un paso es cuántos detalles de la mano cambian; la{' '}
-          <strong>heurística h(n)</strong> es qué tan lejos está una letra de {objetivo}: cada detalle de la mano es una coordenada (1 si
-          todavía es distinto, 0 si ya es igual) y se mide la distancia hasta la meta.
+          <strong>heurística h(n)</strong> es qué tan lejos está una letra de {objetivo} en un plano cartesiano: x = dedos que le faltan cambiar,
+          y = otros detalles que le faltan; la meta queda en (0, 0).
         </p>
 
         {/* ── 0. Distancia de la heurística: Manhattan o Euclidiana ── */}
@@ -215,6 +358,9 @@ export function ComparacionAlgoritmos({
               </button>
             )
           })}
+        </div>
+        <div className="mt-4">
+          <PlanoCartesiano punto={punto} inicio={inicio} objetivo={objetivo} distancia={distancia} />
         </div>
         {comparacion.heuristica_consistente && (
           <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-marca-50 px-3 py-1 text-sm font-bold text-marca-800">
