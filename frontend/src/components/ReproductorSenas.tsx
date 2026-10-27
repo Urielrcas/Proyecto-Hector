@@ -17,6 +17,10 @@ import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 // ▸ Desde nuestro proyecto: src/lib/tipos.ts:
 //     Lengua → tipo: 'LSM' o 'ASL'
+// ▸ Desde nuestro proyecto: src/lib/configuracion.ts:
+//     leerConfiguracion → preferencias guardadas (velocidad inicial de las señas)
+//     VELOCIDADES_SENAS → velocidades posibles (0.5× a 2×)
+import { leerConfiguracion, VELOCIDADES_SENAS as VELOCIDADES } from '../lib/configuracion'
 import type { Lengua } from '../lib/tipos'
 // ▸ Desde nuestro proyecto: src/lib/traduccion/deletreo.ts:
 //     duracion → cuánto se muestra cada seña según la velocidad
@@ -30,7 +34,6 @@ import { Boton } from './Boton'
 //     ManoIlustrada → dibujo de la mano de una letra
 import { ManoIlustrada } from './ManoIlustrada'
 
-const VELOCIDADES = [0.5, 0.75, 1, 1.25, 1.5, 2]
 
 // Lo que se ve en grande para cada seña.
 function SenaGrande({ sena, compacto }: { sena: Sena | undefined; compacto: boolean }) {
@@ -59,7 +62,8 @@ function SenaGrande({ sena, compacto }: { sena: Sena | undefined; compacto: bool
 export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: string; lengua: Lengua; compacto?: boolean }) {
   const [posicion, setPosicion] = useState(0) // seña que se muestra (= total cuando ya terminó)
   const [reproduciendo, setReproduciendo] = useState(() => !!texto.trim()) // empieza solo si hay mensaje
-  const [velocidad, setVelocidad] = useState(1)
+  // Empieza con la velocidad elegida en Configuración (se puede cambiar aquí mismo).
+  const [velocidad, setVelocidad] = useState(() => leerConfiguracion().senasVelocidad)
   // Solo se recalcula al cambiar el texto o la lengua (si no, el temporizador se reiniciaría en cada redibujado).
   const senas = useMemo(() => textoASenas(texto, lengua), [texto, lengua])
   const total = senas.length

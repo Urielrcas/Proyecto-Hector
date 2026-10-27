@@ -25,3 +25,6 @@ dist-ssr
 
 # Archivos generados por scripts/preparar-mediapipe.mjs (npm install)
 public/mediapipe/
+
+# Certificado propio para abrir la app desde el celular (npm run dev:celular)
+certs

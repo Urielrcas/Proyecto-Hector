@@ -83,6 +83,82 @@ export const REGLAS = {
     formula: 'f ∧ (m → d)',
     tablaEsperada: 'VFVVFFFF',
   }),
+  /** Usado por la IA (lib/ia/corrector.ts): cuándo una palabra deletreada se corrige sola. */
+  autocorregir: regla({
+    descripcion:
+      'Se corrige sola si la autocorrección está activada, la palabra no existe en el vocabulario, hay una palabra cercana y es claramente la mejor.',
+    proposiciones: {
+      a: 'la autocorrección está activada',
+      v: 'la palabra ya existe en el vocabulario',
+      c: 'hay una palabra cercana',
+      u: 'la palabra cercana es claramente la mejor',
+    },
+    formula: 'a ∧ ¬v ∧ c ∧ u',
+    tablaEsperada: 'FFFF' + 'VFFF' + 'F'.repeat(8),
+  }),
+  /** Usado por la IA (lib/ia/memoria.ts): cuándo una mano es TU forma recordada de una letra. */
+  formaPersonal: regla({
+    descripcion: 'Es tu forma de la letra si la IA recuerda cómo la haces, tu mano está cerca de ese recuerdo y está claramente más cerca de esa letra que de cualquier otra.',
+    proposiciones: {
+      p: 'la IA recuerda tu forma de esa letra',
+      c: 'tu mano está cerca de la forma recordada',
+      u: 'está claramente más cerca de esa letra que de otra',
+    },
+    formula: 'p ∧ c ∧ u',
+    tablaEsperada: 'VFFFFFFF',
+  }),
+  /** Usado por la práctica de letras y los juegos con cámara: cuándo la forma de la mano cuenta como correcta. */
+  formaAceptada: regla({
+    descripcion: 'La forma cuenta como correcta si la reconocen las reglas generales (como el dibujo) o si es tu forma personal recordada.',
+    proposiciones: {
+      g: 'las reglas generales reconocen la forma',
+      p: 'la IA recuerda tu forma de esa letra',
+      c: 'tu mano está cerca de la forma recordada',
+      u: 'está claramente más cerca de esa letra que de otra',
+    },
+    formula: 'g ∨ (p ∧ c ∧ u)',
+    tablaEsperada: 'V'.repeat(8) + 'VFFFFFFF',
+  }),
+  /** Usado por la IA (hooks/useModeloIA.ts): cuándo la red neuronal se vuelve a entrenar sola. */
+  reentrenarRed: regla({
+    descripcion:
+      'La red se reentrena sola si no se está entrenando ya y, o nunca se ha entrenado, o el usuario agregó suficientes muestras nuevas de su mano.',
+    proposiciones: { e: 'ya se está entrenando', n: 'la red nunca se ha entrenado', m: 'hay suficientes muestras nuevas' },
+    formula: '¬e ∧ (n ∨ m)',
+    tablaEsperada: 'FFFF' + 'VVVF',
+  }),
+  /** Usado por hooks/useGuardadoHistorial.ts: cuándo se guarda una traducción o conversación en el Historial. */
+  guardarHistorial: regla({
+    descripcion: 'Se guarda en el historial si la opción está activada en Configuración y hay al menos un mensaje.',
+    proposiciones: { h: 'guardar historial está activado', t: 'hay al menos un mensaje' },
+    formula: 'h ∧ t',
+    tablaEsperada: 'VFFF',
+  }),
+  /** Usado por Configuración → Perfil: cuándo se puede enviar el formulario. */
+  perfilValido: regla({
+    descripcion: 'El nombre debe ser válido y, si se quiere cambiar la contraseña, hay que escribir la actual y una nueva válida que coincida con su confirmación.',
+    proposiciones: {
+      n: 'el nombre es válido',
+      c: 'se quiere cambiar la contraseña',
+      a: 'se escribió la contraseña actual',
+      k: 'la contraseña nueva cumple los requisitos',
+      q: 'la confirmación coincide con la nueva',
+    },
+    formula: 'n ∧ (c → (a ∧ k ∧ q))',
+    tablaEsperada: 'VFFFFFFF' + 'VVVVVVVV' + 'F'.repeat(16),
+  }),
+  /** Usado por los juegos «Reto contra reloj» y «Deletrea la palabra»: cuándo cuenta como acierto. */
+  aciertoReto: regla({
+    descripcion: 'La letra cuenta como acierto si la forma es correcta, se hizo el movimiento (si lleva) y aún queda tiempo.',
+    proposiciones: {
+      f: 'la forma de la mano es correcta',
+      m: 'la letra lleva movimiento',
+      d: 'se detectó el movimiento',
+      t: 'todavía queda tiempo',
+    },
+    formula: 'f ∧ (m → d) ∧ t',
+    tablaEsperada: 'VFFFVFVF' + 'F'.repeat(8),
+  }),
   /** Usado por el traductor Señas → Texto (lib/vision/reconocedor.ts): cuándo se acepta una letra deletreada. */
   letraReconocida: regla({
     descripcion:

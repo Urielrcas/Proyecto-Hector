@@ -2,6 +2,7 @@
 #   POST /login      → inicia sesión (regla lógica e ∧ k ∧ v) y devuelve un token JWT
 #   POST /registro   → crea una cuenta nueva con rol "usuario"
 #   GET  /yo         → devuelve los datos del usuario de la sesión actual
+#   PUT  /yo         → el usuario cambia su nombre, lengua o contraseña (regla n → k)
 #   POST /recuperar  → solicitud de recuperación de contraseña (el envío de correo está pendiente)
 # Las llama el frontend desde src/services/auth.ts.
 
@@ -38,10 +39,10 @@ from ..dependencias import usuario_actual
 #     RegistroEntrada → datos del registro (app/modelos.py)
 #     SesionSalida → respuesta: token + usuario (app/modelos.py)
 #     UsuarioPublico → usuario sin contraseña, lo que se devuelve (app/modelos.py)
-from ..modelos import LoginEntrada, RecuperarEntrada, RegistroEntrada, SesionSalida, UsuarioPublico
+from ..modelos import LoginEntrada, PerfilActualizar, RecuperarEntrada, RegistroEntrada, SesionSalida, UsuarioPublico
 # ▸ Desde nuestro proyecto (carpeta app/reglas):
 #     PUEDE_INICIAR_SESION → regla e ∧ k ∧ v (app/reglas.py)
-from ..reglas import PUEDE_INICIAR_SESION
+from ..reglas import PUEDE_CAMBIAR_PERFIL, PUEDE_INICIAR_SESION
 # ▸ Desde nuestro proyecto (carpeta app/seguridad):
 #     crear_token → crea el token de sesión (app/seguridad.py)
 #     hashear_contrasena → cifra una contraseña con bcrypt (app/seguridad.py)
@@ -103,6 +104,30 @@ async def yo(usuario: dict[str, Any] = Depends(usuario_actual)):
 
 
 # POST /api/auth/recuperar → código 202 = "solicitud aceptada".
+@router.put("/yo", response_model=UsuarioPublico)
+async def actualizar_perfil(
+    datos: PerfilActualizar,
+    usuario: dict[str, Any] = Depends(usuario_actual),
+    db: AsyncDatabase = Depends(get_db),
+):
+    """El propio usuario cambia su nombre, su lengua o su contraseña (pantalla Configuración)."""
+    n = datos.contrasena_nueva is not None  # n: pide cambiar la contraseña
+    k = n and verificar_contrasena(datos.contrasena_actual or "", usuario["hash_contrasena"])  # k: la actual es correcta
+    # Regla «actualizar mi perfil»: n → k
+    if not PUEDE_CAMBIAR_PERFIL.cumple(n=n, k=k):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "La contraseña actual no es correcta.")
+
+    cambios: dict[str, Any] = {"actualizado_en": datetime.now(UTC)}
+    if datos.nombre is not None:
+        cambios["nombre"] = datos.nombre
+    if datos.lengua is not None:
+        cambios["lengua"] = datos.lengua
+    if n:
+        cambios["hash_contrasena"] = hashear_contrasena(datos.contrasena_nueva)
+    await db.usuarios.update_one({"_id": usuario["_id"]}, {"$set": cambios})
+    return UsuarioPublico.desde_documento(usuario | cambios)
+
+
 @router.post("/recuperar", status_code=status.HTTP_202_ACCEPTED)
 async def recuperar(datos: RecuperarEntrada):
     # TODO: generar un enlace temporal y enviarlo por correo (requiere un servicio SMTP).

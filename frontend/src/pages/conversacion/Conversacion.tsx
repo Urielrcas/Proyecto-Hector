@@ -31,6 +31,14 @@ import { CamaraManos } from '../../components/CamaraManos'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: IA (red neuronal convolucional y autocorrector):
+//     AvisoCorreccion → «La IA corrigió X → Y · Deshacer»;  LoQueVeLaIA → lo que cree la red neuronal
+//     useIADeletreo → la red y el autocorrector listos para el deletreo
+import { AvisoCorreccion, LoQueVeLaIA } from '../../components/ia/PiezasIA'
+import { useIADeletreo } from '../../hooks/useIADeletreo'
+// ▸ Desde nuestro proyecto: src/components/IndicadorHistorial.tsx:
+//     IndicadorHistorial → avisa si la traducción ya se guardó en el Historial
+import { IndicadorHistorial } from '../../components/IndicadorHistorial'
 // ▸ Desde nuestro proyecto: src/components/ReproductorSenas.tsx:
 //     ReproductorSenas → muestra un texto en señas, una tras otra
 import { ReproductorSenas } from '../../components/ReproductorSenas'
@@ -44,6 +52,9 @@ import { useApp } from '../../context/AppContext'
 import { comoFrase, mensajeDeletreo, useDeletreo } from '../../hooks/useDeletreo'
 // ▸ Desde nuestro proyecto: src/hooks/useNivelMicrofono.ts:
 //     useNivelMicrofono → qué tan fuerte llega la voz (para dibujar las ondas)
+// ▸ Desde nuestro proyecto: src/hooks/useHistorial.ts:
+//     useGuardadoHistorial → guarda esta traducción en el Historial mientras se usa la pantalla
+import { useGuardadoHistorial } from '../../hooks/useHistorial'
 import { useNivelMicrofono } from '../../hooks/useNivelMicrofono'
 // ▸ Desde nuestro proyecto: src/hooks/useReconocimientoVoz.ts:
 //     useReconocimientoVoz → convierte la voz en texto con el navegador
@@ -87,6 +98,8 @@ export default function Conversacion() {
   const [envioAutomatico, setEnvioAutomatico] = useState(() => leer('conversacion.envioAutomatico', true))
   const [escrito, setEscrito] = useState('') // lo que escribe la persona oyente
   const siguienteId = useRef(1)
+  // Historial: la conversación se guarda sola; «Nueva conversación» empieza un registro nuevo.
+  const historial = useGuardadoHistorial('conversacion', mensajes)
   const finDeLista = useRef<HTMLDivElement>(null)
 
   const agregar = (autor: Mensaje['autor'], texto: string) => {
@@ -100,7 +113,11 @@ export default function Conversacion() {
   useEffect(() => {
     opciones.current = { envioAutomatico }
   })
+  const ia = useIADeletreo() // red neuronal + autocorrector
   const d = useDeletreo(lengua, {
+    clasificar: ia.clasificar,
+    corrector: ia.corrector,
+    memoria: ia.memoria,
     // Regla «envío automático»: a ∧ s ∧ t
     alCadaCuadro: (e, texto) => {
       const a = opciones.current.envioAutomatico
@@ -171,6 +188,9 @@ export default function Conversacion() {
           </div>
         }
       />
+      <div className="-mt-3 mb-4 sm:-mt-5">
+        <IndicadorHistorial estado={historial.estado} />
+      </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)_minmax(0,1fr)]">
         {/* ═════ Persona oyente (arriba en celular/tableta; a la derecha en computadora) ═════ */}
@@ -308,6 +328,8 @@ export default function Conversacion() {
               <p className="mt-2 text-sm text-stone-700" aria-live="polite">
                 {mensajeDeletreo(d.estado)}
               </p>
+              <LoQueVeLaIA ia={d.estado?.ia} personal={d.estado?.personal} entrenando={ia.entrenando} activa={!!ia.clasificar || !!ia.entrenando} />
+              <AvisoCorreccion correccion={d.correccion} alDeshacer={d.deshacerCorreccion} alAceptar={d.aceptarSugerencia} alCerrar={d.descartarCorreccion} />
             </div>
           </div>
           {/* 4 botones en una fila; en computadora el panel es angosto: Enviar arriba y los otros 3 debajo (4 otra vez en pantallas muy anchas) */}

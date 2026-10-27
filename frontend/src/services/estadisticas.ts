@@ -20,10 +20,18 @@ export interface ResumenEstadisticas {
   por_lengua: Record<Lengua, number>
   letras_logradas: number
   avance_promedio: Record<Lengua, number> // porcentaje (0 a 100)
+  partidas: number
+  jugadores: number
+  registros_historial: number
+  usuarios_con_ia: number
+  redes_entrenadas: number
+  precision_red: number | null // porcentaje
+  posturas: number
+  precision_corrector: number | null // porcentaje
 }
 
 // Las 4 gráficas que dibuja el backend.
-export type NombreGrafica = 'registros' | 'usuarios' | 'letras' | 'avance'
+export type NombreGrafica = 'registros' | 'usuarios' | 'letras' | 'avance' | 'juegos' | 'dificultad' | 'historial'
 
 // GET /api/estadisticas/resumen
 export function obtenerResumen() {

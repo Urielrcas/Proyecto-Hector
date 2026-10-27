@@ -7,9 +7,10 @@
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: BookOpen (libro abierto), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
+//     íconos: BookOpen (libro abierto), Brain (cerebro), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   BookOpen,
+  Brain,
   ChartColumn,
   CircleHelp,
   Hand,
@@ -68,6 +69,13 @@ export const APRENDIZAJE: Seccion = {
   icono: BookOpen,
 }
 
+export const MI_IA: Seccion = {
+  ruta: '/mi-ia',
+  titulo: 'Mi IA',
+  descripcion: 'Lo que la inteligencia artificial aprendió de ti.',
+  icono: Brain,
+}
+
 export const USUARIOS: Seccion = {
   ruta: '/usuarios',
   titulo: 'Usuarios',
@@ -106,4 +114,4 @@ export const EMERGENCIA: Seccion = {
 }
 
 /** Orden del menú lateral. */
-export const MENU: Seccion[] = [INICIO, SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, APRENDIZAJE, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]
+export const MENU: Seccion[] = [INICIO, SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, APRENDIZAJE, MI_IA, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]

@@ -1,13 +1,13 @@
 /*
  * PANTALLA: APRENDIZAJE (lista de letras)
  * Muestra el alfabeto de la lengua elegida (LSM o ASL) en una cuadrícula, la barra de progreso
- * el acceso a la «Ruta de aprendizaje» (/aprender/ruta, búsqueda DFS/BFS) y la sección
+ * el acceso a la «Ruta de aprendizaje» (/aprender/ruta, búsqueda DFS/BFS), a «Juegos» (/aprender/juegos) y la sección
  * "Palabras y frases" (próximamente). Al tocar una letra abre /aprender/LETRA.
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: BookOpen (libro abierto), Check (palomita ✓), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Route (ruta), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
-import { BookOpen, Check, HeartHandshake, MessageCircle, Move, Route, Siren, type LucideIcon } from 'lucide-react'
+//     íconos: BookOpen (libro abierto), Brain (cerebro), Check (palomita ✓), Gamepad2 (control de videojuego), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Route (ruta), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
+import { BookOpen, Brain, Check, Gamepad2, HeartHandshake, MessageCircle, Move, Route, Siren, type LucideIcon } from 'lucide-react'
 // ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
 //     Link → enlace para ir a otra pantalla sin recargar la página
 import { Link } from 'react-router-dom'
@@ -23,6 +23,9 @@ import { useApp } from '../../context/AppContext'
 // ▸ Desde nuestro proyecto: src/hooks/useProgresoAprendizaje.ts:
 //     useProgresoAprendizaje → hook con las letras logradas por el usuario
 import { useProgresoAprendizaje } from '../../hooks/useProgresoAprendizaje'
+// ▸ Desde nuestro proyecto: src/hooks/useModeloIA.ts:
+//     useModeloIA → recomendaciones de la IA (qué letra practicar y por qué)
+import { useModeloIA } from '../../hooks/useModeloIA'
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
 //     alfabeto → devuelve las letras de LSM o ASL con sus pasos y forma
 //     FUENTE_ASL → nombre de la fuente de ASL
@@ -39,6 +42,7 @@ const PROXIMOS: { titulo: string; descripcion: string; icono: LucideIcon }[] = [
 export default function Aprender() {
   const { lengua } = useApp() // LSM o ASL (se cambia en el menú lateral)
   const { logradas } = useProgresoAprendizaje() // letras ya logradas
+  const { recomendaciones } = useModeloIA() // la IA dice qué practicar
   const letras = alfabeto(lengua ?? 'LSM') // las 27 letras de LSM o las 26 de ASL
   const logradasAqui = letras.filter((l) => logradas.includes(l.letra)).length // cuántas lleva
   const porcentaje = Math.round((logradasAqui / letras.length) * 100) // para la barra de progreso
@@ -128,6 +132,33 @@ export default function Aprender() {
         <p className="mt-4 text-sm text-stone-500">Fuente de las descripciones: {lengua === 'ASL' ? FUENTE_ASL : FUENTE_LSM}.</p>
       </section>
 
+      {/* Recomendaciones de la IA (modelo del estudiante) */}
+      {recomendaciones.length > 0 && (
+        <section aria-labelledby="titulo-ia" className="mt-6 rounded-3xl border border-marca-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 id="titulo-ia" className="flex items-center gap-2 text-lg font-bold">
+              <Brain className="size-6 text-marca-700" aria-hidden /> Tu IA te recomienda practicar
+            </h2>
+            <Link to="/mi-ia" className="text-sm font-bold text-marca-800 hover:underline">
+              ¿Cómo lo sabe? →
+            </Link>
+          </div>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-3">
+            {recomendaciones.slice(0, 3).map((r) => (
+              <li key={r.letra}>
+                <Link
+                  to={`/aprender/${encodeURIComponent(r.letra)}`}
+                  className="flex h-full items-center gap-3 rounded-2xl border border-stone-200 p-3 hover:border-marca-300 hover:bg-marca-50"
+                >
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-marca-100 text-xl font-bold text-marca-800">{r.letra}</span>
+                  <span className="text-sm text-stone-700">{r.motivo}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Acceso a la «Ruta de aprendizaje»: busca con DFS/BFS un camino de letras parecidas */}
       <section aria-labelledby="titulo-ruta" className="mt-6 flex flex-wrap items-center gap-4 rounded-3xl border border-marca-200 bg-marca-50/60 p-5 sm:p-6">
         <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-marca-100 text-marca-800">
@@ -140,6 +171,20 @@ export default function Aprender() {
           <p className="text-stone-600">¿Quieres aprender una letra nueva? Te armamos un camino de letras parecidas para llegar a ella poco a poco.</p>
         </div>
         <BotonEnlace to="/aprender/ruta">Armar mi ruta</BotonEnlace>
+      </section>
+
+      {/* Acceso a «Juegos»: poner a prueba las letras que ya se aprendieron */}
+      <section aria-labelledby="titulo-juegos" className="mt-4 flex flex-wrap items-center gap-4 rounded-3xl border border-marca-200 bg-marca-50/60 p-5 sm:p-6">
+        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-marca-100 text-marca-800">
+          <Gamepad2 className="size-6" aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="titulo-juegos" className="text-lg font-bold">
+            Juegos
+          </h2>
+          <p className="text-stone-600">¿Crees que ya te sabes una letra? Ponla a prueba contra reloj, adivinando dibujos o deletreando palabras.</p>
+        </div>
+        <BotonEnlace to="/aprender/juegos">Jugar</BotonEnlace>
       </section>
 
       {/* "Palabras y frases": tarjetas con borde punteado que dicen "Próximamente" */}

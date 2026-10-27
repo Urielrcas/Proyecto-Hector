@@ -43,6 +43,39 @@
   }
 }
 
+/*
+ * ACCESIBILIDAD (pantalla Configuración)
+ *  - .alto-contraste: oscurece los grises y el color de marca para que el texto se lea mejor.
+ *    Tailwind toma los colores de estas variables, así que basta con cambiarlas aquí.
+ *  - .reducir-movimiento: quita animaciones y transiciones.
+ */
+.alto-contraste {
+  --color-stone-50: #ffffff;
+  --color-stone-100: #ececea;
+  --color-stone-200: #a8a29e;
+  --color-stone-300: #78716c;
+  --color-stone-400: #57534e;
+  --color-stone-500: #3f3a36;
+  --color-stone-600: #292524;
+  --color-stone-700: #1c1917;
+  --color-stone-800: #0c0a09;
+  --color-marca-50: #e0f5ef;
+  --color-marca-600: #0b5a4f;
+  --color-marca-700: #08473f;
+  --color-marca-800: #053a33;
+  --color-marca-900: #032b26;
+}
+.alto-contraste a:not([class*="bg-"]) {
+  text-decoration: underline;
+}
+.reducir-movimiento *,
+.reducir-movimiento *::before,
+.reducir-movimiento *::after {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
 /* Animación corta con la que aparece cada seña en el traductor Voz / Texto → Señas.
    Se usa con la clase animate-aparecer (Tailwind la toma de --animate-aparecer). */
 @theme {

@@ -59,6 +59,22 @@ const GRAFICAS: Record<NombreGrafica, { titulo: string; pregunta: string; comoLe
     pregunta: '¿Qué letras les cuestan más a los usuarios?',
     comoLeer: 'Cada barra es una letra: más alta y más oscura = más usuarios la lograron. La de borde naranja es la menos lograda; conviene reforzarla.',
   },
+  juegos: {
+    titulo: 'Juegos',
+    pregunta: '¿Qué juegos usan más?',
+    comoLeer: 'Cada barra es un juego: su largo son las partidas jugadas y al lado va el puntaje promedio. La barra oscura es el juego más usado.',
+  },
+  dificultad: {
+    titulo: 'Dificultad de cada letra según la IA',
+    pregunta: '¿Qué letras le cuestan más a la gente?',
+    comoLeer:
+      'Para cada letra, el dominio promedio que calcula la IA (modelo del estudiante) con los aciertos y fallos de todos. Las de borde naranja son las 3 más difíciles; la línea punteada marca cuándo se considera dominada.',
+  },
+  historial: {
+    titulo: 'Uso de los traductores',
+    pregunta: '¿Qué traductor usan más?',
+    comoLeer: 'Registros guardados en el historial por tipo. Solo se cuentan: el contenido de las conversaciones es privado.',
+  },
   avance: {
     titulo: 'Avance por usuario',
     pregunta: '¿Cuánto lleva cada persona? ¿Quién se quedó atrás?',
@@ -218,6 +234,47 @@ export default function Estadisticas() {
       <div className="grid gap-6">
         <TarjetaGrafica nombre="letras" lengua={lengua} recarga={recarga} />
         <TarjetaGrafica nombre="avance" lengua={lengua} recarga={recarga} />
+      </div>
+
+      {/* Inteligencia artificial: modelo del estudiante, red neuronal y autocorrector (de todos los usuarios) */}
+      <div className="mt-10 mb-4">
+        <h2 className="text-xl font-bold">Inteligencia artificial</h2>
+        <p className="text-stone-600">Cómo le va a la IA que aprende de cada usuario. Solo se muestran totales y promedios.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Indicador titulo="Usuarios con IA" valor={resumen ? String(resumen.usuarios_con_ia) : '—'} detalle="cuentas con modelo propio" />
+        <Indicador
+          titulo="Redes entrenadas"
+          valor={resumen ? String(resumen.redes_entrenadas) : '—'}
+          detalle={resumen ? `${resumen.posturas} posturas de mano guardadas` : undefined}
+        />
+        <Indicador
+          titulo="Precisión de las redes"
+          valor={resumen?.precision_red != null ? `${resumen.precision_red} %` : '—'}
+          detalle="promedio, con manos que no vieron"
+        />
+        <Indicador
+          titulo="Acierto del autocorrector"
+          valor={resumen?.precision_corrector != null ? `${resumen.precision_corrector} %` : '—'}
+          detalle="correcciones que nadie deshizo"
+        />
+      </div>
+      <div className="mt-6 grid gap-6">
+        <TarjetaGrafica nombre="dificultad" lengua={lengua} recarga={recarga} />
+      </div>
+
+      {/* Juegos e historial */}
+      <div className="mt-10 mb-4">
+        <h2 className="text-xl font-bold">Juegos y traductores</h2>
+        <p className="text-stone-600">Cuánto se usan los juegos y los traductores.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Indicador titulo="Partidas jugadas" valor={resumen ? String(resumen.partidas) : '—'} detalle={resumen ? `por ${resumen.jugadores} personas` : undefined} />
+        <Indicador titulo="Registros en historial" valor={resumen ? String(resumen.registros_historial) : '—'} detalle="traducciones y conversaciones" />
+      </div>
+      <div className="mt-6 grid gap-6">
+        <TarjetaGrafica nombre="juegos" recarga={recarga} />
+        <TarjetaGrafica nombre="historial" recarga={recarga} />
       </div>
     </>
   )

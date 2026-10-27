@@ -23,6 +23,9 @@ import { Boton } from '../../components/Boton'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/components/IndicadorHistorial.tsx:
+//     IndicadorHistorial → avisa si la traducción ya se guardó en el Historial
+import { IndicadorHistorial } from '../../components/IndicadorHistorial'
 // ▸ Desde nuestro proyecto: src/components/ReproductorSenas.tsx:
 //     ReproductorSenas → muestra el texto en señas, una tras otra, con sus controles
 import { ReproductorSenas } from '../../components/ReproductorSenas'
@@ -31,6 +34,9 @@ import { ReproductorSenas } from '../../components/ReproductorSenas'
 import { useApp } from '../../context/AppContext'
 // ▸ Desde nuestro proyecto: src/hooks/useNivelMicrofono.ts:
 //     useNivelMicrofono → qué tan fuerte llega la voz (para dibujar las ondas)
+// ▸ Desde nuestro proyecto: src/hooks/useHistorial.ts:
+//     useGuardadoHistorial → guarda esta traducción en el Historial mientras se usa la pantalla
+import { useGuardadoHistorial } from '../../hooks/useHistorial'
 import { useNivelMicrofono } from '../../hooks/useNivelMicrofono'
 // ▸ Desde nuestro proyecto: src/hooks/useReconocimientoVoz.ts:
 //     useReconocimientoVoz → convierte la voz en texto con el navegador
@@ -62,10 +68,18 @@ export default function VozSenas() {
   // Cada mensaje nuevo cambia la «versión»: el reproductor se vuelve a montar y empieza desde el inicio.
   const [version, setVersion] = useState(0)
 
+  // Todos los mensajes de esta visita a la pantalla (se guardan juntos en el Historial).
+  const [enviados, setEnviados] = useState<{ texto: string; hora: Date }[]>([])
+  const historial = useGuardadoHistorial(
+    'voz-senas',
+    enviados.map((m) => ({ autor: 'oyente', ...m })),
+  )
+
   // Mostrar un mensaje nuevo en señas desde el principio.
   const traducir = (nuevo: string) => {
     setTexto(nuevo)
     setVersion((v) => v + 1)
+    setEnviados((ms) => [...ms, { texto: nuevo, hora: new Date() }])
   }
 
   // ── Voz ──
@@ -80,6 +94,9 @@ export default function VozSenas() {
   return (
     <>
       <EncabezadoPagina titulo={VOZ_SENAS.titulo} descripcion={`Habla o escribe y el mensaje se muestra en señas de ${lengua}.`} icono={VOZ_SENAS.icono} />
+      <div className="-mt-3 mb-4 sm:-mt-5">
+        <IndicadorHistorial estado={historial.estado} />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         {/* ── Izquierda: Hablar / Escribir ── */}

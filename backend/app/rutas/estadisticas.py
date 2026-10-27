@@ -5,6 +5,9 @@
   GET /api/estadisticas/graficas/usuarios.png         → usuarios por lengua y estado (barras)
   GET /api/estadisticas/graficas/letras.png?lengua=   → cuántos lograron cada letra (barras)
   GET /api/estadisticas/graficas/avance.png?lengua=   → avance de cada usuario (barras de progreso)
+  GET /api/estadisticas/graficas/juegos.png           → partidas y puntaje promedio por juego
+  GET /api/estadisticas/graficas/dificultad.png?lengua= → dominio promedio de cada letra según la IA
+  GET /api/estadisticas/graficas/historial.png        → registros del historial por tipo (solo conteos)
 
 Los datos salen de las colecciones "usuarios" y "progreso" de MongoDB; las imágenes
 se dibujan con matplotlib en app/graficas.py.
@@ -43,7 +46,16 @@ from ..dependencias import requiere_admin
 # ▸ Desde nuestro proyecto (carpeta app/graficas):
 #     etiqueta_mes → texto del mes para el eje ("Oct\n2026")
 #     grafica_avance, grafica_letras, grafica_registros, grafica_usuarios → dibujan cada gráfica (app/graficas.py)
-from ..graficas import etiqueta_mes, grafica_avance, grafica_letras, grafica_registros, grafica_usuarios
+from ..graficas import (
+    etiqueta_mes,
+    grafica_avance,
+    grafica_dificultad,
+    grafica_historial,
+    grafica_juegos,
+    grafica_letras,
+    grafica_registros,
+    grafica_usuarios,
+)
 # ▸ Desde nuestro proyecto (carpeta app/modelos):
 #     Lengua → tipo: 'LSM' o 'ASL' (app/modelos.py)
 #     ResumenEstadisticas → números de las tarjetas (app/modelos.py)
@@ -79,6 +91,20 @@ async def resumen(db: AsyncDatabase = Depends(get_db)):
         conteo = await _letras_por_usuario(db, lengua)
         avance_promedio[lengua] = round(100 * sum(conteo.values()) / (len(conteo) * len(letras)), 1) if conteo else 0.0
 
+    # IA: precisión promedio de las redes, posturas guardadas y acierto del autocorrector.
+    usuarios_con_ia = set()
+    precisiones: list[float] = []
+    posturas = aplicadas = deshechas = 0
+    async for doc in db.modelos_ia.find({}, {"usuario_id": 1, "modelo.red.precision": 1, "modelo.muestras": 1, "modelo.corrector": 1}):
+        usuarios_con_ia.add(doc["usuario_id"])
+        modelo = doc.get("modelo", {})
+        red = modelo.get("red")
+        if red and red.get("precision") is not None:
+            precisiones.append(red["precision"])
+        posturas += sum(len(lista) for lista in modelo.get("muestras", {}).values())
+        aplicadas += modelo.get("corrector", {}).get("aplicadas", 0)
+        deshechas += modelo.get("corrector", {}).get("deshechas", 0)
+
     return ResumenEstadisticas(
         usuarios=usuarios,
         activos=activos,
@@ -86,6 +112,14 @@ async def resumen(db: AsyncDatabase = Depends(get_db)):
         por_lengua=por_lengua,
         letras_logradas=await db.progreso.count_documents({}),
         avance_promedio=avance_promedio,
+        partidas=await db.partidas.count_documents({}),
+        jugadores=len(await db.partidas.distinct("usuario_id")),
+        registros_historial=await db.historial.count_documents({}),
+        usuarios_con_ia=len(usuarios_con_ia),
+        redes_entrenadas=len(precisiones),
+        precision_red=round(100 * sum(precisiones) / len(precisiones), 1) if precisiones else None,
+        posturas=posturas,
+        precision_corrector=round(100 * (aplicadas - deshechas) / aplicadas, 1) if aplicadas else None,
     )
 
 
@@ -138,3 +172,47 @@ async def avance(lengua: Lengua = "LSM", db: AsyncDatabase = Depends(get_db)):
     nombres = [nombres_por_id.get(i, "(cuenta eliminada)") for i, _ in primeros]
     logradas = [n for _, n in primeros]
     return _png(await run_in_threadpool(grafica_avance, lengua, nombres, logradas, len(LETRAS[lengua]), len(conteo)))
+
+
+NOMBRES_JUEGOS = {"adivina": "¿Qué letra es?", "memorama": "Memorama", "reto": "Reto contra reloj", "palabra": "Deletrea la palabra"}
+NOMBRES_HISTORIAL = {"senas-texto": "Señas → Texto", "voz-senas": "Voz / Texto → Señas", "conversacion": "Conversación"}
+UMBRAL_DOMINIO = 85  # el mismo del frontend (src/lib/ia/dominio.ts)
+
+
+@router.get("/graficas/juegos.png")
+async def juegos(db: AsyncDatabase = Depends(get_db)):
+    conteo: Counter = Counter()
+    puntos: Counter = Counter()
+    async for doc in db.partidas.find({}, {"juego": 1, "puntos": 1}):
+        conteo[doc["juego"]] += 1
+        puntos[doc["juego"]] += doc["puntos"]
+    ids = list(NOMBRES_JUEGOS)
+    promedios = [puntos[j] / conteo[j] if conteo[j] else 0 for j in ids]
+    jugadores = len(await db.partidas.distinct("usuario_id"))
+    nombres = [NOMBRES_JUEGOS[j] for j in ids]
+    return _png(await run_in_threadpool(grafica_juegos, nombres, [conteo[j] for j in ids], promedios, jugadores))
+
+
+@router.get("/graficas/dificultad.png")
+async def dificultad(lengua: Lengua = "LSM", db: AsyncDatabase = Depends(get_db)):
+    letras = LETRAS[lengua]
+    sumas: Counter = Counter()
+    cuantos: Counter = Counter()
+    usuarios = 0
+    async for doc in db.modelos_ia.find({"lengua": lengua}, {"modelo.dominio": 1}):
+        dominio = doc.get("modelo", {}).get("dominio", {})
+        if dominio:
+            usuarios += 1
+        for letra, estado in dominio.items():
+            sumas[letra] += estado["p"]
+            cuantos[letra] += 1
+    promedio = [round(100 * sumas[l] / cuantos[l], 1) if cuantos[l] else None for l in letras]
+    return _png(await run_in_threadpool(grafica_dificultad, lengua, letras, promedio, usuarios, UMBRAL_DOMINIO))
+
+
+@router.get("/graficas/historial.png")
+async def historial(db: AsyncDatabase = Depends(get_db)):
+    conteo = Counter([doc["tipo"] async for doc in db.historial.find({}, {"tipo": 1})])
+    usuarios = len(await db.historial.distinct("usuario_id"))
+    ids = list(NOMBRES_HISTORIAL)
+    return _png(await run_in_threadpool(grafica_historial, [NOMBRES_HISTORIAL[t] for t in ids], [conteo[t] for t in ids], usuarios))

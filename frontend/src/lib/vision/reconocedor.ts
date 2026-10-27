@@ -16,6 +16,11 @@
  *   4. Después de aceptar una letra, esa forma queda bloqueada hasta que la mano cambie de forma
  *      (para no escribir «LLLL» por sostenerla). Para repetir una letra, se cambia la forma y se vuelve.
  *   5. Regla «espacio de palabra»: s ∧ u — si la mano desaparece 1.5 s después de deletrear, termina la palabra.
+ *   6. IA: si hay una red neuronal convolucional entrenada (lib/ia/cnn) y está muy segura (≥ 90 %)
+ *      de la forma que ve, esa forma también cuenta como «cumplida», aunque las reglas no la vean
+ *      (la red aprendió cómo hace las letras ESTA persona).
+ *   7. Memoria de tus señas: si la mano coincide con la forma PERSONAL que el usuario le enseñó
+ *      a la IA (ej.: su A con los dedos un poco distintos), esa letra también cuenta (lib/ia/memoria.ts).
  */
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
 //     alfabeto → letras de LSM o ASL con su forma y lo que la cámara debe reconocer
@@ -39,6 +44,15 @@ import { DetectorMovimiento } from './movimiento'
 //     proposicionesDeLectura → convierte esa forma en proposiciones V/F
 //     Punto → tipo: un punto de la mano (x, y)
 import { formulaDeObjetivo, leerMano, proposicionesDeLectura, type Punto } from './postura'
+// ▸ Desde nuestro proyecto: src/lib/ia/cnn/clasificador.ts:
+//     Clasificar → tipo: función de la red neuronal que dice qué forma ve
+import type { Clasificar } from '../ia/cnn/clasificador'
+// ▸ Desde nuestro proyecto: src/lib/ia/memoria.ts:
+//     reconocerPersonal → ¿la mano es una forma personal recordada?;  Memoria → tipo
+import { reconocerPersonal, type Memoria } from '../ia/memoria'
+
+/** Probabilidad mínima de la red neuronal para sumar su opinión a las reglas. */
+export const UMBRAL_IA = 0.9
 
 /** Cuadros que se recuerdan para decidir (≈ 0.5 s a 30 cuadros por segundo). */
 export const VENTANA = 15
@@ -76,6 +90,10 @@ export interface EstadoReconocedor {
   espacio: boolean
   /** Milisegundos que lleva sin verse la mano (0 si se ve). */
   msSinMano: number
+  /** Lo que cree la red neuronal (si hay una entrenada). Ej.: { nombre: 'I/J', probabilidad: 0.94 }. */
+  ia: { nombre: string; probabilidad: number } | null
+  /** Letra reconocida por la memoria de tus señas (tu forma personal), si hubo. */
+  personal: string | null
 }
 
 export class ReconocedorDeletreo {
@@ -89,13 +107,27 @@ export class ReconocedorDeletreo {
   private sinManoDesde: number | null = null
   private letraDesdeEspacio = false
 
-  constructor(lengua: Lengua) {
+  private clasificar: Clasificar | null
+  private memoria: Memoria | null = null
+
+  constructor(lengua: Lengua, clasificar: Clasificar | null = null) {
     this.letras = alfabeto(lengua)
+    this.clasificar = clasificar
+  }
+
+  /** Cambia la red neuronal (por ejemplo, después de reentrenarla). */
+  usarClasificador(clasificar: Clasificar | null) {
+    this.clasificar = clasificar
+  }
+
+  /** Cambia la memoria de formas personales del usuario. */
+  usarMemoria(memoria: Memoria | null) {
+    this.memoria = memoria && memoria.personales.size ? memoria : null
   }
 
   /** Procesa un cuadro de la cámara: los 21 puntos (o null si no hay mano) y el tiempo en ms. */
   procesar(puntos: Punto[] | null, tiempo: number): EstadoReconocedor {
-    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null }
+    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null, ia: null, personal: null }
 
     // ── Sin mano: reiniciar y, si pasó el tiempo, cerrar la palabra (regla s ∧ u) ──
     if (!puntos) {
@@ -115,6 +147,23 @@ export class ReconocedorDeletreo {
     // ── 1. Qué letras se cumplen en este cuadro (la fórmula lógica de cada una) ──
     const valuacion = proposicionesDeLectura(leerMano(puntos))
     const cumplen = new Set(this.letras.filter((l) => evaluarFormula(formulaDeObjetivo(l.objetivo), valuacion)).map((l) => l.letra))
+    // IA: la red convolucional suma su opinión si está muy segura.
+    let ia: EstadoReconocedor['ia'] = null
+    if (this.clasificar) {
+      const p = this.clasificar(puntos)
+      ia = { nombre: p.clase.nombre, probabilidad: p.probabilidad }
+      if (p.probabilidad >= UMBRAL_IA) for (const l of p.clase.letras) cumplen.add(l)
+    }
+    // Memoria de tus señas: tu forma personal de una letra (y de sus gemelas, que comparten forma).
+    let personal: string | null = null
+    if (this.memoria) {
+      const c = reconocerPersonal(puntos, this.memoria)
+      if (c) {
+        personal = c.letra
+        const grupo = this.memoria.grupos.get(c.letra)
+        for (const l of this.letras) if (this.memoria.grupos.get(l.letra) === grupo) cumplen.add(l.letra)
+      }
+    }
     this.ventana.push(cumplen)
     if (this.ventana.length > VENTANA) this.ventana.shift()
     const votos = (letra: string) => this.ventana.filter((c) => c.has(letra)).length
@@ -179,7 +228,7 @@ export class ReconocedorDeletreo {
       this.seguidos.clear()
       this.detectores.clear()
       this.letraDesdeEspacio = true
-      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0 }
+      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0, ia, personal }
     }
 
     const aviso: Aviso = !candidata
@@ -198,6 +247,8 @@ export class ReconocedorDeletreo {
       letraNueva: null,
       espacio: false,
       msSinMano: 0,
+      ia,
+      personal,
     }
   }
 }

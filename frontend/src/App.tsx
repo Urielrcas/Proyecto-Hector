@@ -23,6 +23,9 @@ import { lazy, Suspense } from 'react'
 //     Route → una ruta: qué pantalla mostrar en cada dirección
 //     Routes → contenedor de todas las rutas
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+// ▸ Desde nuestro proyecto: src/components/AplicarConfiguracion.tsx:
+//     AplicarConfiguracion → aplica tamaño de letra, alto contraste y movimiento a toda la página
+import { AplicarConfiguracion } from './components/AplicarConfiguracion'
 // ▸ Desde nuestro proyecto: src/components/DisenoApp.tsx:
 //     DisenoApp → diseño de las pantallas internas (menú lateral)
 import { DisenoApp } from './components/DisenoApp'
@@ -36,6 +39,9 @@ import { RequiereAdmin, RequiereSesion, RutaRaiz, SoloSinSesion } from './compon
 //     AppProvider → envuelve la app para compartir el estado global
 //     useApp → lee el estado global: usuario, sesión, lengua, permisos, salir()...
 import { AppProvider, useApp } from './context/AppContext'
+// ▸ Desde nuestro proyecto: src/hooks/useConfiguracion.ts:
+//     useConfiguracion → preferencias de la pantalla Configuración
+import { useConfiguracion } from './hooks/useConfiguracion'
 // ▸ Desde nuestro proyecto: src/lib/navegacion.ts:
 //     AYUDA → sección del menú «Ayuda» (ruta, título, descripción e ícono)
 //     CONFIGURACION → sección del menú «Configuración» (ruta, título, descripción e ícono)
@@ -43,7 +49,7 @@ import { AppProvider, useApp } from './context/AppContext'
 //     HISTORIAL → sección del menú «Historial» (ruta, título, descripción e ícono)
 //     SENAS_TEXTO → sección del menú «Señas → Texto» (ruta, título, descripción e ícono)
 //     VOZ_SENAS → sección del menú «Voz → Señas» (ruta, título, descripción e ícono)
-import { AYUDA, CONFIGURACION, CONVERSACION, HISTORIAL, SENAS_TEXTO, VOZ_SENAS } from './lib/navegacion'
+import { AYUDA, CONFIGURACION, CONVERSACION, HISTORIAL, MI_IA, SENAS_TEXTO, VOZ_SENAS } from './lib/navegacion'
 // ▸ Desde nuestro proyecto: src/pages/Bienvenida.tsx:
 //     Bienvenida → pantalla de bienvenida
 import Bienvenida from './pages/Bienvenida'
@@ -53,9 +59,6 @@ import ConfiguracionInicial from './pages/ConfiguracionInicial'
 // ▸ Desde nuestro proyecto: src/pages/Emergencia.tsx:
 //     Emergencia → pantalla de frases de emergencia
 import Emergencia from './pages/Emergencia'
-// ▸ Desde nuestro proyecto: src/pages/EnConstruccion.tsx:
-//     EnConstruccion → pantalla de "módulo en desarrollo"
-import EnConstruccion from './pages/EnConstruccion'
 // ▸ Desde nuestro proyecto: src/pages/estadisticas/Estadisticas.tsx:
 //     Estadisticas → pantalla de gráficas para el administrador
 import Estadisticas from './pages/estadisticas/Estadisticas'
@@ -82,6 +85,18 @@ import ListaUsuarios from './pages/usuarios/ListaUsuarios'
 const Aprender = lazy(() => import('./pages/aprender/Aprender'))
 const PracticarLetra = lazy(() => import('./pages/aprender/PracticarLetra'))
 const RutaAprendizaje = lazy(() => import('./pages/aprender/RutaAprendizaje'))
+// Juegos para poner a prueba lo aprendido (dos de ellos usan la cámara).
+const Juegos = lazy(() => import('./pages/juegos/Juegos'))
+const JuegoAdivina = lazy(() => import('./pages/juegos/JuegoAdivina'))
+const JuegoReto = lazy(() => import('./pages/juegos/JuegoReto'))
+const JuegoMemorama = lazy(() => import('./pages/juegos/JuegoMemorama'))
+// Historial, Configuración y Ayuda.
+const Historial = lazy(() => import('./pages/historial/Historial'))
+const DetalleHistorial = lazy(() => import('./pages/historial/DetalleHistorial'))
+const Configuracion = lazy(() => import('./pages/configuracion/Configuracion'))
+const Ayuda = lazy(() => import('./pages/ayuda/Ayuda'))
+// La IA del usuario: modelo del estudiante, red neuronal convolucional y autocorrector.
+const MiIA = lazy(() => import('./pages/ia/MiIA'))
 // El traductor también usa la cámara y MediaPipe: se carga solo al abrirlo.
 const SenasTexto = lazy(() => import('./pages/traductor/SenasTexto'))
 const VozSenas = lazy(() => import('./pages/traductor/VozSenas'))
@@ -95,9 +110,6 @@ function Cargando() {
     </div>
   )
 }
-
-// Módulos pendientes: se reemplazan por su pantalla real conforme se desarrollen.
-const PENDIENTES = [HISTORIAL, CONFIGURACION, AYUDA]
 
 function Rutas() {
   const { tieneSesion } = useApp()
@@ -124,8 +136,13 @@ function Rutas() {
         <Route path={CONVERSACION.ruta} element={<Suspense fallback={<Cargando />}><Conversacion /></Suspense>} />
         <Route path="/emergencia" element={<Emergencia />} />
         <Route path="/aprender" element={<Suspense fallback={<Cargando />}><Aprender /></Suspense>} />
-        {/* "/aprender/ruta" va antes que "/aprender/:letra" para que "ruta" no se lea como una letra */}
+        {/* "/aprender/ruta" y "/aprender/juegos" van antes que "/aprender/:letra" para que no se lean como una letra */}
         <Route path="/aprender/ruta" element={<Suspense fallback={<Cargando />}><RutaAprendizaje /></Suspense>} />
+        <Route path="/aprender/juegos" element={<Suspense fallback={<Cargando />}><Juegos /></Suspense>} />
+        <Route path="/aprender/juegos/adivina" element={<Suspense fallback={<Cargando />}><JuegoAdivina /></Suspense>} />
+        <Route path="/aprender/juegos/reto" element={<Suspense fallback={<Cargando />}><JuegoReto key="reto" modo="reto" /></Suspense>} />
+        <Route path="/aprender/juegos/memorama" element={<Suspense fallback={<Cargando />}><JuegoMemorama /></Suspense>} />
+        <Route path="/aprender/juegos/palabra" element={<Suspense fallback={<Cargando />}><JuegoReto key="palabra" modo="palabra" /></Suspense>} />
         <Route path="/aprender/:letra" element={<Suspense fallback={<Cargando />}><PracticarLetra /></Suspense>} />
 
         {/* Solo administradores */}
@@ -134,10 +151,12 @@ function Rutas() {
         <Route path="/usuarios/:id/editar" element={<RequiereAdmin><FormularioUsuario /></RequiereAdmin>} />
         <Route path="/estadisticas" element={<RequiereAdmin><Estadisticas /></RequiereAdmin>} />
 
-        {/* Módulos pendientes: muestran "Este módulo está en desarrollo" */}
-        {PENDIENTES.map(({ ruta, titulo }) => (
-          <Route key={ruta} path={ruta} element={<EnConstruccion titulo={titulo} />} />
-        ))}
+        {/* Historial, Configuración y Ayuda */}
+        <Route path={HISTORIAL.ruta} element={<Suspense fallback={<Cargando />}><Historial /></Suspense>} />
+        <Route path={`${HISTORIAL.ruta}/:id`} element={<Suspense fallback={<Cargando />}><DetalleHistorial /></Suspense>} />
+        <Route path={CONFIGURACION.ruta} element={<Suspense fallback={<Cargando />}><Configuracion /></Suspense>} />
+        <Route path={MI_IA.ruta} element={<Suspense fallback={<Cargando />}><MiIA /></Suspense>} />
+        <Route path={AYUDA.ruta} element={<Suspense fallback={<Cargando />}><Ayuda /></Suspense>} />
       </Route>
 
       {/* Cualquier otra dirección que no exista regresa al inicio */}
@@ -148,9 +167,11 @@ function Rutas() {
 
 // Componente raíz: envuelve todo con las animaciones, el estado global (AppProvider) y el enrutador.
 export default function App() {
+  const { config } = useConfiguracion()
   return (
-    // Respeta la preferencia del sistema de "reducir movimiento".
-    <MotionConfig reducedMotion="user">
+    // Respeta la preferencia del sistema de "reducir movimiento" (o la de Configuración, si se activó ahí).
+    <MotionConfig reducedMotion={config.reducirMovimiento ? 'always' : 'user'}>
+      <AplicarConfiguracion />
       <AppProvider>
         <BrowserRouter>
           <Rutas />

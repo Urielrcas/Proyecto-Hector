@@ -29,7 +29,7 @@ class Regla:
         return self.formula.evaluar(valores)
 
 
-e, k, v, c, a, y, r, t = proposiciones("e", "k", "v", "c", "a", "y", "r", "t")
+e, k, v, c, a, y, r, t, x, p, n = proposiciones("e", "k", "v", "c", "a", "y", "r", "t", "x", "p", "n")
 
 PUEDE_INICIAR_SESION = Regla(
     nombre="Inicio de sesión",
@@ -65,7 +65,30 @@ PUEDE_ACTUALIZAR_USUARIO = Regla(
     tabla_esperada="VFFFVVVV" + "F" * 8,
 )
 
-REGLAS = [PUEDE_INICIAR_SESION, ES_ADMINISTRADOR, PUEDE_ELIMINAR_USUARIO, PUEDE_ACTUALIZAR_USUARIO]
+PUEDE_USAR_REGISTRO = Regla(
+    nombre="Ver o modificar un registro del historial",
+    # Las conversaciones son privadas: ni un administrador puede ver las de otra persona.
+    formula=x & p,
+    proposiciones={"x": "el registro existe", "p": "el registro pertenece a quien lo pide"},
+    tabla_esperada="VFFF",
+)
+
+PUEDE_CAMBIAR_PERFIL = Regla(
+    nombre="Actualizar mi perfil",
+    # Si se pide una contraseña nueva, la contraseña actual debe ser correcta.
+    formula=n >> k,
+    proposiciones={"n": "se pide cambiar la contraseña", "k": "la contraseña actual es correcta"},
+    tabla_esperada="VFVV",
+)
+
+REGLAS = [
+    PUEDE_INICIAR_SESION,
+    ES_ADMINISTRADOR,
+    PUEDE_ELIMINAR_USUARIO,
+    PUEDE_ACTUALIZAR_USUARIO,
+    PUEDE_USAR_REGISTRO,
+    PUEDE_CAMBIAR_PERFIL,
+]
 
 
 def verificar(regla: Regla) -> list[str]:

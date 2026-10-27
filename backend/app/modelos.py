@@ -193,6 +193,17 @@ class ResumenEstadisticas(BaseModel):
     por_lengua: dict[str, int]  # {"LSM": 8, "ASL": 3} según la lengua de cada cuenta
     letras_logradas: int  # total de letras logradas sumando a todos
     avance_promedio: dict[str, float]  # % promedio de avance por lengua, entre quienes ya empezaron
+    # Juegos
+    partidas: int = 0  # partidas jugadas (todas las cuentas)
+    jugadores: int = 0  # cuentas que han jugado al menos una vez
+    # Historial (solo cuántos registros hay; el contenido es privado)
+    registros_historial: int = 0
+    # Inteligencia artificial
+    usuarios_con_ia: int = 0  # cuentas con modelo de IA guardado
+    redes_entrenadas: int = 0  # cuentas con su red neuronal entrenada
+    precision_red: float | None = None  # % promedio de precisión de las redes
+    posturas: int = 0  # posturas de mano guardadas para entrenar
+    precision_corrector: float | None = None  # % de correcciones automáticas que nadie deshizo
 
 
 # ── Comparación de los 5 algoritmos: BFS, DFS, UCS, Greedy y A* (rutas/busqueda.py) ──
@@ -263,3 +274,133 @@ class FraseSalida(BaseModel):
     frase: str  # "Hola, ¿cómo estás?"
     corregida: bool  # False = Ollama propuso algo con letras muy distintas y se dejó el texto original
     modelo: str  # modelo de Ollama que se usó (llama3.2)
+
+
+# ── Perfil (el propio usuario cambia sus datos) ──
+
+
+class PerfilActualizar(BaseModel):
+    """Todos los campos son opcionales. Para cambiar la contraseña hay que mandar la actual."""
+
+    nombre: Nombre | None = None
+    lengua: Lengua | None = None
+    contrasena_actual: str | None = None
+    contrasena_nueva: Contrasena | None = None
+
+
+# ── Historial de traducciones y conversaciones ──
+
+# senas-texto: lo que deletreó la persona sorda; voz-senas: lo que se dijo/escribió y se mostró en señas;
+# conversacion: los mensajes de las dos personas en el Modo conversación.
+TipoHistorial = Literal["senas-texto", "voz-senas", "conversacion"]
+
+
+class MensajeHistorial(BaseModel):
+    autor: Literal["sorda", "oyente"]  # sorda = lo hizo en señas; oyente = lo dijo o escribió
+    texto: Annotated[str, Field(min_length=1, max_length=500)]
+    hora: datetime
+
+
+class HistorialEntrada(BaseModel):
+    tipo: TipoHistorial
+    lengua: Lengua
+    mensajes: list[MensajeHistorial] = Field(min_length=1, max_length=300)
+
+
+class HistorialResumen(BaseModel):
+    id: str
+    tipo: TipoHistorial
+    lengua: Lengua
+    titulo: str  # el primer mensaje, recortado (para la tabla)
+    total_mensajes: int
+    creado_en: datetime
+    actualizado_en: datetime
+
+
+class HistorialSalida(HistorialResumen):
+    mensajes: list[MensajeHistorial]
+
+
+class PaginaHistorial(BaseModel):
+    items: list[HistorialResumen]
+    total: int
+    pagina: int
+    por_pagina: int
+
+
+# ── Juegos (partidas, para las estadísticas del administrador) ──
+
+NombreJuego = Literal["adivina", "reto", "palabra", "memorama"]
+
+
+class PartidaEntrada(BaseModel):
+    lengua: Lengua
+    juego: NombreJuego
+    puntos: int = Field(ge=0, le=100_000)
+    aciertos: int = Field(ge=0, le=1000)
+    total: int = Field(ge=0, le=1000)
+    racha: int = Field(0, ge=0, le=1000)
+    pistas: int = Field(0, ge=0, le=1000)
+    estrellas: int = Field(0, ge=0, le=3)
+    falladas: list[Annotated[str, Field(min_length=1, max_length=2)]] = Field(default_factory=list, max_length=40)
+
+
+# ── Modelo de IA de cada usuario (lo que la IA aprendió de él) ──
+
+
+class EstadoLetraIA(BaseModel):
+    p: float = Field(ge=0, le=1)  # probabilidad de que domine la letra
+    intentos: int = Field(ge=0)
+    aciertos: int = Field(ge=0)
+    ultima: float  # fecha del último intento (ms)
+
+
+class EpocaIA(BaseModel):
+    epoca: int
+    perdida: float
+    precision: float
+    validacion: float
+
+
+class RedIA(BaseModel):
+    pesos: Annotated[str, Field(max_length=800_000)]  # pesos de la red en base64
+    clases: list[str] = Field(max_length=40)
+    precision: float = Field(ge=0, le=1)
+    historia: list[EpocaIA] = Field(max_length=50)
+    entrenadaEn: float
+    muestrasUsadas: int = Field(ge=0)
+    parametros: int = Field(ge=0)
+
+
+class CorrectorIA(BaseModel):
+    aplicadas: int = Field(ge=0)
+    deshechas: int = Field(ge=0)
+    palabras: dict[Annotated[str, Field(max_length=40)], int] = Field(max_length=3000)
+
+
+class ModeloIA(BaseModel):
+    dominio: dict[Annotated[str, Field(max_length=2)], EstadoLetraIA] = Field(max_length=40)
+    # Posturas de la mano: por letra, hasta 25 listas de 42 números (x, y de los 21 puntos).
+    muestras: dict[Annotated[str, Field(max_length=2)], list[Annotated[list[float], Field(max_length=42)]]] = Field(max_length=40)
+    # Formas personales: cómo hace el usuario ciertas letras (hasta 30 posturas por letra).
+    personales: dict[Annotated[str, Field(max_length=2)], list[Annotated[list[float], Field(max_length=42)]]] = Field(default_factory=dict, max_length=40)
+    red: RedIA | None = None
+    corrector: CorrectorIA
+    actualizadoEn: float
+
+    @model_validator(mode="after")
+    def _limite_muestras(self):
+        if any(len(lista) > 25 for lista in self.muestras.values()):
+            raise ValueError("Máximo 25 posturas por letra.")
+        if any(len(lista) > 30 for lista in self.personales.values()):
+            raise ValueError("Máximo 30 formas personales por letra.")
+        return self
+
+
+class ModeloIAEntrada(BaseModel):
+    lengua: Lengua
+    modelo: ModeloIA
+
+
+class ModeloIASalida(BaseModel):
+    modelo: ModeloIA | None

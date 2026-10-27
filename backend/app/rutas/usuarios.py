@@ -172,4 +172,9 @@ async def eliminar(id_usuario: str, db: AsyncDatabase = Depends(get_db), admin: 
         raise NO_ENCONTRADO
     # Borrar también su progreso de aprendizaje (ya no debe contar en las estadísticas).
     await db.progreso.delete_many({"usuario_id": oid})
+    # Y su historial de conversaciones (es privado y ya no tiene dueño).
+    await db.historial.delete_many({"usuario_id": oid})
+    # Y lo que la IA aprendió de él y sus partidas.
+    await db.modelos_ia.delete_many({"usuario_id": oid})
+    await db.partidas.delete_many({"usuario_id": oid})
     return Response(status_code=status.HTTP_204_NO_CONTENT)

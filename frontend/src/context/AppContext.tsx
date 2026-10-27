@@ -33,7 +33,7 @@ import { cumple } from '../lib/logica/reglas'
 import type { Lengua, Sesion, Usuario } from '../lib/tipos'
 // ▸ Desde nuestro proyecto: src/services/auth.ts:
 //     obtenerUsuarioActual → pide al servidor los datos del usuario de la sesión
-import { obtenerUsuarioActual } from '../services/auth'
+import { actualizarPerfil, obtenerUsuarioActual } from '../services/auth'
 
 // Datos que se guardan (y se recuerdan al recargar la página).
 interface Estado {
@@ -53,6 +53,8 @@ interface AppContextValor extends Estado {
   puedeAdministrarUsuarios: boolean
   completarOnboarding: () => void
   elegirLengua: (lengua: Lengua) => void
+  /** Reemplaza los datos del usuario de la sesión (p. ej. después de editar su perfil). */
+  actualizarUsuario: (usuario: Usuario) => void
   entrar: (sesion: Sesion) => void
   entrarComoInvitado: () => void
   salir: () => void
@@ -108,7 +110,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     tieneSesion: cumple('accesoModulos', { c: usuario !== null, i: estado.invitado }),
     puedeAdministrarUsuarios: cumple('accesoUsuarios', { c: usuario !== null, a: usuario?.rol === 'admin' }),
     completarOnboarding: () => actualizar({ onboardingVisto: true }),
-    elegirLengua: (lengua) => actualizar({ lengua }),
+    elegirLengua: (lengua) => {
+      actualizar({ lengua })
+      // Con cuenta, también se guarda en el perfil (así se conserva en otros equipos).
+      const sesion = estado.sesion
+      if (sesion && sesion.usuario.lengua !== lengua) {
+        actualizarPerfil({ lengua })
+          .then((usuario) => actualizar({ sesion: { token: sesion.token, usuario } }))
+          .catch(() => {})
+      }
+    },
+    actualizarUsuario: (usuario) => {
+      if (estado.sesion) actualizar({ sesion: { token: estado.sesion.token, usuario } })
+    },
     entrar: (sesion) => actualizar({ sesion, invitado: false, lengua: sesion.usuario.lengua }),
     entrarComoInvitado: () => actualizar({ sesion: null, invitado: true }),
     salir,

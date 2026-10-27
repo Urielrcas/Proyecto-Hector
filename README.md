@@ -33,6 +33,18 @@ npm run dev
 ```
 Abre http://localhost:5173
 
+## Abrir en el celular
+El celular solo deja usar la cámara y el micrófono si la página abre por **https**.
+1. Crea el certificado (solo la primera vez, desde Git Bash, en `frontend/`):
+   ```bash
+   mkdir -p certs && MSYS_NO_PATHCONV=1 openssl req -x509 -newkey rsa:2048 -nodes -days 365      -keyout certs/clave.pem -out certs/certificado.pem -subj "/CN=Traductor de Senas (desarrollo)"
+   ```
+2. Arranca el frontend con `npm run dev:celular` (el backend igual que siempre).
+3. Conecta el celular a la **misma red Wi-Fi** y abre la dirección «Network» que muestra Vite
+   (por ejemplo `https://10.1.16.105:5173`).
+4. El navegador avisará que la conexión no es privada (el certificado es nuestro, no de una
+   autoridad): toca **Avanzado → Continuar**. Si no carga, permite Node.js en el firewall de Windows.
+
 ## Usuario administrador
 Al arrancar, si no existe ningún administrador, el backend crea uno con los datos
 de `ADMIN_CORREO` y `ADMIN_CONTRASENA` del archivo `.env`

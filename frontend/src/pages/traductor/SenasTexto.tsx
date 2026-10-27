@@ -29,6 +29,14 @@ import { CamaraManos } from '../../components/CamaraManos'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: IA (red neuronal convolucional y autocorrector):
+//     AvisoCorreccion → «La IA corrigió X → Y · Deshacer»;  LoQueVeLaIA → lo que cree la red neuronal
+//     useIADeletreo → la red y el autocorrector listos para el deletreo
+import { AvisoCorreccion, LoQueVeLaIA } from '../../components/ia/PiezasIA'
+import { useIADeletreo } from '../../hooks/useIADeletreo'
+// ▸ Desde nuestro proyecto: src/components/IndicadorHistorial.tsx:
+//     IndicadorHistorial → avisa si la traducción ya se guardó en el Historial
+import { IndicadorHistorial } from '../../components/IndicadorHistorial'
 // ▸ Desde nuestro proyecto: src/components/ManoIlustrada.tsx:
 //     ManoIlustrada → dibujo de la mano de una letra
 import { ManoIlustrada } from '../../components/ManoIlustrada'
@@ -40,6 +48,9 @@ import { useApp } from '../../context/AppContext'
 //     mensajeDeletreo → texto de ayuda según lo que pasa con la mano
 //     useDeletreo → reconocimiento de letras con la cámara y el texto que se forma
 import { comoFrase, mensajeDeletreo, useDeletreo } from '../../hooks/useDeletreo'
+// ▸ Desde nuestro proyecto: src/hooks/useHistorial.ts:
+//     useGuardadoHistorial → guarda esta traducción en el Historial mientras se usa la pantalla
+import { useGuardadoHistorial } from '../../hooks/useHistorial'
 // ▸ Desde nuestro proyecto: src/lib/almacenamiento.ts:
 //     guardar → guarda un dato en el navegador (localStorage)
 //     leer → lee un dato guardado en el navegador (localStorage)
@@ -63,9 +74,14 @@ export default function SenasTexto() {
   const [leerPalabras, setLeerPalabras] = useState(() => leer('traductor.leerPalabras', true)) // leer cada palabra al terminarla
 
   // El reconocimiento de letras y el texto que se forma (hooks/useDeletreo.ts).
+  // IA: la red neuronal ayuda a reconocer y el autocorrector arregla las palabras al terminarlas.
+  const ia = useIADeletreo()
   const d = useDeletreo(lengua, {
     // Al terminar una palabra, leerla en voz alta (si está activada la opción).
     alTerminarPalabra: (palabra) => leerPalabras && hablar(palabra.toLowerCase(), idiomaVoz),
+    clasificar: ia.clasificar,
+    corrector: ia.corrector,
+    memoria: ia.memoria,
   })
   const { texto, estado, resaltada, candidata, confianza } = d
 
@@ -86,6 +102,9 @@ export default function SenasTexto() {
   const errorVigente = errorCorreccion?.para === texto ? errorCorreccion.mensaje : null
   // Lo que se lee en voz alta: la frase corregida si la hay; si no, lo deletreado.
   const fraseFinal = vigente?.corregida ? vigente.frase : comoFrase(texto)
+
+  // Historial: lo deletreado se guarda solo; al presionar «Limpiar» empieza un registro nuevo.
+  const historial = useGuardadoHistorial('senas-texto', texto.trim() ? [{ autor: 'sorda', texto: fraseFinal }] : [])
 
   // Botón «Corregir frase»
   const corregir = async () => {
@@ -108,6 +127,9 @@ export default function SenasTexto() {
         descripcion={`Deletrea con el alfabeto de ${lengua} frente a la cámara: cada letra se escribe sola.`}
         icono={Hand}
       />
+      <div className="-mt-3 mb-4 sm:-mt-5">
+        <IndicadorHistorial estado={historial.estado} />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         {/* ── Izquierda: cámara y botones para corregir ── */}
@@ -119,6 +141,7 @@ export default function SenasTexto() {
           <p className="mt-3 min-h-12 rounded-xl bg-stone-50 px-4 py-3 font-bold text-stone-800" aria-live="polite">
             {mensajeDeletreo(estado)}
           </p>
+          <LoQueVeLaIA ia={estado?.ia} personal={estado?.personal} entrenando={ia.entrenando} activa={!!ia.clasificar || !!ia.entrenando} />
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Boton onClick={d.agregarCandidata} disabled={!candidata} title="Escribe la letra que se ve ahora, sin esperar">
               <Plus className="size-5" aria-hidden />
@@ -169,6 +192,7 @@ export default function SenasTexto() {
             {texto ? comoFrase(texto) : <span className="text-lg font-normal text-stone-500">Aquí aparecerá lo que deletrees.</span>}
             <span className="ml-0.5 inline-block h-8 w-0.5 animate-pulse bg-marca-700 align-middle" aria-hidden />
           </p>
+          <AvisoCorreccion correccion={d.correccion} alDeshacer={d.deshacerCorreccion} alAceptar={d.aceptarSugerencia} alCerrar={d.descartarCorreccion} />
 
           {/* Corregir con Ollama: separa palabras y pone acentos y signos */}
           <div className="mt-3 flex flex-wrap items-center gap-3">

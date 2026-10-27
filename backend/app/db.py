@@ -32,6 +32,9 @@ async def conectar(uri: str, nombre_db: str) -> AsyncDatabase:
     await _conexion.db.usuarios.create_index("correo", unique=True)
     # Índice único del progreso: una letra se guarda una sola vez por usuario y lengua.
     await _conexion.db.progreso.create_index([("usuario_id", 1), ("lengua", 1), ("letra", 1)], unique=True)
+    await _conexion.db.historial.create_index([("usuario_id", 1), ("actualizado_en", -1)])
+    await _conexion.db.modelos_ia.create_index([("usuario_id", 1), ("lengua", 1)], unique=True)
+    await _conexion.db.partidas.create_index([("usuario_id", 1), ("fecha", -1)])
     return _conexion.db
 
 

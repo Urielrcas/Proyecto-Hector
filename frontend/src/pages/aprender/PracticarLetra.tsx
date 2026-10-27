@@ -6,6 +6,10 @@
  *   1) evalúa la forma de la mano (postura.ts → fórmula lógica de la letra),
  *   2) si la letra lleva movimiento, sigue la mano (movimiento.ts),
  *   3) aplica la regla "letra lograda": f ∧ (m → d), y si se cumple marca la letra como lograda.
+ * IA: al lograrla, el modelo del estudiante sube el dominio de la letra y la red neuronal
+ * guarda algunas posturas reales de tu mano para aprender cómo la haces TÚ.
+ * Forma personal: si te cuesta hacerla como en el dibujo (ej.: tu A con los dedos un poco distintos),
+ * la IA puede RECORDAR tu forma; desde entonces cuenta como correcta (regla g ∨ (p ∧ c ∧ u)).
  */
 
 // ▸ Desde Framer Motion (librería de animaciones):
@@ -18,7 +22,7 @@ import { ArrowLeft, ArrowRight, Check, PartyPopper, X } from 'lucide-react'
 // ▸ Desde React (librería para construir la interfaz con componentes):
 //     useRef → guarda un valor o un elemento de la página SIN volver a dibujar la pantalla
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 // ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
 //     Navigate → redirige automáticamente a otra dirección
 //     useNavigate → función para cambiar de pantalla desde el código
@@ -45,6 +49,9 @@ import { useApp } from '../../context/AppContext'
 // ▸ Desde nuestro proyecto: src/hooks/useProgresoAprendizaje.ts:
 //     useProgresoAprendizaje → hook con las letras logradas por el usuario
 import { useProgresoAprendizaje } from '../../hooks/useProgresoAprendizaje'
+// ▸ Desde nuestro proyecto: src/hooks/useModeloIA.ts:
+//     useModeloIA → la IA del usuario (dominio por letra y muestras para la red neuronal)
+import { useModeloIA } from '../../hooks/useModeloIA'
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
 //     alfabeto → devuelve las letras de LSM o ASL con sus pasos y forma
 //     FUENTE_ASL → nombre de la fuente de ASL
@@ -53,6 +60,13 @@ import { alfabeto, FUENTE_ASL, FUENTE_LSM } from '../../lib/aprendizaje/alfabeto
 // ▸ Desde nuestro proyecto: src/lib/logica/reglas.ts:
 //     cumple → evalúa una regla de lógica proposicional con valores V/F
 import { cumple } from '../../lib/logica/reglas'
+// ▸ Desde nuestro proyecto: src/lib/ia/memoria.ts:
+//     compararConLetra → ¿tu mano es TU forma recordada de esta letra?
+//     pareceOtraLetra → avisa si la forma que vas a guardar se parece mucho a otra letra
+import { compararConLetra, pareceOtraLetra } from '../../lib/ia/memoria'
+// ▸ Desde nuestro proyecto: src/components/ia/PanelFormaPersonal.tsx:
+//     PanelFormaPersonal → «¿Haces esta letra a tu manera? La IA la puede recordar»
+import { PanelFormaPersonal } from '../../components/ia/PanelFormaPersonal'
 // ▸ Desde nuestro proyecto: src/lib/vision/movimiento.ts:
 //     DetectorMovimiento → sigue la mano unos segundos y reconoce movimientos (J, Z, Ñ...)
 //     INSTRUCCION_MOVIMIENTO → textos como "Ahora dibuja una Z en el aire"
@@ -67,12 +81,17 @@ import { DEDOS, NOMBRE_DEDO, evaluar, type Evaluacion, type Punto } from '../../
 
 /** Cuadros seguidos con la postura correcta para darla por lograda (~0.6 s). */
 const CUADROS_PARA_LOGRAR = 18
+/** Cuadros intentando sin lograrla (mano visible) para ofrecer recordar tu forma (~6 s). */
+const CUADROS_PARA_OFRECER = 180
+/** Segundos que se graba tu forma personal. */
+const SEGUNDOS_GRABAR = 3
 
 export default function PracticarLetra() {
   const { letra: parametro = '' } = useParams() // la letra de la dirección: /aprender/L → "L"
   const { lengua } = useApp()
   const navegar = useNavigate()
   const { logradas, marcarLograda } = useProgresoAprendizaje()
+  const ia = useModeloIA()
 
   // Buscar la letra en el alfabeto de la lengua elegida, y sus vecinas (para "Letra anterior/siguiente").
   const letras = alfabeto(lengua ?? 'LSM')
@@ -92,7 +111,17 @@ export default function PracticarLetra() {
     ultimaClave: '',
     lograda: false,
     detector: null as DetectorMovimiento | null,
+    posturas: [] as Punto[][], // últimas posturas correctas (muestras para la red neuronal)
+    intentosFallidos: 0, // cuadros con la mano visible sin lograrla
+    porMemoria: false, // la última forma correcta la reconoció tu memoria personal (no las reglas)
+    grabacion: null as { hasta: number; posturas: Punto[][]; cuadro: number } | null,
   })
+  // Forma personal: ofrecer recordarla, grabarla y avisar.
+  const [ofrecer, setOfrecer] = useState(false)
+  const [grabando, setGrabando] = useState(0) // segundos que faltan (0 = no está grabando)
+  const [conflicto, setConflicto] = useState<{ otra: string; posturas: Punto[][] } | null>(null)
+  const [avisoForma, setAvisoForma] = useState<string | null>(null)
+  const [porMemoria, setPorMemoria] = useState(false)
 
   // Reiniciar la práctica al cambiar de letra.
   const [letraAnterior, setLetraAnterior] = useState(parametro)
@@ -100,7 +129,18 @@ export default function PracticarLetra() {
     setLetraAnterior(parametro)
     setEvaluacion(null)
     setLogradaAhora(false)
+    setOfrecer(false)
+    setConflicto(null)
+    setAvisoForma(null)
+    setPorMemoria(false)
   }
+
+  // Cuenta regresiva mientras se graba tu forma personal.
+  useEffect(() => {
+    if (!grabando) return
+    const t = setTimeout(() => setGrabando((g) => Math.max(0, g - 1)), 1000)
+    return () => clearTimeout(t)
+  }, [grabando])
 
   if (!letra) return <Navigate to="/aprender" replace /> // letra inexistente → regresar a la lista
   const objetivo = letra.objetivo // lo que la cámara debe reconocer para esta letra
@@ -110,6 +150,38 @@ export default function PracticarLetra() {
     seguimiento.current.lograda = true
     setLogradaAhora(true)
     marcarLograda(letra.letra)
+    // IA: un acierto con cámara y unas cuantas posturas reales (una de cada 3 cuadros).
+    ia.observar(letra.letra, true, 'camara')
+    ia.agregarMuestras(letra.letra, seguimiento.current.posturas.filter((_, i) => i % 3 === 0).slice(-6))
+  }
+
+  const tieneForma = ia.memoria.personales.has(letra.letra)
+
+  // Guarda tu forma personal (y la usa desde ya).
+  const guardarForma = (posturas: Punto[][]) => {
+    ia.recordarForma(letra.letra, posturas)
+    setConflicto(null)
+    setOfrecer(false)
+    setAvisoForma(`¡Listo! La IA recordará tu forma de la ${letra.letra}. Hazla otra vez para comprobarlo.`)
+  }
+
+  // Termina la grabación: revisa que no se parezca demasiado a otra letra y la guarda.
+  const terminarGrabacion = (posturas: Punto[][]) => {
+    setGrabando(0)
+    if (posturas.length < 4) {
+      setAvisoForma('No se vio bien tu mano. Ponla frente a la cámara e inténtalo otra vez.')
+      return
+    }
+    const otra = pareceOtraLetra(posturas, letra.letra, ia.memoria)
+    if (otra) setConflicto({ otra, posturas })
+    else guardarForma(posturas)
+  }
+
+  const empezarGrabacion = () => {
+    setAvisoForma(null)
+    setConflicto(null)
+    seguimiento.current.grabacion = { hasta: Date.now() + SEGUNDOS_GRABAR * 1000, posturas: [], cuadro: 0 }
+    setGrabando(SEGUNDOS_GRABAR)
   }
 
   // Se ejecuta en CADA CUADRO del video (unas 30 veces por segundo) con los 21 puntos de la mano
@@ -125,17 +197,44 @@ export default function PracticarLetra() {
         ultimaClave: '',
         lograda: false,
         detector: objetivo.movimiento ? new DetectorMovimiento(objetivo.movimiento) : null,
+        posturas: [],
+        intentosFallidos: 0,
+        porMemoria: false,
+        grabacion: null,
       })
     }
 
-    // 1) Evaluar la forma de la mano: la fórmula lógica de la letra (postura.ts).
+    // 0) Grabando tu forma personal: solo se guardan posturas (una de cada 3 cuadros).
+    const grab = s.grabacion
+    if (grab) {
+      if (puntos && grab.cuadro++ % 3 === 0) grab.posturas.push(puntos)
+      if (Date.now() >= grab.hasta) {
+        s.grabacion = null
+        terminarGrabacion(grab.posturas)
+      }
+      return
+    }
+
+    // 1) Evaluar la forma de la mano: la fórmula lógica de la letra (postura.ts)…
     const r = puntos ? evaluar(puntos, objetivo) : null
+    // …y, si la IA recuerda tu forma de esta letra, compararla también (memoria.ts).
+    const personal = puntos && tieneForma ? compararConLetra(puntos, letra.letra, ia.memoria) : null
+    const g = !!r?.correcto
+    // Regla «forma aceptada»: g ∨ (p ∧ c ∧ u)
+    const correcto = !!puntos && cumple('formaAceptada', { g, p: !!personal?.p, c: !!personal?.c, u: !!personal?.u })
+    const conMemoria = correcto && !g
+
+    // ¿Lleva rato intentando sin lograrla? → ofrecer recordar su forma.
+    if (puntos && !correcto && !s.lograda) {
+      if (++s.intentosFallidos === CUADROS_PARA_OFRECER) setOfrecer(true)
+    } else if (correcto) s.intentosFallidos = 0
 
     // 2) Contar cuántos cuadros seguidos lleva correcta (para las letras sin movimiento).
-    s.cuadrosCorrectos = r?.correcto ? s.cuadrosCorrectos + 1 : 0
+    s.cuadrosCorrectos = correcto ? s.cuadrosCorrectos + 1 : 0
+    if (correcto && puntos) s.posturas = [...s.posturas, puntos].slice(-20)
     if (s.detector) {
       // Letra con movimiento: se sigue la mano mientras mantiene la forma correcta.
-      if (r?.correcto && puntos) {
+      if (correcto && puntos) {
         s.cuadrosFallidos = 0
         s.detector.agregar(puntos, tiempo)
       } else if (++s.cuadrosFallidos > 10) {
@@ -144,16 +243,20 @@ export default function PracticarLetra() {
     }
 
     // 3) Regla «letra lograda»: f ∧ (m → d)
-    const f = s.detector ? !!r?.correcto : s.cuadrosCorrectos >= CUADROS_PARA_LOGRAR // forma correcta (sostenida)
+    const f = s.detector ? correcto : s.cuadrosCorrectos >= CUADROS_PARA_LOGRAR // forma correcta (sostenida)
     const m = s.detector !== null // ¿la letra lleva movimiento?
     const d = s.detector?.detectado() ?? false // ¿se detectó el movimiento?
     if (!s.lograda && cumple('letraLograda', { f, m, d })) lograr()
 
     // 4) Actualizar la pantalla solo cuando cambia el resultado, no en cada cuadro.
-    const clave = r ? `${r.correcto}|${r.consejos.join()}` : 'sin-mano'
+    const clave = r ? `${r.correcto}|${r.consejos.join()}|${conMemoria}` : 'sin-mano'
     if (clave !== s.ultimaClave) {
       s.ultimaClave = clave
       setEvaluacion(r)
+      if (conMemoria !== s.porMemoria) {
+        s.porMemoria = conMemoria
+        setPorMemoria(conMemoria)
+      }
     }
   }
 
@@ -233,7 +336,7 @@ export default function PracticarLetra() {
             Tu intento
           </h2>
           <div className="mt-3">
-            <CamaraManos alDetectar={alDetectar} borde={evaluacion?.correcto ? 'exito' : 'neutro'} />
+            <CamaraManos alDetectar={alDetectar} borde={evaluacion?.correcto || porMemoria || grabando ? 'exito' : 'neutro'} />
           </div>
 
           <div className="mt-4" aria-live="polite">
@@ -262,8 +365,12 @@ export default function PracticarLetra() {
                   <ManoIlustrada forma={letra.forma} tonos={tonos} etiqueta="Comparación de tus dedos con la seña" />
                 </div>
                 <p className="text-lg font-bold">
-                  {!evaluacion
+                  {grabando
+                    ? `Haz tu ${letra.letra} como siempre la haces… ${grabando}`
+                    : !evaluacion
                     ? 'Haz la seña frente a la cámara.'
+                    : porMemoria
+                      ? `¡Reconocí tu forma de la ${letra.letra}! Mantén la posición…`
                     : !evaluacion.correcto
                       ? evaluacion.consejos[0]
                       : objetivo.movimiento
@@ -294,6 +401,22 @@ export default function PracticarLetra() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <PanelFormaPersonal
+            letra={letra.letra}
+            tieneForma={tieneForma}
+            ofrecer={ofrecer && !logradaAhora}
+            grabando={grabando}
+            conflicto={conflicto?.otra ?? null}
+            aviso={avisoForma}
+            alGrabar={empezarGrabacion}
+            alConfirmar={() => conflicto && guardarForma(conflicto.posturas)}
+            alCancelar={() => setConflicto(null)}
+            alOlvidar={() => {
+              ia.olvidarForma(letra.letra)
+              setAvisoForma(`La IA olvidó tu forma de la ${letra.letra}: ahora se pide como en el dibujo.`)
+            }}
+          />
 
           <p className="mt-4 text-sm text-stone-500">
             Evaluación aproximada según la posición de tus dedos{letra.movimiento ? ' y el movimiento de tu mano' : ''}. Más adelante

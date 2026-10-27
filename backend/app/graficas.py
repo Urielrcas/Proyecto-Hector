@@ -282,3 +282,112 @@ def grafica_avance(lengua: str, nombres: list[str], logradas: list[int], total_l
     ax.legend(loc="lower right", frameon=False, fontsize=10)
     _pie(fig)
     return _png(fig)
+
+
+# ==========================================================
+# 5. JUEGOS (barras horizontales)
+#    Pregunta: ¿qué juegos usan más? ¿cuántos puntos sacan?
+# ==========================================================
+
+def grafica_juegos(nombres: list[str], partidas: list[int], promedios: list[float], jugadores: int) -> bytes:
+    fig, ax = _figura(alto=4.4)
+    total = sum(partidas)
+    personas = "persona" if jugadores == 1 else "personas"
+    _titulos(ax, "¿Qué juegos usan más?", f"Partidas por juego · {total} partidas de {jugadores} {personas}")
+    _ejes(ax, "Partidas jugadas", "", cuadricula="x")
+    if not total:
+        _sin_datos(ax, "Todavía nadie ha jugado.")
+        _pie(fig)
+        return _png(fig)
+    tope = max(partidas)
+    colores = [MARCA_700 if p == tope else MARCA_300 for p in partidas]
+    barras = ax.barh(nombres, partidas, color=colores, height=0.6)
+    for barra, p, prom in zip(barras, partidas, promedios):
+        ax.annotate(
+            f"{p}  ·  promedio {prom:.0f} pts" if p else "sin partidas",
+            (barra.get_width(), barra.get_y() + barra.get_height() / 2),
+            xytext=(6, 0),
+            textcoords="offset points",
+            va="center",
+            fontsize=11,
+            color=TEXTO,
+        )
+    ax.invert_yaxis()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_xlim(0, tope * 1.6)
+    ax.tick_params(axis="y", labelsize=12)
+    _pie(fig)
+    return _png(fig)
+
+
+# ==========================================================
+# 6. DIFICULTAD DE CADA LETRA SEGÚN LA IA (barras por letra)
+#    Pregunta: ¿qué letras le cuestan más a la gente? (dominio promedio del modelo del estudiante)
+# ==========================================================
+
+def grafica_dificultad(lengua: str, letras: list[str], dominio: list[float | None], usuarios: int, umbral: float) -> bytes:
+    fig, ax = _figura(ancho=12, alto=5.4)
+    personas = "persona" if usuarios == 1 else "personas"
+    _titulos(
+        ax,
+        f"¿Qué letras le cuestan más a la gente? · {lengua}",
+        f"Dominio promedio estimado por la IA (Bayesian Knowledge Tracing) · {usuarios} {personas}",
+    )
+    _ejes(ax, "Letra", "Dominio promedio (%)")
+    if not any(v is not None for v in dominio):
+        _sin_datos(ax, f"La IA todavía no tiene datos de {lengua}.")
+        _pie(fig)
+        return _png(fig)
+    valores = [v if v is not None else 0 for v in dominio]
+    medidos = sorted(v for v in dominio if v is not None)
+    dificiles = set(medidos[: min(3, len(medidos))])
+    colores = [SECUENCIAL(v / 100) if v is not None else FONDO_BARRA for v in dominio]
+    barras = ax.bar(letras, valores, color=colores, width=0.7)
+    for barra, v in zip(barras, dominio):
+        x = barra.get_x() + barra.get_width() / 2
+        if v is None:
+            ax.annotate("—", (x, 0), xytext=(0, 4), textcoords="offset points", ha="center", fontsize=9, color=TEXTO_SUAVE)
+            continue
+        if v in dificiles:
+            barra.set_edgecolor(ACENTO)
+            barra.set_linewidth(2.5)
+        ax.annotate(f"{v:.0f}", (x, v), xytext=(0, 4), textcoords="offset points", ha="center", fontsize=9, color=ACENTO if v in dificiles else TEXTO)
+    ax.axhline(umbral, color=TEXTO_SUAVE, linestyle="--", linewidth=1.5)
+    ax.set_ylim(0, 110)
+    ax.tick_params(axis="x", labelsize=12)
+    ax.legend(
+        handles=[Patch(facecolor="white", edgecolor=ACENTO, linewidth=2), ax.lines[-1]],
+        labels=["Las 3 más difíciles: reforzar", f"Dominada a partir de {umbral:.0f} %"],
+        loc="upper left",
+        bbox_to_anchor=(0, -0.14),
+        ncols=2,
+        frameon=False,
+        fontsize=10,
+    )
+    _pie(fig)
+    return _png(fig)
+
+
+# ==========================================================
+# 7. USO DEL HISTORIAL (barras)
+#    Pregunta: ¿qué traductor usan más? (solo cuenta registros; nunca su contenido)
+# ==========================================================
+
+def grafica_historial(tipos: list[str], conteos: list[int], usuarios: int) -> bytes:
+    fig, ax = _figura(alto=4.4)
+    total = sum(conteos)
+    personas = "persona" if usuarios == 1 else "personas"
+    _titulos(ax, "¿Qué traductor usan más?", f"Traducciones y conversaciones guardadas · {total} registros de {usuarios} {personas}")
+    _ejes(ax, "Tipo", "Registros guardados")
+    if not total:
+        _sin_datos(ax, "Todavía no hay registros en el historial.")
+        _pie(fig)
+        return _png(fig)
+    tope = max(conteos)
+    barras = ax.bar(tipos, conteos, color=[MARCA_700 if c == tope else MARCA_300 for c in conteos], width=0.55)
+    ax.bar_label(barras, padding=4, fontsize=11, fontweight="bold", color=TEXTO)
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_ylim(0, tope * 1.25)
+    ax.tick_params(axis="x", labelsize=12)
+    _pie(fig)
+    return _png(fig)

@@ -34,6 +34,11 @@ export function obtenerUsuarioActual() {
 }
 
 // POST /api/auth/recuperar → solicita recuperar la contraseña (el envío del correo está pendiente en el servidor).
+/** El usuario cambia su nombre, su lengua o su contraseña (pantalla Configuración; regla n → k en el backend). */
+export function actualizarPerfil(datos: { nombre?: string; lengua?: Lengua; contrasena_actual?: string; contrasena_nueva?: string }) {
+  return api<Usuario>('/auth/yo', { metodo: 'PUT', cuerpo: datos })
+}
+
 export async function solicitarRecuperacion(correo: string) {
   await api('/auth/recuperar', { metodo: 'POST', cuerpo: { correo: correo.trim() } })
 }
