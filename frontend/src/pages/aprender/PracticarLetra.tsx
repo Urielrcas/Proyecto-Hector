@@ -419,8 +419,8 @@ export default function PracticarLetra() {
           />
 
           <p className="mt-4 text-sm text-stone-500">
-            Evaluación aproximada según la posición de tus dedos{letra.movimiento ? ' y el movimiento de tu mano' : ''}. Más adelante
-            la hará un modelo entrenado.
+            Evaluación aproximada según la posición de tus dedos{letra.movimiento ? ' y el movimiento de tu mano' : ''}. Cada intento le
+            enseña a tu IA (ver «Mi IA»).
           </p>
         </section>
       </div>
