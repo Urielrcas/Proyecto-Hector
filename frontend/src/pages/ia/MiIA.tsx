@@ -17,7 +17,7 @@ import { useMemo, useState, type ReactNode } from 'react'
 // ▸ Desde React Router:
 import { Link } from 'react-router-dom'
 // ▸ Desde nuestro proyecto:
-import { Boton } from '../../components/Boton'
+import { Boton, BotonEnlace } from '../../components/Boton'
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
 import { useConfiguracion } from '../../hooks/useConfiguracion'
 import { useModeloIA } from '../../hooks/useModeloIA'
@@ -68,7 +68,16 @@ export default function MiIA() {
 
   return (
     <>
-      <EncabezadoPagina titulo="Mi IA" descripcion="Así aprende de ti la inteligencia artificial de la app." icono={Brain} />
+      <EncabezadoPagina
+        titulo="Mi IA"
+        descripcion="Así aprende de ti la inteligencia artificial de la app."
+        icono={Brain}
+        acciones={
+          <BotonEnlace to="/mi-ia/calibrar">
+            <Hand className="size-5" aria-hidden /> Calibrar con mi mano
+          </BotonEnlace>
+        }
+      />
 
       {/* 1. Resumen */}
       <motion.section

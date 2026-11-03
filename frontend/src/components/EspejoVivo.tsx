@@ -149,6 +149,9 @@ export default function EspejoVivo({ alApagar }: { alApagar: () => void }) {
                   </button>
                 </div>
                 <p className="mt-2 text-stone-500">Solo se guardan los números de los puntos de la mano, no la imagen.</p>
+                <Link to="/mi-ia/calibrar" className="mt-2 inline-block font-bold text-marca-800 hover:underline">
+                  ¿Varias letras fallan? Calibra con tu mano
+                </Link>
               </>
             )}
           </div>
