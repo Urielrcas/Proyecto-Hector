@@ -1,6 +1,6 @@
 /*
  * COMPONENTE: REPRODUCTOR DE SEÑAS
- * Muestra un texto en señas, una tras otra (por ahora deletreado con el dibujo de cada letra),
+ * Muestra un texto en señas, una tras otra, deletreado con el avatar 3D (o con el dibujo de cada letra),
  * con barra de avance, reproducir/pausar, anterior/siguiente, repetir, velocidad y la tira de letras.
  * Empieza a reproducir solo al aparecer. Para mostrar un mensaje nuevo desde el inicio,
  * quien lo usa le cambia la «key» (así se vuelve a montar).
@@ -33,6 +33,9 @@ import { Boton } from './Boton'
 // ▸ Desde nuestro proyecto: src/components/ManoIlustrada.tsx:
 //     ManoIlustrada → dibujo de la mano de una letra
 import { ManoIlustrada } from './ManoIlustrada'
+// ▸ Desde nuestro proyecto: el avatar 3D (components/Avatar3D.tsx) y la preferencia guardada de la vista
+import { Avatar3D } from './Avatar3D'
+import { guardar, leer } from '../lib/almacenamiento'
 
 
 // Lo que se ve en grande para cada seña.
@@ -64,6 +67,12 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
   const [reproduciendo, setReproduciendo] = useState(() => !!texto.trim()) // empieza solo si hay mensaje
   // Empieza con la velocidad elegida en Configuración (se puede cambiar aquí mismo).
   const [velocidad, setVelocidad] = useState(() => leerConfiguracion().senasVelocidad)
+  // Avatar 3D o dibujo plano (se recuerda la última elección).
+  const [vista, setVista] = useState<'3d' | 'dibujo'>(() => leer('reproductor.vista', '3d'))
+  const cambiarVista = (v: '3d' | 'dibujo') => {
+    setVista(v)
+    guardar('reproductor.vista', v)
+  }
   // Solo se recalcula al cambiar el texto o la lengua (si no, el temporizador se reiniciaría en cada redibujado).
   const senas = useMemo(() => textoASenas(texto, lengua), [texto, lengua])
   const total = senas.length
@@ -100,11 +109,53 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
 
   return (
     <div>
-      <div className={`grid place-items-center rounded-2xl bg-stone-50 p-4 ${compacto ? 'min-h-48' : 'min-h-72'}`} aria-live="polite">
-        {/* key: al cambiar de seña se vuelve a montar y se ve la animación (también si se repite la letra) */}
-        <div key={posicion} className="animate-aparecer">
-          <SenaGrande sena={total ? actual : undefined} compacto={compacto} />
+      <div className={`relative grid place-items-center rounded-2xl bg-stone-50 p-4 ${compacto ? 'min-h-48' : 'min-h-72'}`} aria-live="polite">
+        {/* Cambiar entre el avatar 3D y el dibujo */}
+        <div role="radiogroup" aria-label="Cómo ver las señas" className="absolute top-2 right-2 z-10 flex rounded-lg bg-white/90 p-0.5 text-xs font-bold shadow-sm">
+          {(['3d', 'dibujo'] as const).map((v) => (
+            <button
+              key={v}
+              role="radio"
+              aria-checked={vista === v}
+              onClick={() => cambiarVista(v)}
+              className={`rounded-md px-2 py-1 ${vista === v ? 'bg-marca-700 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
+            >
+              {v === '3d' ? 'Avatar 3D' : 'Dibujo'}
+            </button>
+          ))}
         </div>
+        {vista === '3d' && total > 0 ? (
+          <div className="flex items-center gap-4 sm:gap-6">
+            {/* El avatar no se vuelve a montar: así pasa suave de una letra a otra */}
+            <Avatar3D
+              forma={actual.tipo === 'letra' ? actual.letra.forma : null}
+              clave={posicion}
+              msMovimiento={duracion(actual, velocidad)}
+              className={compacto ? 'h-44 w-40' : 'h-64 w-56 sm:h-72 sm:w-64'}
+              etiqueta={actual.tipo === 'letra' ? `Avatar haciendo la letra ${actual.letra.letra}` : 'Avatar en reposo'}
+            />
+            <div key={posicion} className="animate-aparecer min-w-16">
+              {actual.tipo === 'letra' ? (
+                <>
+                  <p className={`${compacto ? 'text-6xl' : 'text-8xl'} leading-none font-bold text-marca-900`}>{actual.letra.letra}</p>
+                  {actual.letra.movimiento && <p className="mt-2 text-sm font-bold text-amber-700">Con movimiento</p>}
+                </>
+              ) : actual.tipo === 'sin-sena' ? (
+                <>
+                  <p className={`${compacto ? 'text-5xl' : 'text-7xl'} font-bold text-stone-700`}>{actual.texto}</p>
+                  <p className="mt-2 text-sm text-stone-600">Sin seña en el alfabeto</p>
+                </>
+              ) : (
+                <p className="text-lg font-bold text-stone-500">· pausa ·</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* key: al cambiar de seña se vuelve a montar y se ve la animación (también si se repite la letra) */
+          <div key={posicion} className="animate-aparecer">
+            <SenaGrande sena={total ? actual : undefined} compacto={compacto} />
+          </div>
+        )}
       </div>
 
       {/* Barra de avance */}
