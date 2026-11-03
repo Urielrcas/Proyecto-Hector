@@ -23,3 +23,9 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// App instalable: registrar el service worker (public/sw.js). Solo en la versión publicada,
+// en desarrollo estorbaría con la recarga automática de Vite.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+}

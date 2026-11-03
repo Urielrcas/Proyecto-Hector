@@ -13,7 +13,7 @@ import { CameraOff, Hand, LoaderCircle, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 // ▸ Desde nuestro proyecto: src/hooks/useCamaraManos.ts:
 //     useCamaraManos → hook que enciende la cámara y detecta la mano
-import { useCamaraManos } from '../hooks/useCamaraManos'
+import { useCamaraManos, type OpcionesSenas } from '../hooks/useCamaraManos'
 // ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
 //     Punto → tipo: un punto de la mano (x, y)
 import type { Punto } from '../lib/vision/postura'
@@ -31,13 +31,32 @@ const MENSAJES = {
 }
 
 /** Video de la cámara frontal (en espejo) con la mano detectada dibujada encima. */
-export function CamaraManos({ alDetectar, borde = 'neutro' }: { alDetectar: (puntos: Punto[] | null, tiempo: number) => void; borde?: 'neutro' | 'exito' }) {
+export function CamaraManos({
+  alDetectar,
+  borde = 'neutro',
+  senas,
+}: {
+  alDetectar: (puntos: Punto[] | null, tiempo: number) => void
+  borde?: 'neutro' | 'exito'
+  /** Modo señas de palabras: dos manos + cuerpo (ver useCamaraManos). */
+  senas?: OpcionesSenas
+}) {
   const [hayMano, setHayMano] = useState(false)
-  const { videoRef, canvasRef, estado, reintentar } = useCamaraManos((puntos, tiempo) => {
-    // Solo actualizar el estado cuando cambia, no en cada cuadro.
-    setHayMano((antes) => (antes === (puntos !== null) ? antes : puntos !== null))
-    alDetectar(puntos, tiempo)
-  })
+  const [dosManos, setDosManos] = useState(false)
+  const { videoRef, canvasRef, estado, reintentar } = useCamaraManos(
+    (puntos, tiempo) => {
+      // Solo actualizar el estado cuando cambia, no en cada cuadro.
+      setHayMano((antes) => (antes === (puntos !== null) ? antes : puntos !== null))
+      alDetectar(puntos, tiempo)
+    },
+    senas && {
+      ...senas,
+      alVerEscena: (escena, tiempo) => {
+        setDosManos((antes) => (antes === escena.manos.length > 1 ? antes : escena.manos.length > 1))
+        senas.alVerEscena(escena, tiempo)
+      },
+    },
+  )
 
   const problema = estado === 'sin-permiso' || estado === 'sin-camara' || estado === 'error' ? MENSAJES[estado] : null
 
@@ -54,7 +73,7 @@ export function CamaraManos({ alDetectar, borde = 'neutro' }: { alDetectar: (pun
       {estado === 'activa' && (
         <span className="absolute top-3 left-3 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-sm font-bold text-stone-800">
           <span className={`size-2.5 rounded-full ${hayMano ? 'bg-emerald-500' : 'bg-amber-500'}`} aria-hidden />
-          {hayMano ? 'Mano detectada' : 'Cámara activa'}
+          {dosManos ? 'Dos manos detectadas' : hayMano ? 'Mano detectada' : 'Cámara activa'}
         </span>
       )}
 

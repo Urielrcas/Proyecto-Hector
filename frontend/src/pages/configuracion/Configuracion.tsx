@@ -11,7 +11,7 @@
  */
 
 // ▸ Desde Lucide (librería de íconos):
-import { Accessibility, Hand, History, KeyRound, Languages, RotateCcw, Settings, Trash2, User, Volume2, type LucideIcon } from 'lucide-react'
+import { Accessibility, Check, Hand, History, KeyRound, Languages, Palette, RotateCcw, Settings, Trash2, User, Volume2, type LucideIcon } from 'lucide-react'
 // ▸ Desde React:
 //     useEffect → escuchar cuándo el navegador termina de cargar sus voces
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
@@ -29,6 +29,7 @@ import { useConfiguracion } from '../../hooks/useConfiguracion'
 import { useAlmacenHistorial } from '../../hooks/useHistorial'
 import { ErrorApi } from '../../lib/api'
 import { ESCALA_TEXTO, restablecerConfiguracion, VELOCIDADES_SENAS, type TamanoTexto } from '../../lib/configuracion'
+import { COLORES_PRINCIPALES, PALETAS } from '../../lib/colores'
 import { cumple } from '../../lib/logica/reglas'
 import { LENGUAS, type Lengua } from '../../lib/tipos'
 import { validarContrasena, validarNombre } from '../../lib/validacion'
@@ -250,6 +251,33 @@ export default function Configuracion() {
             Qué tan rápido se muestran las letras en Voz / Texto → Señas, en el Modo conversación y en el Historial. A 1× cada letra dura
             un segundo.
           </p>
+        </Tarjeta>
+
+        {/* Color de la app */}
+        <Tarjeta titulo="Color de la app" icono={Palette} id="cfg-color">
+          <div role="radiogroup" aria-label="Color principal" className="grid grid-cols-3 gap-2 sm:grid-cols-6 xl:grid-cols-3 2xl:grid-cols-6">
+            {COLORES_PRINCIPALES.map((c) => {
+              const elegido = config.colorPrincipal === c
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  role="radio"
+                  aria-checked={elegido}
+                  onClick={() => cambiar({ colorPrincipal: c })}
+                  className={`flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-xl border-2 p-2 transition-colors ${
+                    elegido ? 'border-marca-600 bg-marca-50' : 'border-stone-200 hover:border-marca-300'
+                  }`}
+                >
+                  <span className="grid size-9 place-items-center rounded-full text-white shadow-inner" style={{ background: PALETAS[c].tonos[7] }} aria-hidden>
+                    {elegido && <Check className="size-5" strokeWidth={3} />}
+                  </span>
+                  <span className="text-sm leading-tight">{PALETAS[c].nombre}</span>
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-sm text-stone-600">Cambia el color de botones, menús y de Mani. También puedes pedírselo a Mani: «pon la app en azul».</p>
         </Tarjeta>
 
         {/* 4. Accesibilidad */}

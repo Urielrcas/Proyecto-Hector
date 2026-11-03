@@ -15,17 +15,17 @@
 //     ResultadoBusqueda → tipo: lo que devolvió la búsqueda (orden, rutas, ciclos, cortes...)
 import { caminoEnPaso, type ResultadoBusqueda } from '../services/busqueda'
 
-// Colores (los mismos tonos "marca" de index.css, más el naranja de acento).
+// Colores (los tonos "marca" de index.css como variables, así siguen el color elegido; más el naranja de acento).
 const COLOR = {
   linea: '#e7e5e4',
-  lineaCamino: '#13695d',
+  lineaCamino: 'var(--color-marca-700)',
   nodo: '#ffffff',
   bordeNodo: '#d6d3d1',
   textoNodo: '#78716c',
-  explorado: '#d0f5eb',
-  bordeExplorado: '#6dd8c1',
-  textoExplorado: '#12463f',
-  camino: '#13695d',
+  explorado: 'var(--color-marca-100)',
+  bordeExplorado: 'var(--color-marca-300)',
+  textoExplorado: 'var(--color-marca-900)',
+  camino: 'var(--color-marca-700)',
   textoCamino: '#ffffff',
   actual: '#c2410c',
   corte: '#78716c',

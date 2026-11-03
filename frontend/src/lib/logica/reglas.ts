@@ -172,6 +172,21 @@ export const REGLAS = {
     formula: 'f ∧ (m → d) ∧ (¬m → q)',
     tablaEsperada: 'VVFFVFVF' + 'F'.repeat(8),
   }),
+  /** Usado por las señas de palabras (lib/vision/senas.ts): cuándo se reconoce una parte de la seña. */
+  senaReconocida: regla({
+    descripcion:
+      'La mano tiene la forma y está en el lugar de la seña; si la seña usa las dos manos, la otra mano debe estar bien colocada, y si lleva movimiento, se debe detectar.',
+    proposiciones: {
+      f: 'la mano principal tiene la forma de la seña',
+      l: 'la mano está en el lugar de la seña (barbilla, pecho, frente…)',
+      d: 'la seña usa las dos manos',
+      p: 'la otra mano tiene su forma y su posición',
+      m: 'la seña lleva movimiento',
+      v: 'se detectó el movimiento',
+    },
+    formula: 'f ∧ l ∧ (d → p) ∧ (m → v)',
+    tablaEsperada: 'VFVVFFFFVFVVVFVVFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF',
+  }),
   /** Usado por el traductor Señas → Texto: cuándo termina una palabra (se agrega un espacio). */
   espacioPalabra: regla({
     descripcion: 'Se cierra la palabra cuando la mano desaparece un momento después de haber deletreado al menos una letra.',

@@ -28,9 +28,14 @@ import { Boton } from '../../components/Boton'
 // ▸ Desde nuestro proyecto: src/components/CamaraManos.tsx:
 //     CamaraManos → video de la cámara con la mano dibujada encima
 import { CamaraManos } from '../../components/CamaraManos'
+// ▸ LetrasQueSalen → cada letra reconocida sale volando de la cámara (con sonido y vibración)
+import { LetrasQueSalen } from '../../components/LetrasQueSalen'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/components/SelectorModo.tsx:
+//     SelectorModo → barra para cambiar entre Señas→Texto, Voz→Señas y Conversación
+import { SelectorModo } from '../../components/SelectorModo'
 // ▸ Desde nuestro proyecto: IA (red neuronal convolucional y autocorrector):
 //     AvisoCorreccion → «La IA corrigió X → Y · Deshacer»;  LoQueVeLaIA → lo que cree la red neuronal
 //     useIADeletreo → la red y el autocorrector listos para el deletreo
@@ -164,6 +169,7 @@ export default function Conversacion() {
 
   return (
     <>
+      <SelectorModo />
       <EncabezadoPagina
         titulo={CONVERSACION.titulo}
         descripcion="Pantalla dividida para que una persona sorda y una oyente platiquen."
@@ -319,7 +325,10 @@ export default function Conversacion() {
           <p className="mt-5 text-sm font-bold text-stone-600">Tu mensaje (deletrea con la cámara):</p>
           {/* En tableta, cámara y texto lado a lado; en computadora el panel es angosto: uno debajo del otro */}
           <div className="mt-2 grid gap-4 sm:grid-cols-[minmax(0,14rem)_1fr] xl:grid-cols-1">
-            <CamaraManos alDetectar={d.alDetectar} borde={d.resaltada ? 'exito' : 'neutro'} />
+            <div className="relative">
+              <CamaraManos alDetectar={d.alDetectar} borde={d.resaltada ? 'exito' : 'neutro'} />
+              <LetrasQueSalen texto={d.texto} />
+            </div>
             <div className="flex flex-col">
               <p className="min-h-16 rounded-2xl bg-marca-50/60 p-3 text-2xl font-bold break-words">
                 {d.texto ? comoFrase(d.texto) : <span className="text-base font-normal text-stone-500">Lo que deletrees aparecerá aquí.</span>}

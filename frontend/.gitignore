@@ -28,3 +28,6 @@ public/mediapipe/
 
 # Certificado propio para abrir la app desde el celular (npm run dev:celular)
 certs
+
+# Configuración local de Netlify (id del sitio publicado)
+.netlify

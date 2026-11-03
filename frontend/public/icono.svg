@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ecfbf7"/>
+  <g transform="translate(256 262) scale(2.35) translate(-63 -72)">
+    <g fill="#1fa38c" stroke="#13695d" stroke-width="3" stroke-linejoin="round">
+      <rect x="26" y="12" width="17" height="70" rx="8.5"/>
+      <rect x="46" y="2" width="17" height="80" rx="8.5"/>
+      <rect x="66" y="6" width="17" height="76" rx="8.5"/>
+      <rect x="86" y="18" width="17" height="64" rx="8.5"/>
+      <rect x="2" y="72" width="44" height="18" rx="9" transform="rotate(-38 40 81)"/>
+      <rect x="20" y="52" width="88" height="76" rx="34"/>
+    </g>
+    <rect x="24" y="56" width="80" height="20" rx="10" fill="#1fa38c"/>
+    <ellipse cx="45" cy="98" rx="6" ry="4" fill="#6dd8c1" fill-opacity="0.7"/>
+    <ellipse cx="81" cy="98" rx="6" ry="4" fill="#6dd8c1" fill-opacity="0.7"/>
+    <ellipse cx="52" cy="86" rx="4.5" ry="6.5" fill="#062824"/>
+    <ellipse cx="74" cy="86" rx="4.5" ry="6.5" fill="#062824"/>
+    <path d="M52 100 Q63 111 74 100" fill="none" stroke="#062824" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>

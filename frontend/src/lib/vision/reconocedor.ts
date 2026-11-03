@@ -43,7 +43,7 @@ import { DetectorMovimiento } from './movimiento'
 //     leerMano → convierte los 21 puntos en la forma de la mano (dedos, pulgar, orientación)
 //     proposicionesDeLectura → convierte esa forma en proposiciones V/F
 //     Punto → tipo: un punto de la mano (x, y)
-import { formulaDeObjetivo, leerMano, proposicionesDeLectura, type Punto } from './postura'
+import { evaluar, formulaDeObjetivo, leerMano, proposicionesDeLectura, type Punto } from './postura'
 // ▸ Desde nuestro proyecto: src/lib/ia/cnn/clasificador.ts:
 //     Clasificar → tipo: función de la red neuronal que dice qué forma ve
 import type { Clasificar } from '../ia/cnn/clasificador'
@@ -53,6 +53,9 @@ import { reconocerPersonal, type Memoria } from '../ia/memoria'
 
 /** Probabilidad mínima de la red neuronal para sumar su opinión a las reglas. */
 export const UMBRAL_IA = 0.9
+
+/** La red solo confirma letras a las que les falta a lo mucho esto para cumplirse. */
+export const MAX_DIFERENCIAS_IA = 1
 
 /** Cuadros que se recuerdan para decidir (≈ 0.5 s a 30 cuadros por segundo). */
 export const VENTANA = 15
@@ -147,12 +150,22 @@ export class ReconocedorDeletreo {
     // ── 1. Qué letras se cumplen en este cuadro (la fórmula lógica de cada una) ──
     const valuacion = proposicionesDeLectura(leerMano(puntos))
     const cumplen = new Set(this.letras.filter((l) => evaluarFormula(formulaDeObjetivo(l.objetivo), valuacion)).map((l) => l.letra))
-    // IA: la red convolucional suma su opinión si está muy segura.
+    // IA: la red convolucional suma su opinión si está muy segura, pero SOLO para confirmar una letra
+    // cuya forma ya casi se cumple (le falta a lo mucho una cosa). Sola no escribe letras: con manos
+    // reales puede estar «muy segura» y equivocarse (aprendió sobre todo con manos simuladas).
     let ia: EstadoReconocedor['ia'] = null
     if (this.clasificar) {
       const p = this.clasificar(puntos)
       ia = { nombre: p.clase.nombre, probabilidad: p.probabilidad }
-      if (p.probabilidad >= UMBRAL_IA) for (const l of p.clase.letras) cumplen.add(l)
+      if (p.probabilidad >= UMBRAL_IA) {
+        for (const nombre of p.clase.letras) {
+          const letra = this.letras.find((l) => l.letra === nombre)
+          // Además el pulgar debe estar bien: en el puño (A, E, S, T, M, N) es lo único que cambia
+          // entre letras, así que la red no puede «perdonarlo».
+          const r = letra && evaluar(puntos, letra.objetivo)
+          if (r && r.dedosOk.pulgar && r.consejos.length <= MAX_DIFERENCIAS_IA) cumplen.add(nombre)
+        }
+      }
     }
     // Memoria de tus señas: tu forma personal de una letra (y de sus gemelas, que comparten forma).
     let personal: string | null = null

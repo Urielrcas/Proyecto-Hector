@@ -1,7 +1,7 @@
 /*
  * CONFIGURACIÓN DE LA APLICACIÓN (preferencias de este dispositivo)
  * Guarda en el navegador las preferencias de la pantalla «Configuración»:
- * voz, velocidad de las señas, tamaño de letra, alto contraste, movimiento e historial.
+ * voz, velocidad de las señas, tamaño de letra, color de la app, alto contraste, movimiento e historial.
  *
  * Funciona como un pequeño "almacén": cualquier archivo puede leerla (leerConfiguracion),
  * cambiarla (cambiarConfiguracion) o enterarse cuando cambia (suscribirse). Las pantallas
@@ -11,6 +11,9 @@
 //     guardar → guarda un dato en el navegador (localStorage)
 //     leer → lee un dato guardado en el navegador (localStorage)
 import { guardar, leer } from './almacenamiento'
+// ▸ Desde nuestro proyecto: src/lib/colores.ts:
+//     ColorPrincipal → tipo: el color de la app (teal, azul, morado...)
+import type { ColorPrincipal } from './colores'
 
 export type TamanoTexto = 'normal' | 'grande' | 'muy-grande'
 
@@ -24,6 +27,8 @@ export interface Configuracion {
   /** Velocidad con la que se muestran las señas (0.5× – 2×). */
   senasVelocidad: number
   tamanoTexto: TamanoTexto
+  /** Color principal de toda la app (ver lib/colores.ts). */
+  colorPrincipal: ColorPrincipal
   altoContraste: boolean
   reducirMovimiento: boolean
   /** Guardar automáticamente las traducciones y conversaciones en el Historial. */
@@ -42,6 +47,7 @@ export const CONFIGURACION_INICIAL: Configuracion = {
   vozNombre: '',
   senasVelocidad: 1,
   tamanoTexto: 'normal',
+  colorPrincipal: 'teal',
   altoContraste: false,
   reducirMovimiento: false,
   guardarHistorial: true,

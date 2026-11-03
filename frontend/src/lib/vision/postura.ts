@@ -100,9 +100,16 @@ function angulo(a: Punto, b: Punto, c: Punto) {
   return (Math.acos(Math.max(-1, Math.min(1, coseno))) * 180) / Math.PI
 }
 
+/** En una mano de frente, el largo de la palma mide ≈ 1.25 veces el ancho de los nudillos. */
+const ANCHO_A_LARGO = 1.25
+
 function marcoDeMano(p: Punto[]) {
-  const palma = distancia(p[0], p[9]) || 1
-  const arriba = { x: (p[9].x - p[0].x) / palma, y: (p[9].y - p[0].y) / palma }
+  const largo = distancia(p[0], p[9]) || 1
+  // La unidad «palma» es el largo (muñeca → nudillo del medio), pero si la mano se inclina ese largo
+  // se acorta en la imagen y todo parecía lejísimos (una E se leía como C). El ancho de los nudillos
+  // (índice → meñique) no se acorta igual, así que se usa el mayor de los dos.
+  const palma = Math.max(largo, distancia(p[5], p[17]) * ANCHO_A_LARGO)
+  const arriba = { x: (p[9].x - p[0].x) / largo, y: (p[9].y - p[0].y) / largo }
   let ancho = { x: -arriba.y, y: arriba.x }
   // Orientar "ancho" del índice hacia el meñique.
   if ((p[17].x - p[5].x) * ancho.x + (p[17].y - p[5].y) * ancho.y < 0) ancho = { x: -ancho.x, y: -ancho.y }
@@ -168,16 +175,23 @@ function palmaPorProfundidad(p: Punto[], dedos: Record<DedoLargo, EstadoDedo>): 
   return diferencia < -0.08 ? 'frente' : diferencia > 0.08 ? 'dorso' : undefined
 }
 
+/** Qué tan lejos del centro de la palma (en palmas) puede quedar la punta de un dedo doblado. */
+const DOBLADO_MAX = 0.95
+
 export function leerMano(p: Punto[]): Lectura {
   const m = marcoDeMano(p)
+  const centroDeLaPalma = { x: (p[0].x + p[5].x + p[9].x + p[13].x + p[17].x) / 5, y: (p[0].y + p[5].y + p[9].y + p[13].y + p[17].y) / 5 }
 
   const dedos = {} as Record<DedoLargo, EstadoDedo>
   for (const d of DEDOS_LARGOS) {
     const [mcp, pip, dip, punta] = FALANGES[d]
     const recto = angulo(p[mcp], p[pip], p[dip]) > 150 && angulo(p[pip], p[dip], p[punta]) > 140
     if (recto && distancia(p[0], p[punta]) > distancia(p[0], p[pip])) dedos[d] = 'estirado'
-    // Punta a la altura de los nudillos o más abajo: dedo metido en la palma.
-    else if (m.v(p[punta]) < m.v(p[mcp]) + 0.25) dedos[d] = 'doblado'
+    // Doblado: la punta a la altura de los nudillos o más abajo Y pegada a la palma (puño, A, E, S).
+    // Si la punta queda lejos de la palma, hay un hueco: el dedo está curvo (C, O), aunque baje mucho.
+    // Con la mano real vista de lado, una C muy cerrada baja las puntas hasta los nudillos: sin la
+    // segunda condición se leía como puño y la app escribía A.
+    else if (m.v(p[punta]) < m.v(p[mcp]) + 0.25 && distancia(p[punta], centroDeLaPalma) < m.palma * DOBLADO_MAX) dedos[d] = 'doblado'
     else dedos[d] = 'curvo'
   }
 
@@ -190,9 +204,26 @@ export function leerMano(p: Punto[]): Lectura {
     const cerrandoLaO = dedos[d] === 'doblado' && distancia(punta, p[0]) > m.palma
     return (dedos[d] === 'curvo' || cerrandoLaO) && distancia(t, punta) < m.palma * 0.3
   })
+  // E: las puntas del índice y del medio, dobladas, descansan ENCIMA del pulgar (quedan más lejos de
+  // la muñeca que la punta del pulgar y muy cerca de ella). En la A el pulgar sube por el costado,
+  // más arriba que las puntas; en la S cruza por delante, también más arriba. Con manos reales, la E
+  // tenía la punta del pulgar hacia el lado del índice y se leía como «al lado» (A).
+  // Los cuatro dedos cerrados (doblados o curvos). La Q y la X llevan el índice curvo con el pulgar
+  // cerca, pero su medio va metido en la palma, lejos del pulgar: por eso se piden las DOS puntas cerca.
+  const puntasDobladas = DEDOS_LARGOS.every((d) => dedos[d] !== 'estirado')
+  const alturaPuntas = (m.v(p[8]) + m.v(p[12])) / 2
+  const puntasSobreElPulgar =
+    puntasDobladas &&
+    alturaPuntas > m.v(t) + 0.06 &&
+    Math.max(distancia(t, p[8]), distancia(t, p[12])) < m.palma * 0.6 &&
+    // Índice y medio a la misma altura, los dos apoyados en el pulgar (en la X el índice va en gancho, más arriba).
+    Math.abs(m.v(p[8]) - m.v(p[12])) < 0.3
+
   let pulgar: PulgarLeido
   let entre: 1 | 2 | 3 | undefined
-  if (tocaUnDedo) pulgar = 'toca'
+  // Primero la E: en la O las puntas tocan la punta del pulgar a la misma altura; en la E quedan encima.
+  if (puntasSobreElPulgar) pulgar = 'doblado'
+  else if (tocaUnDedo) pulgar = 'toca'
   // Estirado: lejos del índice, recto y POR FUERA de la mano (si cruza la palma no cuenta, como en la S).
   else if (distancia(t, p[5]) > m.palma * 0.6 && angulo(p[2], p[3], t) > 140 && m.u(t) < -0.15) pulgar = 'estirado'
   else if (m.u(t) < 0.02) pulgar = 'lado' // pegado al costado del índice
@@ -262,6 +293,9 @@ export function objetivoDesdeForma(forma: FormaMano): Objetivo {
     // cámara solo la adivina: a veces lo lee "curvo". Se acepta (lo que separa M de N es cuáles
     // dedos van estirados, no cuánto se doblan los otros).
     if (e === 'doblado' && dorso) dedos[d] = ['doblado', 'curvo']
+    // E (puño con el pulgar doblado bajo las puntas): con la mano real los dedos a veces se ven
+    // curvos; lo que la separa de la C es el pulgar debajo de las puntas, no cuánto se doblan.
+    if (e === 'doblado' && puno && forma.pulgar === 'doblado' && !dorso) dedos[d] = ['doblado', 'curvo']
   }
 
   // En puño (A, E, S, T…) el pulgar es lo único que distingue la letra: se exige exacto.

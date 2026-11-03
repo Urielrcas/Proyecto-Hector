@@ -1,4 +1,4 @@
-// Copia los archivos WebAssembly de MediaPipe a public/ y descarga el modelo de manos,
+// Copia los archivos WebAssembly de MediaPipe a public/ y descarga los modelos de manos y del cuerpo,
 // para que la detección funcione sin depender de CDNs externos.
 // ▸ Desde Node.js, módulo fs (leer y escribir archivos del disco):
 //     copyFileSync → copia un archivo
@@ -20,6 +20,16 @@ for (const archivo of readdirSync(ORIGEN_WASM)) {
   copyFileSync(`${ORIGEN_WASM}/${archivo}`, `${DESTINO}/wasm/${archivo}`)
 }
 console.log('MediaPipe: archivos wasm copiados')
+
+// Modelo del cuerpo (cara y hombros) para las señas de palabras.
+const MODELO_CUERPO = `${DESTINO}/pose_landmarker_lite.task`
+const URL_MODELO_CUERPO = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task'
+if (!existsSync(MODELO_CUERPO)) {
+  const respuesta = await fetch(URL_MODELO_CUERPO)
+  if (!respuesta.ok) throw new Error(`No se pudo descargar el modelo del cuerpo (${respuesta.status})`)
+  writeFileSync(MODELO_CUERPO, Buffer.from(await respuesta.arrayBuffer()))
+  console.log('MediaPipe: modelo del cuerpo descargado')
+}
 
 if (!existsSync(MODELO)) {
   const respuesta = await fetch(URL_MODELO)

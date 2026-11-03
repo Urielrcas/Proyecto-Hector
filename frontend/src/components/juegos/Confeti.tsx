@@ -15,9 +15,12 @@ import { useEffect, useRef } from 'react'
 // ▸ Desde nuestro proyecto: src/lib/configuracion.ts:
 //     leerConfiguracion → ¿está activado «reducir movimiento»?
 import { leerConfiguracion } from '../../lib/configuracion'
+// ▸ Desde nuestro proyecto: src/lib/colores.ts:
+//     tonoMarca → un tono del color de la app
+import { tonoMarca } from '../../lib/colores'
 
-// Colores: los de la marca (teal) con dorado para la celebración.
-const COLORES = ['#13695d', '#1fa38c', '#6dd8c1', '#a4ead8', '#f59e0b', '#fbbf24']
+// Colores: los del color de la app (se leen al lanzar) con dorado para la celebración.
+const colores = () => [tonoMarca(700), tonoMarca(500), tonoMarca(300), tonoMarca(200), '#f59e0b', '#fbbf24']
 
 interface Papelito {
   x: number
@@ -56,6 +59,7 @@ export function Confeti({ disparo, cantidad = 120, origen = { x: 0.5, y: 0.35 } 
     // Nuevos papelitos que salen disparados hacia arriba en abanico.
     const x0 = origen.x * window.innerWidth
     const y0 = origen.y * window.innerHeight
+    const paleta = colores()
     for (let i = 0; i < cantidad; i++) {
       const angulo = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 0.9
       const rapidez = 6 + Math.random() * 9
@@ -68,7 +72,7 @@ export function Confeti({ disparo, cantidad = 120, origen = { x: 0.5, y: 0.35 } 
         velGiro: (Math.random() - 0.5) * 0.4,
         ancho: 6 + Math.random() * 6,
         alto: 8 + Math.random() * 8,
-        color: COLORES[Math.floor(Math.random() * COLORES.length)],
+        color: paleta[Math.floor(Math.random() * paleta.length)],
         vida: 1,
       })
     }

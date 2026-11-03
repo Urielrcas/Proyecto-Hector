@@ -12,7 +12,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
 //     íconos: LogOut (salir), Menu (menú ☰), Siren (sirena), X (tache ✕)
-import { LogOut, Menu, Siren, X } from 'lucide-react'
+import { Ellipsis, LogOut, Menu, Siren, X } from 'lucide-react'
 // ▸ Desde React (librería para construir la interfaz con componentes):
 //     useEffect → ejecuta código después de dibujar (cargar datos, escuchar teclas, encender la cámara...)
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
@@ -30,13 +30,18 @@ import { useApp } from '../context/AppContext'
 // ▸ Desde nuestro proyecto: src/lib/navegacion.ts:
 //     EMERGENCIA → sección del menú «Frases de emergencia» (ruta, título, descripción e ícono)
 //     MENU → lista ordenada de secciones del menú lateral
-import { EMERGENCIA, MENU } from '../lib/navegacion'
+import { BARRA_INFERIOR, EMERGENCIA, MENU, seccionActiva } from '../lib/navegacion'
+// ▸ vibrar → golpecito de vibración en el celular al tocar la barra inferior
+import { vibrar } from '../lib/tacto'
 // ▸ Desde nuestro proyecto: src/lib/tipos.ts:
 //     Lengua → tipo: 'LSM' o 'ASL'
 import type { Lengua } from '../lib/tipos'
 // ▸ Desde nuestro proyecto: src/components/Logo.tsx:
 //     Logo → logo de la app (ícono + nombre)
 import { Logo } from './Logo'
+// ▸ Desde nuestro proyecto: src/components/AsistenteMani.tsx:
+//     AsistenteMani → botón flotante de Mani, el asistente
+import { AsistenteMani } from './AsistenteMani'
 
 // Interruptor LSM / ASL del menú. La opción elegida se ve en blanco.
 function SelectorLengua() {
@@ -62,9 +67,10 @@ function SelectorLengua() {
 
 // El menú: logo, selector de lengua, secciones, botón de emergencia y datos del usuario.
 // Se usa igual en computadora (fijo a la izquierda) y en celular (desplegable).
-function MenuLateral() {
+function MenuLateral({ idMenu }: { idMenu: string }) {
   const { usuario, invitado, esAdmin, puedeAdministrarUsuarios, salir } = useApp()
   const navegar = useNavigate()
+  const { pathname } = useLocation()
 
   // Botón de salida (junto al nombre): cierra la sesión y regresa al login.
   const cerrarSesion = () => {
@@ -87,26 +93,34 @@ function MenuLateral() {
           La sección actual (isActive) se ve con fondo verde claro y una barra verde a la izquierda. */}
       <nav aria-label="Menú principal" className="flex-1 overflow-y-auto px-3">
         <ul className="space-y-1">
-          {MENU.filter((s) => !s.soloAdmin || puedeAdministrarUsuarios).map((s) => (
-            <li key={s.ruta}>
-              <NavLink
-                to={s.ruta}
-                className={({ isActive }) =>
-                  `group relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-bold transition-colors ${
+          {MENU.filter((s) => !s.soloAdmin || puedeAdministrarUsuarios).map((s) => {
+            const isActive = seccionActiva(s, pathname) // Traducir también se marca en Voz→Señas y Conversación
+            return (
+              <li key={s.ruta}>
+                <Link
+                  to={s.ruta}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`group relative flex min-h-12 items-center gap-3 rounded-xl px-3 font-bold transition-colors ${
                     isActive ? 'bg-marca-50 text-marca-800' : 'text-stone-700 hover:bg-stone-100 hover:text-stone-900'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && <span className="absolute top-2.5 bottom-2.5 left-0 w-1 rounded-full bg-marca-600" aria-hidden />}
-                    <s.icono className={`size-5 shrink-0 ${isActive ? 'text-marca-700' : 'text-stone-500 group-hover:text-stone-700'}`} aria-hidden />
-                    {s.titulo}
-                  </>
-                )}
-              </NavLink>
-            </li>
-          ))}
+                  }`}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId={`${idMenu}-barra`}
+                      className="absolute top-2.5 bottom-2.5 left-0 w-1 rounded-full bg-marca-600"
+                      transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                      aria-hidden
+                    />
+                  )}
+                  <s.icono
+                    className={`size-5 shrink-0 transition-transform group-hover:scale-110 ${isActive ? 'text-marca-700' : 'text-stone-500 group-hover:text-stone-700'}`}
+                    aria-hidden
+                  />
+                  {s.titulo}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
       </nav>
 
@@ -168,7 +182,7 @@ export function DisenoApp() {
     <div className="min-h-dvh bg-stone-50 lg:pl-72">
       {/* Menú lateral fijo: oculto en celular (hidden) y visible en pantallas grandes (lg:block) */}
       <aside className="fixed inset-y-0 left-0 hidden w-72 lg:block">
-        <MenuLateral />
+        <MenuLateral idMenu="escritorio" />
       </aside>
 
       {/* Barra superior en celular: botón ☰, logo y botón rojo de emergencia (lg:hidden = se oculta en pantallas grandes) */}
@@ -207,7 +221,7 @@ export function DisenoApp() {
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25 }}
             >
-              <MenuLateral />
+              <MenuLateral idMenu="celular" />
               <button
                 onClick={() => setMenuAbierto(false)}
                 className="absolute top-5 right-3 grid size-10 place-items-center rounded-lg text-stone-600 hover:bg-stone-100"
@@ -221,10 +235,62 @@ export function DisenoApp() {
         )}
       </AnimatePresence>
 
-      {/* Contenido: aquí (<Outlet />) se dibuja la pantalla actual: Inicio, Usuarios, Aprendizaje... */}
-      <main className="mx-auto max-w-6xl px-4 py-6 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-10">
-        <Outlet />
+      {/* Contenido: aquí (<Outlet />) se dibuja la pantalla actual: Inicio, Usuarios, Aprendizaje...
+          Cada pantalla entra deslizándose un poco hacia arriba (key = dirección actual).
+          pb-28 en celular deja espacio para la barra inferior. */}
+      <main className="mx-auto max-w-6xl px-4 py-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:px-8 sm:py-10 lg:pb-28">
+        <motion.div key={pathname} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}>
+          <Outlet />
+        </motion.div>
       </main>
+
+      {/* Barra inferior del celular: Inicio, Traducir, Aprender y «Más» (abre el menú completo) */}
+      <nav
+        aria-label="Navegación rápida"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      >
+        <ul className="mx-auto grid max-w-lg grid-cols-4">
+          {BARRA_INFERIOR.map((s) => {
+            const activa = seccionActiva(s, pathname)
+            return (
+              <li key={s.ruta}>
+                <Link
+                  to={s.ruta}
+                  onClick={() => vibrar('toque')}
+                  aria-current={activa ? 'page' : undefined}
+                  className={`relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-bold ${activa ? 'text-marca-800' : 'text-stone-500'}`}
+                >
+                  {activa && (
+                    <motion.span
+                      layoutId="barra-inferior"
+                      className="absolute top-1.5 h-8 w-14 rounded-full bg-marca-100"
+                      transition={{ type: 'spring', stiffness: 500, damping: 36 }}
+                      aria-hidden
+                    />
+                  )}
+                  <s.icono className="relative size-6" aria-hidden />
+                  <span className="relative">{s.titulo}</span>
+                </Link>
+              </li>
+            )
+          })}
+          <li>
+            <button
+              onClick={() => {
+                vibrar('toque')
+                setMenuAbierto(true)
+              }}
+              className="flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-bold text-stone-500"
+            >
+              <Ellipsis className="size-6" aria-hidden />
+              Más
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      {/* Mani, el asistente: botón flotante en todas las pantallas */}
+      <AsistenteMani />
     </div>
   )
 }

@@ -16,7 +16,7 @@
 import { Delete, Hand, Plus, Space, SpellCheck, Trash2, Volume2 } from 'lucide-react'
 // ▸ Desde React (librería para construir la interfaz con componentes):
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 // ▸ Desde nuestro proyecto: src/components/Aviso.tsx:
 //     Aviso → mensaje verde (éxito) o rojo (error)
 import { Aviso } from '../../components/Aviso'
@@ -26,9 +26,14 @@ import { Boton } from '../../components/Boton'
 // ▸ Desde nuestro proyecto: src/components/CamaraManos.tsx:
 //     CamaraManos → video de la cámara con la mano dibujada encima
 import { CamaraManos } from '../../components/CamaraManos'
+// ▸ LetrasQueSalen → cada letra reconocida sale volando de la cámara (con sonido y vibración)
+import { LetrasQueSalen } from '../../components/LetrasQueSalen'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/components/SelectorModo.tsx:
+//     SelectorModo → barra para cambiar entre Señas→Texto, Voz→Señas y Conversación
+import { SelectorModo } from '../../components/SelectorModo'
 // ▸ Desde nuestro proyecto: IA (red neuronal convolucional y autocorrector):
 //     AvisoCorreccion → «La IA corrigió X → Y · Deshacer»;  LoQueVeLaIA → lo que cree la red neuronal
 //     useIADeletreo → la red y el autocorrector listos para el deletreo
@@ -48,6 +53,10 @@ import { useApp } from '../../context/AppContext'
 //     mensajeDeletreo → texto de ayuda según lo que pasa con la mano
 //     useDeletreo → reconocimiento de letras con la cámara y el texto que se forma
 import { comoFrase, mensajeDeletreo, useDeletreo } from '../../hooks/useDeletreo'
+// ▸ Desde nuestro proyecto: pistas de Mani cuando la cámara no reconoce la letra:
+import { usePistaMani } from '../../hooks/usePistaMani'
+import { alfabeto } from '../../lib/aprendizaje/alfabeto'
+import { Mascota } from '../../components/Mascota'
 // ▸ Desde nuestro proyecto: src/hooks/useHistorial.ts:
 //     useGuardadoHistorial → guarda esta traducción en el Historial mientras se usa la pantalla
 import { useGuardadoHistorial } from '../../hooks/useHistorial'
@@ -76,7 +85,11 @@ export default function SenasTexto() {
   // El reconocimiento de letras y el texto que se forma (hooks/useDeletreo.ts).
   // IA: la red neuronal ayuda a reconocer y el autocorrector arregla las palabras al terminarlas.
   const ia = useIADeletreo()
+  // Mani: si te atoras, adivina qué letra intentas y te dice qué corregir (hooks/usePistaMani.ts).
+  const letras = useMemo(() => alfabeto(lengua), [lengua])
+  const pista = usePistaMani(letras)
   const d = useDeletreo(lengua, {
+    alCadaCuadro: pista.alCadaCuadro,
     // Al terminar una palabra, leerla en voz alta (si está activada la opción).
     alTerminarPalabra: (palabra) => leerPalabras && hablar(palabra.toLowerCase(), idiomaVoz),
     clasificar: ia.clasificar,
@@ -122,6 +135,7 @@ export default function SenasTexto() {
 
   return (
     <>
+      <SelectorModo />
       <EncabezadoPagina
         titulo="Señas → Texto y voz"
         descripcion={`Deletrea con el alfabeto de ${lengua} frente a la cámara: cada letra se escribe sola.`}
@@ -137,9 +151,21 @@ export default function SenasTexto() {
           <h2 id="titulo-camara" className="sr-only">
             Cámara
           </h2>
-          <CamaraManos alDetectar={d.alDetectar} borde={resaltada ? 'exito' : 'neutro'} />
-          <p className="mt-3 min-h-12 rounded-xl bg-stone-50 px-4 py-3 font-bold text-stone-800" aria-live="polite">
-            {mensajeDeletreo(estado)}
+          <div className="relative">
+            <CamaraManos alDetectar={pista.conPuntos(d.alDetectar)} borde={resaltada ? 'exito' : 'neutro'} />
+            <LetrasQueSalen texto={texto} />
+          </div>
+          <p className="mt-3 flex min-h-12 items-center gap-3 rounded-xl bg-stone-50 px-4 py-3 font-bold text-stone-800" aria-live="polite">
+            {pista.actual ? (
+              <>
+                <Mascota animo="pensando" className="size-10" />
+                <span>
+                  ¿Intentas la {pista.actual.letra}? {pista.actual.consejos[0]}
+                </span>
+              </>
+            ) : (
+              mensajeDeletreo(estado)
+            )}
           </p>
           <LoQueVeLaIA ia={estado?.ia} personal={estado?.personal} entrenando={ia.entrenando} activa={!!ia.clasificar || !!ia.entrenando} />
           <div className="mt-4 grid grid-cols-2 gap-3">

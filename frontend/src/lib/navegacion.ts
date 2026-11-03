@@ -7,7 +7,7 @@
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: BookOpen (libro abierto), Brain (cerebro), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
+//     íconos: Languages (idiomas), BookOpen (libro abierto), Brain (cerebro), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   BookOpen,
   Brain,
@@ -16,6 +16,7 @@ import {
   Hand,
   History,
   House,
+  Languages,
   Mic,
   Settings,
   Siren,
@@ -30,6 +31,8 @@ export interface Seccion {
   descripcion: string
   icono: LucideIcon
   soloAdmin?: boolean
+  /** Otras rutas en las que esta sección se marca como activa en el menú. */
+  activaEn?: string[]
 }
 
 export const INICIO: Seccion = { ruta: '/inicio', titulo: 'Inicio', descripcion: '', icono: House }
@@ -54,6 +57,18 @@ export const CONVERSACION: Seccion = {
   descripcion: 'Pantalla dividida para dos personas.',
   icono: Users,
 }
+
+/** Sección del menú que junta los tres modos de traducción (Señas→Texto, Voz→Señas y Conversación). */
+export const TRADUCIR: Seccion = {
+  ruta: '/traductor/senas',
+  titulo: 'Traducir',
+  descripcion: 'Señas, voz y texto, o una conversación.',
+  icono: Languages,
+  activaEn: ['/traductor', '/conversacion'],
+}
+
+/** Los modos que se eligen arriba de cada traductor (components/SelectorModo.tsx). */
+export const MODOS_TRADUCIR: Seccion[] = [SENAS_TEXTO, VOZ_SENAS, CONVERSACION]
 
 export const HISTORIAL: Seccion = {
   ruta: '/historial',
@@ -114,4 +129,13 @@ export const EMERGENCIA: Seccion = {
 }
 
 /** Orden del menú lateral. */
-export const MENU: Seccion[] = [INICIO, SENAS_TEXTO, VOZ_SENAS, CONVERSACION, HISTORIAL, APRENDIZAJE, MI_IA, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]
+export const MENU: Seccion[] = [INICIO, TRADUCIR, APRENDIZAJE, HISTORIAL, MI_IA, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]
+
+/** Barra inferior del celular (el resto está en «Más», que abre el menú completo). */
+export const BARRA_INFERIOR: Seccion[] = [INICIO, TRADUCIR, APRENDIZAJE]
+
+/** ¿La sección está activa en esta dirección? (Inicio solo en /inicio exacto.) */
+export function seccionActiva(s: Seccion, ruta: string): boolean {
+  if (s.ruta === INICIO.ruta) return ruta === INICIO.ruta
+  return [s.ruta, ...(s.activaEn ?? [])].some((r) => ruta === r || ruta.startsWith(r + '/'))
+}

@@ -23,6 +23,9 @@ import { Boton } from '../../components/Boton'
 // ▸ Desde nuestro proyecto: src/components/EncabezadoPagina.tsx:
 //     EncabezadoPagina → título de la página con ícono o flecha de regreso
 import { EncabezadoPagina } from '../../components/EncabezadoPagina'
+// ▸ Desde nuestro proyecto: src/components/SelectorModo.tsx:
+//     SelectorModo → barra para cambiar entre Señas→Texto, Voz→Señas y Conversación
+import { SelectorModo } from '../../components/SelectorModo'
 // ▸ Desde nuestro proyecto: src/components/IndicadorHistorial.tsx:
 //     IndicadorHistorial → avisa si la traducción ya se guardó en el Historial
 import { IndicadorHistorial } from '../../components/IndicadorHistorial'
@@ -93,6 +96,7 @@ export default function VozSenas() {
 
   return (
     <>
+      <SelectorModo />
       <EncabezadoPagina titulo={VOZ_SENAS.titulo} descripcion={`Habla o escribe y el mensaje se muestra en señas de ${lengua}.`} icono={VOZ_SENAS.icono} />
       <div className="-mt-3 mb-4 sm:-mt-5">
         <IndicadorHistorial estado={historial.estado} />

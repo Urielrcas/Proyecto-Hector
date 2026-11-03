@@ -85,6 +85,8 @@ import ListaUsuarios from './pages/usuarios/ListaUsuarios'
 const Aprender = lazy(() => import('./pages/aprender/Aprender'))
 const PracticarLetra = lazy(() => import('./pages/aprender/PracticarLetra'))
 const RutaAprendizaje = lazy(() => import('./pages/aprender/RutaAprendizaje'))
+const Palabras = lazy(() => import('./pages/aprender/Palabras'))
+const PracticarPalabra = lazy(() => import('./pages/aprender/PracticarPalabra'))
 // Juegos para poner a prueba lo aprendido (dos de ellos usan la cámara).
 const Juegos = lazy(() => import('./pages/juegos/Juegos'))
 const JuegoAdivina = lazy(() => import('./pages/juegos/JuegoAdivina'))
@@ -138,6 +140,8 @@ function Rutas() {
         <Route path="/aprender" element={<Suspense fallback={<Cargando />}><Aprender /></Suspense>} />
         {/* "/aprender/ruta" y "/aprender/juegos" van antes que "/aprender/:letra" para que no se lean como una letra */}
         <Route path="/aprender/ruta" element={<Suspense fallback={<Cargando />}><RutaAprendizaje /></Suspense>} />
+        <Route path="/aprender/palabras" element={<Suspense fallback={<Cargando />}><Palabras /></Suspense>} />
+        <Route path="/aprender/palabras/:id" element={<Suspense fallback={<Cargando />}><PracticarPalabra /></Suspense>} />
         <Route path="/aprender/juegos" element={<Suspense fallback={<Cargando />}><Juegos /></Suspense>} />
         <Route path="/aprender/juegos/adivina" element={<Suspense fallback={<Cargando />}><JuegoAdivina /></Suspense>} />
         <Route path="/aprender/juegos/reto" element={<Suspense fallback={<Cargando />}><JuegoReto key="reto" modo="reto" /></Suspense>} />

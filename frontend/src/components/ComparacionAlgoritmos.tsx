@@ -95,7 +95,7 @@ function Barras({
               </text>
               {/* Riel gris y barra: oscura si es el algoritmo elegido, clara si no (sin barra si no hay valor) */}
               <rect x={IZQ} y={y + 3} width={ANCHO - IZQ - DER} height={22} rx={5} fill="#f5f5f4" />
-              {d.valor !== null && <rect x={IZQ} y={y + 3} width={Math.max(largo, 2)} height={22} rx={5} fill={elegido ? '#13695d' : '#6dd8c1'} />}
+              {d.valor !== null && <rect x={IZQ} y={y + 3} width={Math.max(largo, 2)} height={22} rx={5} fill={elegido ? 'var(--color-marca-700)' : 'var(--color-marca-300)'} />}
               <text x={IZQ + largo + 6} y={y + 19} fontSize={13} fontWeight={700} fill={d.mejor ? '#c2410c' : '#1c1917'}>
                 {d.valor ?? '—'}
                 {d.mejor ? ' ★' : ''}
@@ -128,7 +128,7 @@ function PlanoCartesiano({ punto, inicio, objetivo, distancia }: { punto: [numbe
   const py = (cy: number) => ARRIBA + (MAX_EJE.y - cy) * CUADRO
   const manhattan = distanciaManhattan(punto, [0, 0])
   const euclidiana = Math.round(distanciaEuclidiana(punto, [0, 0]) * 100) / 100
-  const fuerte = { color: '#13695d', grosor: 3.5 } // la distancia elegida
+  const fuerte = { color: 'var(--color-marca-700)', grosor: 3.5 } // la distancia elegida
   const suave = { color: '#5fb3a3', grosor: 2 }
   const estiloM = distancia === 'manhattan' ? fuerte : suave
   const estiloE = distancia === 'euclidiana' ? fuerte : suave
@@ -205,10 +205,10 @@ function PlanoCartesiano({ punto, inicio, objetivo, distancia }: { punto: [numbe
         </line>
 
         {/* Los dos puntos: A (inicio) y B (meta) */}
-        <circle cx={px(0)} cy={py(0)} r={8} fill="#13695d" stroke="#fff" strokeWidth={2}>
+        <circle cx={px(0)} cy={py(0)} r={8} fill="var(--color-marca-700)" stroke="#fff" strokeWidth={2}>
           <title>{`${objetivo}, la meta, en (0, 0)`}</title>
         </circle>
-        <circle cx={px(x)} cy={py(y)} r={8} fill="#fff" stroke="#13695d" strokeWidth={3}>
+        <circle cx={px(x)} cy={py(y)} r={8} fill="#fff" stroke="var(--color-marca-700)" strokeWidth={3}>
           <title>{`${inicio}, la letra de inicio, en (${x}, ${y})`}</title>
         </circle>
         {/* Etiquetas: la de inicio arriba de su punto y la de la meta a la izquierda del origen, para que no se encimen */}
