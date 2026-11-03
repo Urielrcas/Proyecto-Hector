@@ -38,6 +38,16 @@ class Config(BaseSettings):
     ollama_modelo: str = "llama3.2"
     ollama_segundos: float = 60  # tiempo máximo de espera (la primera frase tarda más: carga el modelo)
 
+    # Correo para recuperar la contraseña (app/correo.py). Sin servidor SMTP, el enlace sale en la consola.
+    # Con Gmail: SMTP_SERVIDOR=smtp.gmail.com, SMTP_PUERTO=587 y una contraseña de aplicación.
+    smtp_servidor: str = ""
+    smtp_puerto: int = 587
+    smtp_usuario: str = ""
+    smtp_contrasena: str = ""
+    smtp_remitente: str = ""  # vacío = el mismo usuario
+    url_app: str = "http://localhost:5173"  # dirección del frontend, para armar el enlace del correo
+    minutos_restablecer: int = 30  # vigencia del enlace para crear contraseña nueva
+
     # Direcciones desde las que el navegador puede llamar a esta API (la del frontend).
     cors_origenes: list[str] = ["http://localhost:5173"]
 

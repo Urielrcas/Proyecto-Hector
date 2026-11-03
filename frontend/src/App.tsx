@@ -71,6 +71,8 @@ import Login from './pages/Login'
 // ▸ Desde nuestro proyecto: src/pages/RecuperarContrasena.tsx:
 //     RecuperarContrasena → pantalla de recuperar contraseña
 import RecuperarContrasena from './pages/RecuperarContrasena'
+// ▸ Desde nuestro proyecto: src/pages/RestablecerContrasena.tsx: crear la contraseña nueva con el enlace del correo
+import RestablecerContrasena from './pages/RestablecerContrasena'
 // ▸ Desde nuestro proyecto: src/pages/Registro.tsx:
 //     Registro → pantalla de crear cuenta
 import Registro from './pages/Registro'
@@ -99,6 +101,7 @@ const Configuracion = lazy(() => import('./pages/configuracion/Configuracion'))
 const Ayuda = lazy(() => import('./pages/ayuda/Ayuda'))
 // La IA del usuario: modelo del estudiante, red neuronal convolucional y autocorrector.
 const MiIA = lazy(() => import('./pages/ia/MiIA'))
+const Calibrar = lazy(() => import('./pages/ia/Calibrar'))
 // El traductor también usa la cámara y MediaPipe: se carga solo al abrirlo.
 const SenasTexto = lazy(() => import('./pages/traductor/SenasTexto'))
 const VozSenas = lazy(() => import('./pages/traductor/VozSenas'))
@@ -126,6 +129,7 @@ function Rutas() {
       <Route path="/login" element={<SoloSinSesion><Login /></SoloSinSesion>} />
       <Route path="/registro" element={<SoloSinSesion><Registro /></SoloSinSesion>} />
       <Route path="/recuperar" element={<RecuperarContrasena />} />
+      <Route path="/restablecer" element={<RestablecerContrasena />} />
 
       {/* Emergencia no requiere sesión: sin sesión se muestra fuera del menú */}
       {!tieneSesion && <Route path="/emergencia" element={<Emergencia />} />}
@@ -160,6 +164,7 @@ function Rutas() {
         <Route path={`${HISTORIAL.ruta}/:id`} element={<Suspense fallback={<Cargando />}><DetalleHistorial /></Suspense>} />
         <Route path={CONFIGURACION.ruta} element={<Suspense fallback={<Cargando />}><Configuracion /></Suspense>} />
         <Route path={MI_IA.ruta} element={<Suspense fallback={<Cargando />}><MiIA /></Suspense>} />
+        <Route path={`${MI_IA.ruta}/calibrar`} element={<Suspense fallback={<Cargando />}><Calibrar /></Suspense>} />
         <Route path={AYUDA.ruta} element={<Suspense fallback={<Cargando />}><Ayuda /></Suspense>} />
       </Route>
 

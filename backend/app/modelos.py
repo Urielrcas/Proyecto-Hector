@@ -65,6 +65,12 @@ class RecuperarEntrada(BaseModel):
     correo: Correo
 
 
+# Crear la contraseña nueva con el enlace del correo.
+class RestablecerEntrada(BaseModel):
+    token: str = Field(min_length=10, max_length=2000)
+    contrasena: Contrasena
+
+
 # Crear usuario desde el CRUD: igual que el registro + rol y estado. "(RegistroEntrada)" = hereda sus campos.
 class UsuarioCrear(RegistroEntrada):
     rol: Rol = "usuario"

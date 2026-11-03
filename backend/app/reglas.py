@@ -29,7 +29,7 @@ class Regla:
         return self.formula.evaluar(valores)
 
 
-e, k, v, c, a, y, r, t, x, p, n = proposiciones("e", "k", "v", "c", "a", "y", "r", "t", "x", "p", "n")
+e, k, v, c, a, y, r, t, x, p, n, u = proposiciones("e", "k", "v", "c", "a", "y", "r", "t", "x", "p", "n", "u")
 
 PUEDE_INICIAR_SESION = Regla(
     nombre="Inicio de sesión",
@@ -81,6 +81,17 @@ PUEDE_CAMBIAR_PERFIL = Regla(
     tabla_esperada="VFVV",
 )
 
+PUEDE_RESTABLECER = Regla(
+    nombre="Crear contraseña nueva con el enlace del correo",
+    formula=t & u & a,
+    proposiciones={
+        "t": "el enlace es válido (firma correcta, no venció y es de restablecer)",
+        "u": "no se ha usado (la contraseña sigue siendo la misma que cuando se pidió)",
+        "a": "la cuenta existe y está activa",
+    },
+    tabla_esperada="VFFFFFFF",
+)
+
 REGLAS = [
     PUEDE_INICIAR_SESION,
     ES_ADMINISTRADOR,
@@ -88,6 +99,7 @@ REGLAS = [
     PUEDE_ACTUALIZAR_USUARIO,
     PUEDE_USAR_REGISTRO,
     PUEDE_CAMBIAR_PERFIL,
+    PUEDE_RESTABLECER,
 ]
 
 

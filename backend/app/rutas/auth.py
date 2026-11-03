@@ -3,7 +3,8 @@
 #   POST /registro   → crea una cuenta nueva con rol "usuario"
 #   GET  /yo         → devuelve los datos del usuario de la sesión actual
 #   PUT  /yo         → el usuario cambia su nombre, lengua o contraseña (regla n → k)
-#   POST /recuperar  → solicitud de recuperación de contraseña (el envío de correo está pendiente)
+#   POST /recuperar  → manda un correo con el enlace para crear una contraseña nueva
+#   POST /restablecer → crea la contraseña nueva con el token del enlace (regla t ∧ u ∧ a)
 # Las llama el frontend desde src/services/auth.ts.
 
 # ▸ Desde Python, módulo datetime (fechas y horas):
@@ -14,6 +15,12 @@ from datetime import UTC, datetime
 #     Any → tipo: cualquier valor
 from typing import Any
 
+# ▸ Desde Starlette (base de FastAPI): correr una función lenta (mandar el correo) sin trabar el servidor
+from starlette.concurrency import run_in_threadpool
+
+# ▸ Desde bson (viene con PyMongo):
+#     ObjectId → el tipo de identificador (_id) que usa MongoDB
+from bson import ObjectId
 # ▸ Desde FastAPI (framework para crear la API):
 #     APIRouter → grupo de rutas de la API
 #     Depends → pide a FastAPI ejecutar una función antes (seguridad, base de datos)
@@ -39,15 +46,18 @@ from ..dependencias import usuario_actual
 #     RegistroEntrada → datos del registro (app/modelos.py)
 #     SesionSalida → respuesta: token + usuario (app/modelos.py)
 #     UsuarioPublico → usuario sin contraseña, lo que se devuelve (app/modelos.py)
-from ..modelos import LoginEntrada, PerfilActualizar, RecuperarEntrada, RegistroEntrada, SesionSalida, UsuarioPublico
+from ..modelos import LoginEntrada, PerfilActualizar, RecuperarEntrada, RegistroEntrada, RestablecerEntrada, SesionSalida, UsuarioPublico
+# ▸ Desde nuestro proyecto: envío de correos (app/correo.py)
+from .. import correo as correos
+from ..config import config
 # ▸ Desde nuestro proyecto (carpeta app/reglas):
 #     PUEDE_INICIAR_SESION → regla e ∧ k ∧ v (app/reglas.py)
-from ..reglas import PUEDE_CAMBIAR_PERFIL, PUEDE_INICIAR_SESION
+from ..reglas import PUEDE_CAMBIAR_PERFIL, PUEDE_INICIAR_SESION, PUEDE_RESTABLECER
 # ▸ Desde nuestro proyecto (carpeta app/seguridad):
 #     crear_token → crea el token de sesión (app/seguridad.py)
 #     hashear_contrasena → cifra una contraseña con bcrypt (app/seguridad.py)
 #     verificar_contrasena → compara una contraseña con su hash (app/seguridad.py)
-from ..seguridad import crear_token, hashear_contrasena, verificar_contrasena
+from ..seguridad import crear_token, crear_token_restablecer, hashear_contrasena, huella, leer_token_restablecer, verificar_contrasena
 
 # Todas las rutas de este archivo empiezan con /api/auth.
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -128,8 +138,36 @@ async def actualizar_perfil(
     return UsuarioPublico.desde_documento(usuario | cambios)
 
 
+MENSAJE_RECUPERAR = "Si el correo está registrado, recibirás un enlace para crear una contraseña nueva."
+
+
 @router.post("/recuperar", status_code=status.HTTP_202_ACCEPTED)
-async def recuperar(datos: RecuperarEntrada):
-    # TODO: generar un enlace temporal y enviarlo por correo (requiere un servicio SMTP).
-    # La respuesta es igual exista o no la cuenta, para no revelar qué correos están registrados.
-    return {"mensaje": "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."}
+async def recuperar(datos: RecuperarEntrada, db: AsyncDatabase = Depends(get_db)):
+    """Manda el enlace por correo. La respuesta es igual exista o no la cuenta (no revela qué correos hay)."""
+    usuario = await db.usuarios.find_one({"correo": datos.correo})
+    if usuario and usuario.get("estado") == "activo":
+        token = crear_token_restablecer(str(usuario["_id"]), usuario["hash_contrasena"])
+        enlace = f"{config.url_app.rstrip('/')}/restablecer?token={token}"
+        mensaje = correos.mensaje_recuperacion(usuario["nombre"], usuario["correo"], enlace)
+        # Mandar el correo puede tardar unos segundos: se hace en otro hilo para no trabar al servidor.
+        await run_in_threadpool(correos.enviar, mensaje, enlace)
+    return {"mensaje": MENSAJE_RECUPERAR}
+
+
+@router.post("/restablecer")
+async def restablecer(datos: RestablecerEntrada, db: AsyncDatabase = Depends(get_db)):
+    """Crea la contraseña nueva con el token del correo (regla t ∧ u ∧ a)."""
+    contenido = leer_token_restablecer(datos.token)
+    t = contenido is not None  # t: firma correcta, no venció y es de restablecer
+    usuario = None
+    if t and ObjectId.is_valid(contenido["sub"]):
+        usuario = await db.usuarios.find_one({"_id": ObjectId(contenido["sub"])})
+    a = usuario is not None and usuario.get("estado") == "activo"  # a: la cuenta existe y está activa
+    u = a and huella(usuario["hash_contrasena"]) == contenido["h"]  # u: el enlace no se ha usado
+    if not PUEDE_RESTABLECER.cumple(t=t, u=u, a=a):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "El enlace no es válido o ya venció. Pide uno nuevo.")
+    await db.usuarios.update_one(
+        {"_id": usuario["_id"]},
+        {"$set": {"hash_contrasena": hashear_contrasena(datos.contrasena), "actualizado_en": datetime.now(UTC)}},
+    )
+    return {"mensaje": "Listo: tu contraseña cambió. Ya puedes iniciar sesión."}

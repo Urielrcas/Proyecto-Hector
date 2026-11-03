@@ -8,6 +8,8 @@
 #     UTC → zona horaria universal
 #     datetime → fecha y hora
 #     timedelta → duración (para calcular cuándo vence el token)
+# ▸ Desde Python, módulo hashlib (resúmenes sha256, para la huella de la contraseña)
+import hashlib
 from datetime import UTC, datetime, timedelta
 
 # ▸ Desde librería bcrypt (cifrado de contraseñas)
@@ -30,6 +32,27 @@ def hashear_contrasena(contrasena: str) -> str:
 def verificar_contrasena(contrasena: str, hash_guardado: str) -> bool:
     # Compara la contraseña escrita con el hash guardado, sin necesidad de "descifrarlo".
     return bcrypt.checkpw(contrasena.encode(), hash_guardado.encode())
+
+
+def huella(hash_contrasena: str) -> str:
+    """Un resumen corto del hash actual: si la contraseña cambia, la huella cambia y el enlace ya no sirve."""
+    return hashlib.sha256(hash_contrasena.encode()).hexdigest()[:16]
+
+
+def crear_token_restablecer(id_usuario: str, hash_contrasena: str) -> str:
+    """Token para crear contraseña nueva: dura poco y lleva la huella de la contraseña actual (un solo uso)."""
+    expira = datetime.now(UTC) + timedelta(minutes=config.minutos_restablecer)
+    datos = {"sub": id_usuario, "exp": expira, "uso": "restablecer", "h": huella(hash_contrasena)}
+    return jwt.encode(datos, config.jwt_secreto, algorithm=ALGORITMO)
+
+
+def leer_token_restablecer(token: str) -> dict | None:
+    """Los datos del token si la firma es válida, no venció y es de restablecer; si no, None."""
+    try:
+        datos = jwt.decode(token, config.jwt_secreto, algorithms=[ALGORITMO])
+    except jwt.PyJWTError:
+        return None
+    return datos if datos.get("uso") == "restablecer" else None
 
 
 def crear_token(id_usuario: str) -> str:
