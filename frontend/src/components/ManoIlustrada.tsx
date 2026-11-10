@@ -18,6 +18,8 @@
 //     FormaMano → tipo: descripción de la forma de la mano
 //     Movimiento → tipo: el movimiento de una letra (j, z, arriba, lados, frente)
 import type { EstadoDedo, FormaMano, Movimiento } from '../lib/aprendizaje/forma'
+// ▸ Desde nuestro proyecto: los dibujos propios de las letras de LSM (public/senas-lsm)
+import { DIBUJO_PROPIO } from '../lib/aprendizaje/alfabeto'
 // ▸ Desde nuestro proyecto: src/lib/vision/postura.ts:
 //     Dedo → tipo: nombre de un dedo
 import type { Dedo } from '../lib/vision/postura'
@@ -294,6 +296,17 @@ const ENCUADRE_PERFIL = 'translate(-8 -6)'
  * `tonos` colorea cada dedo como correcto o incorrecto al comparar con el intento del usuario.
  */
 export function ManoIlustrada({ forma, tonos, etiqueta }: { forma: FormaMano; tonos?: Partial<Record<Dedo, Tono>>; etiqueta: string }) {
+  // Letras de LSM con dibujo propio del equipo: se muestra ese dibujo. Con `tonos` (comparar dedo por
+  // dedo en la práctica) se usa el dibujo hecho con código, porque ahí se pinta cada dedo de un color.
+  const dibujo = !tonos ? DIBUJO_PROPIO.get(forma) : undefined
+  if (dibujo) {
+    return <img src={dibujo} alt={etiqueta} className="size-full object-contain" draggable={false} {...(etiqueta ? {} : { 'aria-hidden': true })} />
+  }
+  return <ManoDibujada forma={forma} tonos={tonos} etiqueta={etiqueta} />
+}
+
+/** La mano dibujada con código (para la Ñ, ASL y la comparación de dedos). */
+function ManoDibujada({ forma, tonos, etiqueta }: { forma: FormaMano; tonos?: Partial<Record<Dedo, Tono>>; etiqueta: string }) {
   const tono = (d: Dedo): Tono => tonos?.[d] ?? 'objetivo'
   const vista = forma.palma ?? 'frente'
   const giro = forma.giro ?? 0

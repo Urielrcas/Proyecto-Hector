@@ -19,7 +19,9 @@
  *   6. IA: si hay una red neuronal convolucional entrenada (lib/ia/cnn) y está muy segura (≥ 90 %)
  *      de la forma que ve, esa forma también cuenta como «cumplida», aunque las reglas no la vean
  *      (la red aprendió cómo hace las letras ESTA persona).
- *   7. Memoria de tus señas: si la mano coincide con la forma PERSONAL que el usuario le enseñó
+ *   7. Árbol de decisión (machine learning, entrenado en Python con scikit-learn: ml/p03_modelo.py):
+ *      solo en LSM; con el mismo seguro que la red, confirma letras cuya forma ya casi se cumple.
+ *   8. Memoria de tus señas: si la mano coincide con la forma PERSONAL que el usuario le enseñó
  *      a la IA (ej.: su A con los dedos un poco distintos), esa letra también cuenta (lib/ia/memoria.ts).
  */
 // ▸ Desde nuestro proyecto: src/lib/aprendizaje/alfabeto.ts:
@@ -50,6 +52,12 @@ import type { Clasificar } from '../ia/cnn/clasificador'
 // ▸ Desde nuestro proyecto: src/lib/ia/memoria.ts:
 //     reconocerPersonal → ¿la mano es una forma personal recordada?;  Memoria → tipo
 import { reconocerPersonal, type Memoria } from '../ia/memoria'
+// ▸ Desde nuestro proyecto: src/lib/ia/arbol/arbol.ts:
+//     predecirConArbol → recorre el árbol de decisión entrenado con scikit-learn
+import { predecirConArbol } from '../ia/arbol/arbol'
+
+/** Seguridad mínima de la hoja del árbol para sumar su opinión. */
+export const UMBRAL_ARBOL = 0.8
 
 /** Probabilidad mínima de la red neuronal para sumar su opinión a las reglas. */
 export const UMBRAL_IA = 0.9
@@ -97,6 +105,8 @@ export interface EstadoReconocedor {
   ia: { nombre: string; probabilidad: number } | null
   /** Letra reconocida por la memoria de tus señas (tu forma personal), si hubo. */
   personal: string | null
+  /** Lo que dice el árbol de decisión (solo LSM). Ej.: { nombre: 'B', seguridad: 0.97 }. */
+  arbol: { nombre: string; seguridad: number } | null
 }
 
 export class ReconocedorDeletreo {
@@ -113,8 +123,11 @@ export class ReconocedorDeletreo {
   private clasificar: Clasificar | null
   private memoria: Memoria | null = null
 
+  private readonly usarArbol: boolean
+
   constructor(lengua: Lengua, clasificar: Clasificar | null = null) {
     this.letras = alfabeto(lengua)
+    this.usarArbol = lengua === 'LSM' // el árbol se entrenó con manos de LSM
     this.clasificar = clasificar
   }
 
@@ -130,7 +143,7 @@ export class ReconocedorDeletreo {
 
   /** Procesa un cuadro de la cámara: los 21 puntos (o null si no hay mano) y el tiempo en ms. */
   procesar(puntos: Punto[] | null, tiempo: number): EstadoReconocedor {
-    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null, ia: null, personal: null }
+    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null, ia: null, personal: null, arbol: null }
 
     // ── Sin mano: reiniciar y, si pasó el tiempo, cerrar la palabra (regla s ∧ u) ──
     if (!puntos) {
@@ -162,6 +175,19 @@ export class ReconocedorDeletreo {
           const letra = this.letras.find((l) => l.letra === nombre)
           // Además el pulgar debe estar bien: en el puño (A, E, S, T, M, N) es lo único que cambia
           // entre letras, así que la red no puede «perdonarlo».
+          const r = letra && evaluar(puntos, letra.objetivo)
+          if (r && r.dedosOk.pulgar && r.consejos.length <= MAX_DIFERENCIAS_IA) cumplen.add(nombre)
+        }
+      }
+    }
+    // Árbol de decisión: mismo seguro que la red (casi se cumple y el pulgar bien puesto).
+    let arbol: EstadoReconocedor['arbol'] = null
+    if (this.usarArbol) {
+      const p = predecirConArbol(puntos)
+      arbol = { nombre: p.nombre, seguridad: p.seguridad }
+      if (p.seguridad >= UMBRAL_ARBOL) {
+        for (const nombre of p.letras) {
+          const letra = this.letras.find((l) => l.letra === nombre)
           const r = letra && evaluar(puntos, letra.objetivo)
           if (r && r.dedosOk.pulgar && r.consejos.length <= MAX_DIFERENCIAS_IA) cumplen.add(nombre)
         }
@@ -241,7 +267,7 @@ export class ReconocedorDeletreo {
       this.seguidos.clear()
       this.detectores.clear()
       this.letraDesdeEspacio = true
-      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0, ia, personal }
+      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0, ia, personal, arbol }
     }
 
     const aviso: Aviso = !candidata
@@ -262,6 +288,7 @@ export class ReconocedorDeletreo {
       msSinMano: 0,
       ia,
       personal,
+      arbol,
     }
   }
 }

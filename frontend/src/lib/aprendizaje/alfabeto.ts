@@ -169,7 +169,21 @@ const FORMAS_ASL: Record<string, FormaMano> = {
 }
 
 const GUIAS: Record<Lengua, Record<string, Guia>> = { LSM, ASL }
-const FORMAS: Record<Lengua, Record<string, FormaMano>> = { LSM: FORMAS_LSM, ASL: FORMAS_ASL }
+// ASL reutiliza las formas de LSM que son iguales; se copian para que cada lengua tenga las suyas
+// (así un dibujo propio de LSM no aparece por error en ASL).
+const FORMAS: Record<Lengua, Record<string, FormaMano>> = {
+  LSM: FORMAS_LSM,
+  ASL: Object.fromEntries(Object.entries(FORMAS_ASL).map(([l, f]) => [l, { ...f }])),
+}
+
+/**
+ * Dibujos propios del equipo para las letras de LSM (carpeta public/senas-lsm, de la A a la Z;
+ * la Ñ todavía no tiene). ManoIlustrada los muestra en lugar del dibujo hecho con código.
+ */
+const LETRAS_CON_DIBUJO = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+export const DIBUJO_PROPIO = new WeakMap<FormaMano, string>(
+  [...LETRAS_CON_DIBUJO].filter((l) => FORMAS_LSM[l]).map((l) => [FORMAS_LSM[l], `/senas-lsm/${l}.svg`]),
+)
 
 export function alfabeto(lengua: Lengua): Letra[] {
   return Object.entries(GUIAS[lengua]).map(([letra, guia]) => {

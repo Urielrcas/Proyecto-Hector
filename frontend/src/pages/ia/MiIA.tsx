@@ -5,13 +5,14 @@
  *   3. Tus señas personales: las letras que la IA recuerda «a tu manera».
  *   4. Red neuronal convolucional: sus capas, entrenarla (curva en vivo) y el laboratorio
  *      (verla pensar con la cámara y enseñarle tu mano).
- *   5. Autocorrector: palabras que aprendió, cuántas correcciones aceptaste y un probador.
+ *   5. Árbol de decisión: el modelo de machine learning entrenado en Python y su examen.
+ *   6. Autocorrector: palabras que aprendió, cuántas correcciones aceptaste y un probador.
  */
 
 // ▸ Desde Framer Motion (animaciones):
 import { motion } from 'framer-motion'
 // ▸ Desde Lucide (íconos):
-import { Brain, GraduationCap, Hand, Network, RotateCcw, Sparkles, SpellCheck, Trash2, Zap } from 'lucide-react'
+import { Brain, GitBranch, GraduationCap, Hand, Network, RotateCcw, Sparkles, SpellCheck, Trash2, Zap } from 'lucide-react'
 // ▸ Desde React:
 import { useMemo, useState, type ReactNode } from 'react'
 // ▸ Desde React Router:
@@ -27,6 +28,7 @@ import { dominioEfectivo, nivelLetra, UMBRAL_DOMINIO } from '../../lib/ia/domini
 import { precisionCorrector, totalMuestras } from '../../lib/ia/modeloIA'
 import { VOCABULARIO } from '../../lib/ia/vocabulario'
 import { useApp } from '../../context/AppContext'
+import { ArbolDecision } from './ArbolDecision'
 import { CurvaEntrenamiento, DiagramaRed } from './GraficasRed'
 import { LaboratorioRed } from './LaboratorioRed'
 import { SenasPersonales } from './SenasPersonales'
@@ -247,7 +249,12 @@ export default function MiIA() {
           </div>
         </Tarjeta>
 
-        {/* 5. Autocorrector */}
+        {/* 5. Árbol de decisión (machine learning) */}
+        <Tarjeta titulo="Árbol de decisión (machine learning)" icono={GitBranch}>
+          <ArbolDecision />
+        </Tarjeta>
+
+        {/* 6. Autocorrector */}
         <Tarjeta
           titulo="Autocorrector que aprende"
           icono={Sparkles}

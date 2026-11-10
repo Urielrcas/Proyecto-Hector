@@ -5,3 +5,8 @@ Thumbs.db
 
 # Variables de entorno (contienen secretos)
 .env
+
+# Material de clase y documentos que no se suben
+Manuales/
+Ejemplos/
+Señas-image/
