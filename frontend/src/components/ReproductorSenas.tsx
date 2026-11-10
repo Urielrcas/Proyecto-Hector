@@ -35,11 +35,29 @@ import { Boton } from './Boton'
 import { ManoIlustrada } from './ManoIlustrada'
 // ▸ Desde nuestro proyecto: el avatar 3D (components/Avatar3D.tsx) y la preferencia guardada de la vista
 import { Avatar3D } from './Avatar3D'
+// ▸ Desde nuestro proyecto: la seña de una palabra hecha por el avatar (lib/avatar/palabras3d.ts)
+import { formaAvatarDePalabra, notaDePalabra } from '../lib/avatar/palabras3d'
 import { guardar, leer } from '../lib/almacenamiento'
 
 
 // Lo que se ve en grande para cada seña.
-function SenaGrande({ sena, compacto }: { sena: Sena | undefined; compacto: boolean }) {
+/** La palabra con seña propia: su nombre, en qué parte va y lo que el avatar no puede mostrar. */
+function TextoPalabra({ sena, compacto }: { sena: Extract<Sena, { tipo: 'palabra' }>; compacto: boolean }) {
+  const nota = notaDePalabra(sena.entrada, sena.parte)
+  const paso = sena.entrada.pasos[sena.parte] ?? sena.entrada.pasos[0]
+  return (
+    <div className="max-w-52 min-w-0">
+      <p className={`${compacto ? 'text-2xl' : 'text-3xl sm:text-4xl'} leading-tight font-bold break-words text-marca-900`}>{sena.entrada.palabra}</p>
+      <p className="mt-1 text-sm font-bold text-marca-700">
+        Seña de palabra{sena.partes > 1 ? ` · parte ${sena.parte + 1} de ${sena.partes}` : ''}
+      </p>
+      {nota && <p className="mt-1 text-sm font-bold text-amber-700">Hazla {nota}</p>}
+      {!compacto && paso && <p className="mt-2 text-sm text-stone-600">{paso}</p>}
+    </div>
+  )
+}
+
+function SenaGrande({ sena, compacto, lengua }: { sena: Sena | undefined; compacto: boolean; lengua: Lengua }) {
   if (!sena) return <p className="text-stone-500">Aquí aparecerán las señas.</p>
   if (sena.tipo === 'pausa') return <p className="text-lg font-bold text-stone-500">· pausa entre palabras ·</p>
   if (sena.tipo === 'sin-sena')
@@ -49,6 +67,19 @@ function SenaGrande({ sena, compacto }: { sena: Sena | undefined; compacto: bool
         <p className="mt-2 text-stone-600">Sin seña en el alfabeto</p>
       </div>
     )
+  if (sena.tipo === 'palabra') {
+    const forma = formaAvatarDePalabra(sena.entrada, lengua, sena.parte)
+    return (
+      <div className="flex items-center gap-6">
+        {forma && (
+          <div className={compacto ? 'size-32' : 'size-44 sm:size-52'}>
+            <ManoIlustrada forma={forma} etiqueta={`Seña de la palabra ${sena.entrada.palabra}`} />
+          </div>
+        )}
+        <TextoPalabra sena={sena} compacto={compacto} />
+      </div>
+    )
+  }
   return (
     <div className="flex items-center gap-6">
       <div className={compacto ? 'size-32' : 'size-44 sm:size-52'}>
@@ -103,7 +134,8 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
   // Las señas agrupadas por palabra, para la tira de abajo.
   const porPalabra: { sena: Sena; indice: number }[][] = []
   senas.forEach((sena, indice) => {
-    if (sena.tipo === 'pausa') return
+    // Las palabras con seña se muestran una sola vez (aunque su seña tenga varias partes).
+    if (sena.tipo === 'pausa' || (sena.tipo === 'palabra' && sena.parte > 0)) return
     ;(porPalabra[sena.palabra] ??= []).push({ sena, indice })
   })
 
@@ -125,21 +157,25 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
           ))}
         </div>
         {vista === '3d' && total > 0 ? (
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex w-full items-center justify-center gap-3 sm:gap-5">
             {/* El avatar no se vuelve a montar: así pasa suave de una letra a otra */}
             <Avatar3D
-              forma={actual.tipo === 'letra' ? actual.letra.forma : null}
+              forma={actual.tipo === 'letra' ? actual.letra.forma : actual.tipo === 'palabra' ? formaAvatarDePalabra(actual.entrada, lengua, actual.parte) : null}
               clave={posicion}
               msMovimiento={duracion(actual, velocidad)}
-              className={compacto ? 'h-44 w-40' : 'h-64 w-56 sm:h-72 sm:w-64'}
-              etiqueta={actual.tipo === 'letra' ? `Avatar haciendo la letra ${actual.letra.letra}` : 'Avatar en reposo'}
+              className={compacto ? 'h-44 w-40' : 'h-56 w-44 shrink-0 sm:h-64 sm:w-52'}
+              etiqueta={
+                actual.tipo === 'letra' ? `Avatar haciendo la letra ${actual.letra.letra}` : actual.tipo === 'palabra' ? `Avatar haciendo la seña de ${actual.entrada.palabra}` : 'Avatar en reposo'
+              }
             />
-            <div key={posicion} className="animate-aparecer min-w-16">
+            <div key={posicion} className="animate-aparecer min-w-16 shrink">
               {actual.tipo === 'letra' ? (
                 <>
                   <p className={`${compacto ? 'text-6xl' : 'text-8xl'} leading-none font-bold text-marca-900`}>{actual.letra.letra}</p>
                   {actual.letra.movimiento && <p className="mt-2 text-sm font-bold text-amber-700">Con movimiento</p>}
                 </>
+              ) : actual.tipo === 'palabra' ? (
+                <TextoPalabra sena={actual} compacto={compacto} />
               ) : actual.tipo === 'sin-sena' ? (
                 <>
                   <p className={`${compacto ? 'text-5xl' : 'text-7xl'} font-bold text-stone-700`}>{actual.texto}</p>
@@ -153,7 +189,7 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
         ) : (
           /* key: al cambiar de seña se vuelve a montar y se ve la animación (también si se repite la letra) */
           <div key={posicion} className="animate-aparecer">
-            <SenaGrande sena={total ? actual : undefined} compacto={compacto} />
+            <SenaGrande sena={total ? actual : undefined} compacto={compacto} lengua={lengua} />
           </div>
         )}
       </div>
@@ -205,18 +241,24 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2" aria-label="Letras del mensaje">
           {porPalabra.map((palabra, i) => (
             <span key={i} className="flex gap-1">
-              {palabra.map(({ sena, indice }) => (
-                <button
-                  key={indice}
-                  onClick={() => irA(indice)}
-                  aria-current={indice === posicion}
-                  className={`min-w-8 rounded-md px-1.5 py-0.5 text-lg font-bold ${
-                    indice === posicion ? 'bg-marca-700 text-white' : indice < posicion ? 'text-marca-800' : 'text-stone-400 hover:bg-stone-100'
-                  }`}
-                >
-                  {sena.tipo === 'letra' ? sena.letra.letra : sena.tipo === 'sin-sena' ? sena.texto : ''}
-                </button>
-              ))}
+              {palabra.map(({ sena, indice }) => {
+                // Una palabra con seña ocupa todas sus partes.
+                const ultimo = sena.tipo === 'palabra' ? indice + sena.partes - 1 : indice
+                const esActual = posicion >= indice && posicion <= ultimo
+                return (
+                  <button
+                    key={indice}
+                    onClick={() => irA(indice)}
+                    aria-current={esActual}
+                    title={sena.tipo === 'palabra' ? 'Seña de palabra' : undefined}
+                    className={`min-w-8 rounded-md px-1.5 py-0.5 text-lg font-bold ${
+                      esActual ? 'bg-marca-700 text-white' : ultimo < posicion ? 'text-marca-800' : 'text-stone-400 hover:bg-stone-100'
+                    } ${sena.tipo === 'palabra' && !esActual ? 'underline decoration-marca-300 decoration-2 underline-offset-4' : ''}`}
+                  >
+                    {sena.tipo === 'letra' ? sena.letra.letra : sena.tipo === 'sin-sena' ? sena.texto : sena.tipo === 'palabra' ? sena.entrada.palabra : ''}
+                  </button>
+                )
+              })}
             </span>
           ))}
         </div>

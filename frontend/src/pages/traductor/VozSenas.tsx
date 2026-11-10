@@ -3,8 +3,8 @@
  * La persona oyente habla (o escribe) y la app muestra el mensaje en señas.
  *   - Izquierda: pestañas «Hablar» (micrófono con las ondas de la voz) y «Escribir».
  *   - Derecha: el texto reconocido y las señas, una tras otra (components/ReproductorSenas.tsx).
- * Por ahora el mensaje se muestra DELETREADO con los dibujos de la mano de cada letra
- * (lib/traduccion/deletreo.ts). Las palabras con seña propia y el avatar llegarán después.
+ * El mensaje se muestra con el avatar 3D: las palabras que tienen seña propia (Palabras y frases)
+ * con su seña completa y lo demás deletreado letra por letra (lib/traduccion/deletreo.ts).
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
@@ -213,7 +213,8 @@ export default function VozSenas() {
           <h2 className="mt-5 mb-2 font-bold">En señas · {lengua}</h2>
           <ReproductorSenas key={version} texto={texto} lengua={lengua} />
           <p className="mt-auto pt-5 text-sm text-stone-500">
-            Por ahora el mensaje se muestra deletreado letra por letra. Las palabras con seña propia y el avatar llegarán más adelante.
+            Las palabras que tienen seña propia (como agua, ayudar o buenos días) se muestran con su seña completa; lo demás se deletrea
+            letra por letra.
           </p>
         </section>
       </div>

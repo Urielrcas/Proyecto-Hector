@@ -15,7 +15,9 @@ import { describe, expect, it } from 'vitest'
 import { duracion, MS_LETRA, textoASenas, type Sena } from './deletreo'
 
 // Resume la secuencia como texto: letras, «_» para las pausas y [x] para lo que no tiene seña.
-const resumen = (senas: Sena[]) => senas.map((s) => (s.tipo === 'letra' ? s.letra.letra : s.tipo === 'pausa' ? '_' : `[${s.texto}]`)).join('')
+// Las palabras con seña propia se ven como {id parte}.
+const resumen = (senas: Sena[]) =>
+  senas.map((s) => (s.tipo === 'letra' ? s.letra.letra : s.tipo === 'pausa' ? '_' : s.tipo === 'palabra' ? `{${s.entrada.id} ${s.parte + 1}/${s.partes}}` : `[${s.texto}]`)).join('')
 
 describe('textoASenas', () => {
   it('deletrea palabras con una pausa entre ellas', () => {
@@ -40,13 +42,14 @@ describe('textoASenas', () => {
   })
 
   it('no deja pausas sueltas por palabras hechas solo de signos', () => {
-    expect(resumen(textoASenas('hola , ¿ adiós', 'LSM'))).toBe('HOLA_ADIOS')
+    expect(resumen(textoASenas('hola , ¿ mundo', 'LSM'))).toBe('HOLA_MUNDO')
     expect(textoASenas('   ', 'LSM')).toEqual([])
   })
 
   it('numera las palabras', () => {
-    const s = textoASenas('sí no', 'LSM')
-    expect(s.map((x) => x.palabra)).toEqual([0, 0, 1, 1, 1])
+    // «sol» y «mar» no tienen seña propia: se deletrean (dos palabras con la pausa en medio).
+    const s = textoASenas('sol mar', 'LSM')
+    expect(s.map((x) => x.palabra)).toEqual([0, 0, 0, 1, 1, 1, 1])
   })
 })
 
@@ -57,5 +60,29 @@ describe('duracion', () => {
     expect(duracion(a, 1)).toBe(MS_LETRA)
     expect(duracion(a, 2)).toBe(MS_LETRA / 2)
     expect(duracion(j, 1)).toBeGreaterThan(duracion(a, 1))
+  })
+})
+
+describe('palabras con seña propia', () => {
+  it('se muestran completas aunque vengan conjugadas o en plural; lo demás se deletrea', () => {
+    expect(resumen(textoASenas('Necesito agua', 'LSM'))).toBe('{lsm-necesitar 1/1}_{lsm-agua 1/1}')
+    expect(resumen(textoASenas('mis amigos', 'LSM'))).toBe('MIS_{lsm-amigo 1/1}')
+    expect(resumen(textoASenas('Ayúdame', 'LSM'))).toBe('AYUDAME')
+    expect(resumen(textoASenas('ayuda por favor', 'LSM'))).toBe('{lsm-ayudar 1/1}_{lsm-por-favor 1/1}')
+  })
+
+  it('las frases de varias palabras ganan y su seña puede tener partes', () => {
+    expect(resumen(textoASenas('¡Buenos días!', 'LSM'))).toBe('{lsm-buenos-dias 1/2}{lsm-buenos-dias 2/2}')
+    expect(resumen(textoASenas('buenas noches Ana', 'LSM'))).toBe('{lsm-buenas-noches 1/2}{lsm-buenas-noches 2/2}_ANA')
+  })
+
+  it('en ASL se reconocen en inglés (la glosa) y en español', () => {
+    expect(resumen(textoASenas('hello water', 'ASL'))).toBe('{asl-hola 1/1}_{asl-agua 1/1}')
+    expect(resumen(textoASenas('agua', 'ASL'))).toBe('{asl-agua 1/1}')
+  })
+
+  it('cada parte de una palabra dura más que una letra', () => {
+    const [parte] = textoASenas('agua', 'LSM')
+    expect(duracion(parte, 1)).toBeGreaterThan(MS_LETRA)
   })
 })

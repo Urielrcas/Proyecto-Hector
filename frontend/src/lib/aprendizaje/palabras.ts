@@ -173,3 +173,38 @@ export function opcionesPrueba(lengua: Lengua, correcta: Palabra, azar: () => nu
   const distractores = [...mezcla(otras.filter((p) => p.categoria === correcta.categoria)), ...mezcla(otras.filter((p) => p.categoria !== correcta.categoria))].slice(0, 3)
   return mezcla([correcta, ...distractores])
 }
+
+// ── Encontrar palabras con seña dentro de una frase (Voz / Texto → Señas) ──
+
+/**
+ * Las formas en que puede aparecer una palabra en una frase: tal cual, lo que va entre paréntesis
+ * («Tomar (beber)» → TOMAR y BEBER), en plural y, si es verbo, conjugada en presente
+ * (NECESITAR → NECESITO, NECESITAS, NECESITA, NECESITAMOS…). En ASL también la glosa en inglés.
+ */
+export function variantesDe(p: Palabra): string[] {
+  const bases = [p.palabra.replace(/\(.*?\)/g, ''), ...(p.palabra.match(/\((.*?)\)/)?.slice(1) ?? []), p.glosa ?? ''].map(paraDeletrear).filter(Boolean)
+  const formas = new Set<string>()
+  for (const b of bases) {
+    formas.add(b)
+    if (b.includes(' ')) continue // las frases van tal cual
+    // Plural, salvo en palabras muy cortas (NO → NOS sería otra palabra).
+    if (b.length > 2) formas.add(/[AEIOU]$/.test(b) ? `${b}S` : `${b}ES`)
+    const verbo = b.match(/^(.{2,})(AR|ER|IR)$/)
+    if (verbo) {
+      const [, raiz, fin] = verbo
+      const v = fin === 'AR' ? 'A' : 'E'
+      for (const t of ['O', `${v}S`, v, `${fin[0]}MOS`, `${v}N`]) formas.add(raiz + t)
+    }
+  }
+  return [...formas]
+}
+
+/** Diccionario forma → palabra de una lengua (para buscar rápido). */
+export function diccionarioDe(lengua: Lengua): Map<string, Palabra> {
+  const mapa = new Map<string, Palabra>()
+  for (const p of PALABRAS[lengua]) for (const f of variantesDe(p)) if (!mapa.has(f)) mapa.set(f, p)
+  return mapa
+}
+
+/** Normaliza una palabra escrita como las claves del diccionario (sin acentos ni signos, en mayúsculas). */
+export const claveDePalabra = (texto: string) => paraDeletrear(texto)
