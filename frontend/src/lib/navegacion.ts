@@ -7,12 +7,13 @@
  */
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
-//     íconos: Languages (idiomas), BookOpen (libro abierto), Brain (cerebro), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
+//     íconos: Languages (idiomas), BookOpen (libro abierto), Brain (cerebro), ChartColumn (gráfica de barras), CircleHelp (círculo con ?), Cpu (chip), Hand (mano), History (reloj de historial), House (casa), Mic (micrófono), Settings (engrane), Siren (sirena), UserCog (usuario con engrane), Users (dos personas), LucideIcon (tipo: cualquier ícono de Lucide)
 import {
   BookOpen,
   Brain,
   ChartColumn,
   CircleHelp,
+  Cpu,
   Hand,
   History,
   House,
@@ -107,6 +108,15 @@ export const ESTADISTICAS: Seccion = {
   soloAdmin: true,
 }
 
+/** Lo técnico de la IA (capas de la red, gráficas, árbol de decisión). El usuario ve la versión sencilla en «Mi IA». */
+export const IA_POR_DENTRO: Seccion = {
+  ruta: '/ia-por-dentro',
+  titulo: 'IA por dentro',
+  descripcion: 'Cómo funcionan los modelos de IA.',
+  icono: Cpu,
+  soloAdmin: true,
+}
+
 export const CONFIGURACION: Seccion = {
   ruta: '/configuracion',
   titulo: 'Configuración',
@@ -129,7 +139,7 @@ export const EMERGENCIA: Seccion = {
 }
 
 /** Orden del menú lateral. */
-export const MENU: Seccion[] = [INICIO, TRADUCIR, APRENDIZAJE, HISTORIAL, MI_IA, USUARIOS, ESTADISTICAS, CONFIGURACION, AYUDA]
+export const MENU: Seccion[] = [INICIO, TRADUCIR, APRENDIZAJE, HISTORIAL, MI_IA, USUARIOS, ESTADISTICAS, IA_POR_DENTRO, CONFIGURACION, AYUDA]
 
 /** Barra inferior del celular (el resto está en «Más», que abre el menú completo). */
 export const BARRA_INFERIOR: Seccion[] = [INICIO, TRADUCIR, APRENDIZAJE]

@@ -1,7 +1,8 @@
 /*
- * LABORATORIO DE LA RED NEURONAL (pantalla «Mi IA»)
- *   - Pruébala: con la cámara, muestra la imagen 28×28 que recibe la red, lo que «ve» cada
- *     filtro de la primera convolución y las 3 formas más probables.
+ * LABORATORIO DE LA RED NEURONAL («Mi IA» y «IA por dentro»)
+ *   - Pruébala: con la cámara, muestra las 3 formas más probables.
+ *     Con `tecnico` (solo en «IA por dentro») también la imagen 28×28 que recibe la red
+ *     y lo que «ve» cada filtro de la primera convolución.
  *   - Enséñale: eliges una letra, la haces 3 segundos y la IA recuerda TU forma (memoria.ts):
  *     desde ese momento cuenta como correcta. También son muestras para la red (con 15 nuevas se reentrena sola).
  */
@@ -26,7 +27,7 @@ import { ImagenRed } from './GraficasRed'
 /** Segundos que se graban al enseñarle una letra. */
 const SEGUNDOS_GRABAR = 3
 
-export function LaboratorioRed() {
+export function LaboratorioRed({ tecnico = false }: { tecnico?: boolean }) {
   const ia = useModeloIA()
   const [camara, setCamara] = useState(false)
   const [prediccion, setPrediccion] = useState<Prediccion | null>(null)
@@ -80,7 +81,9 @@ export function LaboratorioRed() {
           <div className="grid aspect-4/3 place-items-center rounded-2xl border-2 border-dashed border-stone-300 bg-stone-50 p-6 text-center">
             <div>
               <Camera className="mx-auto size-10 text-stone-400" aria-hidden />
-              <p className="mt-2 text-stone-600">Enciende la cámara para ver cómo piensa la red y para enseñarle tu mano.</p>
+              <p className="mt-2 text-stone-600">
+                {tecnico ? 'Enciende la cámara para ver cómo piensa la red y para enseñarle tu mano.' : 'Enciende la cámara para enseñarle tu mano.'}
+              </p>
             </div>
           </div>
         )}
@@ -115,8 +118,8 @@ export function LaboratorioRed() {
             </div>
           )}
           <p className="mt-3 text-sm text-stone-600">
-            Posturas nuevas desde el último entrenamiento: <strong>{nuevas}</strong> de {MUESTRAS_PARA_REENTRENAR}. Al llegar, la red se
-            reentrena sola.
+            {tecnico ? 'Posturas nuevas desde el último entrenamiento: ' : 'Señas nuevas que le enseñaste: '}
+            <strong>{nuevas}</strong> de {MUESTRAS_PARA_REENTRENAR}. {tecnico ? 'Al llegar, la red se reentrena sola.' : 'Al llegar, aprende de ellas sola.'}
           </p>
         </div>
       </div>
@@ -124,31 +127,35 @@ export function LaboratorioRed() {
       {/* ── Lo que ve y piensa la red ── */}
       <div className="space-y-4">
         {!ia.clasificar ? (
-          <p className="rounded-2xl bg-stone-50 p-5 text-stone-600">La red todavía no está entrenada. Entrénala arriba para ver sus respuestas aquí.</p>
+          <p className="rounded-2xl bg-stone-50 p-5 text-stone-600">
+            {tecnico ? 'La red todavía no está entrenada. Entrénala arriba para ver sus respuestas aquí.' : 'Todavía no conoce tu mano. Presiona «Aprender de mí» para que empiece.'}
+          </p>
         ) : (
           <>
-            <div className="flex flex-wrap items-start gap-4">
-              <div>
-                <p className="mb-1 text-sm font-bold">Lo que recibe (28×28)</p>
-                <ImagenRed datos={prediccion?.imagen ?? null} etiqueta="Imagen del esqueleto de la mano que recibe la red" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="mb-1 text-sm font-bold">Lo que detecta cada filtro</p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {Array.from({ length: 6 }, (_, f) => (
-                    <ImagenRed
-                      key={f}
-                      datos={mapas ? mapas.subarray(f * 784, (f + 1) * 784) : null}
-                      tamano={64}
-                      etiqueta={`Mapa del filtro ${f + 1} de la primera convolución`}
-                    />
-                  ))}
+            {tecnico && (
+              <div className="flex flex-wrap items-start gap-4">
+                <div>
+                  <p className="mb-1 text-sm font-bold">Lo que recibe (28×28)</p>
+                  <ImagenRed datos={prediccion?.imagen ?? null} etiqueta="Imagen del esqueleto de la mano que recibe la red" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="mb-1 text-sm font-bold">Lo que detecta cada filtro</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {Array.from({ length: 6 }, (_, f) => (
+                      <ImagenRed
+                        key={f}
+                        datos={mapas ? mapas.subarray(f * 784, (f + 1) * 784) : null}
+                        tamano={64}
+                        etiqueta={`Mapa del filtro ${f + 1} de la primera convolución`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div>
-              <p className="mb-2 text-sm font-bold">La red cree que es…</p>
+              <p className="mb-2 text-sm font-bold">{tecnico ? 'La red cree que es…' : 'Cree que estás haciendo…'}</p>
               {prediccion ? (
                 <ul className="space-y-2">
                   <AnimatePresence initial={false}>

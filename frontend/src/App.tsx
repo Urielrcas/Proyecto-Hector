@@ -49,7 +49,7 @@ import { useConfiguracion } from './hooks/useConfiguracion'
 //     HISTORIAL → sección del menú «Historial» (ruta, título, descripción e ícono)
 //     SENAS_TEXTO → sección del menú «Señas → Texto» (ruta, título, descripción e ícono)
 //     VOZ_SENAS → sección del menú «Voz → Señas» (ruta, título, descripción e ícono)
-import { AYUDA, CONFIGURACION, CONVERSACION, HISTORIAL, MI_IA, SENAS_TEXTO, VOZ_SENAS } from './lib/navegacion'
+import { AYUDA, CONFIGURACION, CONVERSACION, HISTORIAL, IA_POR_DENTRO, MI_IA, SENAS_TEXTO, VOZ_SENAS } from './lib/navegacion'
 // ▸ Desde nuestro proyecto: src/pages/Bienvenida.tsx:
 //     Bienvenida → pantalla de bienvenida
 import Bienvenida from './pages/Bienvenida'
@@ -102,6 +102,8 @@ const Ayuda = lazy(() => import('./pages/ayuda/Ayuda'))
 // La IA del usuario: modelo del estudiante, red neuronal convolucional y autocorrector.
 const MiIA = lazy(() => import('./pages/ia/MiIA'))
 const Calibrar = lazy(() => import('./pages/ia/Calibrar'))
+// Lo técnico de la IA, solo para administradores.
+const IAPorDentro = lazy(() => import('./pages/ia/IAPorDentro'))
 // El traductor también usa la cámara y MediaPipe: se carga solo al abrirlo.
 const SenasTexto = lazy(() => import('./pages/traductor/SenasTexto'))
 const VozSenas = lazy(() => import('./pages/traductor/VozSenas'))
@@ -158,6 +160,7 @@ function Rutas() {
         <Route path="/usuarios/nuevo" element={<RequiereAdmin><FormularioUsuario /></RequiereAdmin>} />
         <Route path="/usuarios/:id/editar" element={<RequiereAdmin><FormularioUsuario /></RequiereAdmin>} />
         <Route path="/estadisticas" element={<RequiereAdmin><Estadisticas /></RequiereAdmin>} />
+        <Route path={IA_POR_DENTRO.ruta} element={<RequiereAdmin><Suspense fallback={<Cargando />}><IAPorDentro /></Suspense></RequiereAdmin>} />
 
         {/* Historial, Configuración y Ayuda */}
         <Route path={HISTORIAL.ruta} element={<Suspense fallback={<Cargando />}><Historial /></Suspense>} />
