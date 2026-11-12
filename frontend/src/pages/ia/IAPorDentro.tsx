@@ -4,12 +4,13 @@
  *   1. Red neuronal convolucional: sus capas, entrenarla (curva en vivo) y el laboratorio
  *      (ver lo que recibe y lo que detecta cada filtro).
  *   2. Árbol de decisión: el modelo de machine learning entrenado en Python y su examen.
+ *      Validación y comparación de algoritmos (prácticas 04 y 05): profundidad, Random Forest, KNN.
  *   3. Autocorrector: cómo decide y un probador.
  * El usuario normal ve la versión sencilla en «Mi IA».
  */
 
 // ▸ Desde Lucide (íconos):
-import { Cpu, GitBranch, Network, Sparkles, Zap } from 'lucide-react'
+import { Cpu, GitBranch, Network, Scale, Sparkles, Zap } from 'lucide-react'
 // ▸ Desde React:
 import { useMemo, useState } from 'react'
 // ▸ Desde nuestro proyecto:
@@ -25,6 +26,7 @@ import { ArbolDecision } from './ArbolDecision'
 import { CurvaEntrenamiento, DiagramaRed } from './GraficasRed'
 import { LaboratorioRed } from './LaboratorioRed'
 import { pct, Tarjeta } from './Tarjeta'
+import { ValidacionModelos } from './ValidacionModelos'
 
 export default function IAPorDentro() {
   const { lengua: lenguaApp } = useApp()
@@ -106,6 +108,11 @@ export default function IAPorDentro() {
         {/* 2. Árbol de decisión (machine learning) */}
         <Tarjeta titulo="Árbol de decisión (machine learning)" icono={GitBranch}>
           <ArbolDecision />
+        </Tarjeta>
+
+        {/* 2b. Validación y comparación de algoritmos (prácticas 04 y 05) */}
+        <Tarjeta titulo="Validación y comparación de algoritmos" icono={Scale}>
+          <ValidacionModelos />
         </Tarjeta>
 
         {/* 3. Autocorrector */}

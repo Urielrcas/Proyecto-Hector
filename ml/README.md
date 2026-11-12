@@ -14,7 +14,7 @@ Aquí están las prácticas de la materia aplicadas a nuestro proyecto. El resul
 | `p02c_calidad_datos.py` | 2C | Busca errores: manos sin medidas, detecciones falsas en los dibujos, duplicados, rangos. |
 | `p02d_limpieza_datos.py` | 2D | Separa las manos válidas y guarda las demás con el motivo en `manos_revision.csv`. |
 | `p02e_variables.py` | 2E | Prepara X (las 57 medidas) y y (la letra). |
-| `p03_modelo.py` | 3 | Entrena el árbol, lo compara con las reglas y KNN, saca métricas y matriz de confusión y lo exporta a la app. |
+| `p03_modelo.py` | 3, 4 y 5 | Divide 60/20/20, elige la profundidad del árbol con la validación (sobreajuste/subajuste), compara Árbol, Random Forest y KNN por F1, hace los experimentos A/B/C y la validación cruzada, examina con la prueba y exporta el árbol y el KNN a la app. |
 
 ## De dónde salen los datos
 
@@ -46,15 +46,28 @@ python p02e_variables.py
 python p03_modelo.py
 ```
 
-`p03_modelo.py` escribe `frontend/src/lib/ia/arbol/modelo.json` (el árbol) y `metricas.json` (el
-examen), que la app lee en el traductor y en **Mi IA → Árbol de decisión**.
+`p03_modelo.py` escribe `frontend/src/lib/ia/arbol/modelo.json` (el árbol), `knn.json` (el KNN) y
+`metricas.json` (el examen), que la app lee en el traductor y en **IA por dentro** (tarjetas «Árbol de
+decisión» y «Validación y comparación de algoritmos»).
 
-## Resultados (manos que el modelo nunca vio)
+## Prácticas 04 y 05 en resumen
+
+- **Profundidad del árbol** (validación): 2, 3 y 5 → subajuste (16–62 %); 8 en adelante → buen ajuste
+  (~87–89 %). Se eligió **16** (la de mejor validación).
+- **Comparación por F1** (validación): Random Forest 93.6 % · KNN 89.8 % · Árbol 88.5 %.
+- **Experimentos:** A) KNN mejora un poco con más vecinos (90.3 % con 3 → 90.8 % con 9 y 15).
+  B) el bosque sube de 50 a 100 árboles y luego casi no cambia. C) es la tabla de profundidades.
+- **Validación cruzada** (Random Forest, 5 partes): F1 93.1 % ± 0.8 %.
+- La app **no** usa el Random Forest (pesaría varios MB); usa la votación de árbol + KNN + reglas.
+
+## Resultados (prueba: manos que ningún modelo vio)
 
 | Modelo | Aciertos |
 |---|---|
-| Árbol de decisión | 88 % |
+| Random Forest (solo para comparar) | 93 % |
+| Votación de la app (árbol + KNN + reglas) | 92 % |
+| K vecinos (KNN, con escala) | 90 % |
+| Árbol de decisión | 89 % |
 | Reglas fijas | 66 % |
-| Vecino más cercano (KNN) | 40 % |
 
 Las gráficas quedan en `resultados/`.

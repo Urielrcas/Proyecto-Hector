@@ -50,11 +50,29 @@ export function predecirConArbol(puntos: Punto[]): PrediccionArbol {
   }
 }
 
+export type NombreModelo = 'arbol' | 'bosque' | 'knn'
+export interface Metricas4 {
+  exactitud: number
+  precision: number
+  recall: number
+  f1: number
+}
+
 /** Resultados del examen del modelo (ml/p03_modelo.py), para mostrarlos en Mi IA. */
 export const METRICAS_ARBOL = metricasJson as {
   fecha: string
-  manos: { entrenamiento: number; prueba: number; total: number }
-  exactitud: { reglas: number; arbol: number; knn: number }
+  manos: { entrenamiento: number; validacion: number; prueba: number; total: number }
+  exactitud: { reglas: number; arbol: number; knn: number; bosque: number; votacion: number }
+  /** Práctica 04: exactitud en entrenamiento y validación según la profundidad del árbol. */
+  profundidades: { profundidad: string; entrenamiento: number; validacion: number; diagnostico: 'subajuste' | 'sobreajuste' | 'buen ajuste' }[]
+  profundidadElegida: string
+  /** Práctica 05: los tres algoritmos en validación, ordenados por F1. */
+  comparacion: ({ modelo: NombreModelo } & Metricas4)[]
+  ganador: NombreModelo
+  /** Examen final con la prueba (después de reentrenar con entrenamiento + validación). */
+  examen: Record<NombreModelo | 'reglas' | 'votacion', Metricas4>
+  experimentos: { knn: { valor: number; exactitud: number; f1: number }[]; bosque: { valor: number; exactitud: number; f1: number }[] }
+  validacionCruzada: { modelo: NombreModelo; particiones: number[]; promedio: number; desviacion: number }
   porGiro: { tramo: string; manos: number; reglas: number; arbol: number }[]
   porLetra: Record<string, { precision: number; recall: number; f1: number }>
   confusiones: { reglas: { real: string; dijo: string; veces: number }[]; arbol: { real: string; dijo: string; veces: number }[] }
