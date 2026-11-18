@@ -1,0 +1,690 @@
+{
+ "fecha": "2026-11-17",
+ "manos": 3765,
+ "medidas": 57,
+ "k": 9,
+ "kUtil": [
+  4,
+  10
+ ],
+ "codo": [
+  {
+   "k": 2,
+   "inercia": 178312,
+   "silueta": 0.1743
+  },
+  {
+   "k": 3,
+   "inercia": 156811,
+   "silueta": 0.2028
+  },
+  {
+   "k": 4,
+   "inercia": 140628,
+   "silueta": 0.2096
+  },
+  {
+   "k": 5,
+   "inercia": 126366,
+   "silueta": 0.2226
+  },
+  {
+   "k": 6,
+   "inercia": 114531,
+   "silueta": 0.222
+  },
+  {
+   "k": 7,
+   "inercia": 105793,
+   "silueta": 0.2195
+  },
+  {
+   "k": 8,
+   "inercia": 99786,
+   "silueta": 0.2292
+  },
+  {
+   "k": 9,
+   "inercia": 93747,
+   "silueta": 0.2373
+  },
+  {
+   "k": 10,
+   "inercia": 90163,
+   "silueta": 0.2283
+  },
+  {
+   "k": 11,
+   "inercia": 85648,
+   "silueta": 0.2358
+  },
+  {
+   "k": 12,
+   "inercia": 81727,
+   "silueta": 0.2325
+  }
+ ],
+ "silueta": 0.2373,
+ "grupos": [
+  {
+   "id": 0,
+   "nombre": "Estirados: medio, anular, meñique",
+   "descripcion": "Medio, anular y meñique estirados; índice curvo",
+   "dedos": {
+    "indice": "curvo",
+    "medio": "estirado",
+    "anular": "estirado",
+    "menique": "estirado"
+   },
+   "manos": 285,
+   "giroPromedio": 19.5,
+   "letras": [
+    {
+     "letra": "F",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "D",
+     "porcentaje": 0.867
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "nombre": "Mano curva",
+   "descripcion": "Índice, medio, anular y meñique curvos",
+   "dedos": {
+    "indice": "curvo",
+    "medio": "curvo",
+    "anular": "curvo",
+    "menique": "curvo"
+   },
+   "manos": 294,
+   "giroPromedio": 18.6,
+   "letras": [
+    {
+     "letra": "C",
+     "porcentaje": 0.687
+    },
+    {
+     "letra": "O",
+     "porcentaje": 0.633
+    },
+    {
+     "letra": "P",
+     "porcentaje": 0.613
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "nombre": "Estirados: índice · G, L, Z",
+   "descripcion": "Índice estirado; medio, anular y meñique doblados",
+   "dedos": {
+    "indice": "estirado",
+    "medio": "doblado",
+    "anular": "doblado",
+    "menique": "doblado"
+   },
+   "manos": 586,
+   "giroPromedio": 21.0,
+   "letras": [
+    {
+     "letra": "G",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "L",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "Z",
+     "porcentaje": 1.0
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "nombre": "Mezcla de letras",
+   "descripcion": "Índice, medio, anular y meñique curvos",
+   "dedos": {
+    "indice": "curvo",
+    "medio": "curvo",
+    "anular": "curvo",
+    "menique": "curvo"
+   },
+   "manos": 140,
+   "giroPromedio": 22.6,
+   "letras": []
+  },
+  {
+   "id": 4,
+   "nombre": "Puño cerrado",
+   "descripcion": "Índice, medio, anular y meñique doblados",
+   "dedos": {
+    "indice": "doblado",
+    "medio": "doblado",
+    "anular": "doblado",
+    "menique": "doblado"
+   },
+   "manos": 684,
+   "giroPromedio": 20.2,
+   "letras": [
+    {
+     "letra": "A",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "S",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "T",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "E",
+     "porcentaje": 0.98
+    },
+    {
+     "letra": "Q",
+     "porcentaje": 0.56
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "nombre": "Estirados: índice · X",
+   "descripcion": "Índice estirado; medio, anular y meñique doblados",
+   "dedos": {
+    "indice": "estirado",
+    "medio": "doblado",
+    "anular": "doblado",
+    "menique": "doblado"
+   },
+   "manos": 97,
+   "giroPromedio": 17.8,
+   "letras": [
+    {
+     "letra": "X",
+     "porcentaje": 0.62
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "nombre": "Estirados: índice, medio",
+   "descripcion": "Índice y medio estirados; anular y meñique doblados",
+   "dedos": {
+    "indice": "estirado",
+    "medio": "estirado",
+    "anular": "doblado",
+    "menique": "doblado"
+   },
+   "manos": 925,
+   "giroPromedio": 20.7,
+   "letras": [
+    {
+     "letra": "H",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "R",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "U",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "V",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "N/Ñ",
+     "porcentaje": 0.993
+    },
+    {
+     "letra": "K",
+     "porcentaje": 0.98
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "nombre": "Estirados: meñique",
+   "descripcion": "Meñique estirado; índice, medio y anular doblados",
+   "dedos": {
+    "indice": "doblado",
+    "medio": "doblado",
+    "anular": "doblado",
+    "menique": "estirado"
+   },
+   "manos": 302,
+   "giroPromedio": 20.3,
+   "letras": [
+    {
+     "letra": "Y",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "I/J",
+     "porcentaje": 0.974
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "nombre": "Estirados: índice, medio, anular",
+   "descripcion": "Índice, medio y anular estirados; meñique doblado",
+   "dedos": {
+    "indice": "estirado",
+    "medio": "estirado",
+    "anular": "estirado",
+    "menique": "doblado"
+   },
+   "manos": 452,
+   "giroPromedio": 20.0,
+   "letras": [
+    {
+     "letra": "B",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "M",
+     "porcentaje": 1.0
+    },
+    {
+     "letra": "W",
+     "porcentaje": 0.993
+    }
+   ]
+  }
+ ],
+ "letras": {
+  "A": {
+   "grupo": 4,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "E",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  "B": {
+   "grupo": 8,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "M",
+    "W"
+   ]
+  },
+  "C": {
+   "grupo": 1,
+   "porcentaje": 0.687,
+   "parecidas": [
+    "O",
+    "P"
+   ]
+  },
+  "D": {
+   "grupo": 0,
+   "porcentaje": 0.867,
+   "parecidas": [
+    "F"
+   ]
+  },
+  "E": {
+   "grupo": 4,
+   "porcentaje": 0.98,
+   "parecidas": [
+    "A",
+    "Q",
+    "S",
+    "T"
+   ]
+  },
+  "F": {
+   "grupo": 0,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "D"
+   ]
+  },
+  "G": {
+   "grupo": 2,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "L",
+    "Z"
+   ]
+  },
+  "H": {
+   "grupo": 6,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "K",
+    "N/Ñ",
+    "R",
+    "U",
+    "V"
+   ]
+  },
+  "I/J": {
+   "grupo": 7,
+   "porcentaje": 0.974,
+   "parecidas": [
+    "Y"
+   ]
+  },
+  "K": {
+   "grupo": 6,
+   "porcentaje": 0.98,
+   "parecidas": [
+    "H",
+    "N/Ñ",
+    "R",
+    "U",
+    "V"
+   ]
+  },
+  "L": {
+   "grupo": 2,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "G",
+    "Z"
+   ]
+  },
+  "M": {
+   "grupo": 8,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "B",
+    "W"
+   ]
+  },
+  "N/Ñ": {
+   "grupo": 6,
+   "porcentaje": 0.993,
+   "parecidas": [
+    "H",
+    "K",
+    "R",
+    "U",
+    "V"
+   ]
+  },
+  "O": {
+   "grupo": 1,
+   "porcentaje": 0.633,
+   "parecidas": [
+    "C",
+    "P"
+   ]
+  },
+  "P": {
+   "grupo": 1,
+   "porcentaje": 0.613,
+   "parecidas": [
+    "C",
+    "O"
+   ]
+  },
+  "Q": {
+   "grupo": 4,
+   "porcentaje": 0.56,
+   "parecidas": [
+    "A",
+    "E",
+    "S",
+    "T"
+   ]
+  },
+  "R": {
+   "grupo": 6,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "H",
+    "K",
+    "N/Ñ",
+    "U",
+    "V"
+   ]
+  },
+  "S": {
+   "grupo": 4,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "A",
+    "E",
+    "Q",
+    "T"
+   ]
+  },
+  "T": {
+   "grupo": 4,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "A",
+    "E",
+    "Q",
+    "S"
+   ]
+  },
+  "U": {
+   "grupo": 6,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "H",
+    "K",
+    "N/Ñ",
+    "R",
+    "V"
+   ]
+  },
+  "V": {
+   "grupo": 6,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "H",
+    "K",
+    "N/Ñ",
+    "R",
+    "U"
+   ]
+  },
+  "W": {
+   "grupo": 8,
+   "porcentaje": 0.993,
+   "parecidas": [
+    "B",
+    "M"
+   ]
+  },
+  "X": {
+   "grupo": 5,
+   "porcentaje": 0.62,
+   "parecidas": []
+  },
+  "Y": {
+   "grupo": 7,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "I/J"
+   ]
+  },
+  "Z": {
+   "grupo": 2,
+   "porcentaje": 1.0,
+   "parecidas": [
+    "G",
+    "L"
+   ]
+  }
+ },
+ "divididas": [
+  "C",
+  "O",
+  "P",
+  "Q",
+  "X"
+ ],
+ "analisis": {
+  "inicializaciones": [
+   {
+    "init": "k-means++",
+    "inerciaPromedio": 97622.274,
+    "inerciaMejor": 95412.6416,
+    "inerciaDesviacion": 2513.2743,
+    "iteraciones": 28.6667,
+    "silueta": 0.2102,
+    "segundos": 1.7042
+   },
+   {
+    "init": "random",
+    "inerciaPromedio": 97501.2751,
+    "inerciaMejor": 94029.1604,
+    "inerciaDesviacion": 2543.6166,
+    "iteraciones": 19.6667,
+    "silueta": 0.213,
+    "segundos": 1.5864
+   }
+  ],
+  "empateInicializacion": true,
+  "escaladores": [
+   {
+    "escalador": "StandardScaler",
+    "silueta": 0.2373,
+    "arLetras": 0.325,
+    "pureza": 0.9161
+   },
+   {
+    "escalador": "MinMaxScaler",
+    "silueta": 0.2978,
+    "arLetras": 0.3016,
+    "pureza": 0.9158
+   }
+  ],
+  "ariEscaladores": 0.8652,
+  "estabilidad": {
+   "semillas": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    42
+   ],
+   "promedio": 0.9213,
+   "minimo": 0.7748,
+   "veredicto": "muy estables"
+  },
+  "parecidos": [
+   {
+    "a": 2,
+    "b": 6,
+    "distancia": 4.9859
+   },
+   {
+    "a": 2,
+    "b": 4,
+    "distancia": 5.2378
+   },
+   {
+    "a": 4,
+    "b": 7,
+    "distancia": 5.3714
+   }
+  ],
+  "siluetaGrupo": [
+   {
+    "grupo": 0,
+    "silueta": 0.2074,
+    "negativas": 6
+   },
+   {
+    "grupo": 1,
+    "silueta": 0.3258,
+    "negativas": 14
+   },
+   {
+    "grupo": 2,
+    "silueta": 0.1377,
+    "negativas": 22
+   },
+   {
+    "grupo": 3,
+    "silueta": 0.371,
+    "negativas": 3
+   },
+   {
+    "grupo": 4,
+    "silueta": 0.2195,
+    "negativas": 0
+   },
+   {
+    "grupo": 5,
+    "silueta": 0.0863,
+    "negativas": 33
+   },
+   {
+    "grupo": 6,
+    "silueta": 0.2525,
+    "negativas": 0
+   },
+   {
+    "grupo": 7,
+    "silueta": 0.2467,
+    "negativas": 0
+   },
+   {
+    "grupo": 8,
+    "silueta": 0.3081,
+    "negativas": 0
+   }
+  ],
+  "atipicas": {
+   "percentil": 95,
+   "umbral": 7.2603,
+   "total": 189,
+   "giroAtipicas": 19.2,
+   "giroNormales": 20.3,
+   "porLetra": [
+    {
+     "letra": "X",
+     "manos": 133
+    },
+    {
+     "letra": "P",
+     "manos": 14
+    },
+    {
+     "letra": "Q",
+     "manos": 6
+    },
+    {
+     "letra": "G",
+     "manos": 5
+    },
+    {
+     "letra": "Z",
+     "manos": 5
+    },
+    {
+     "letra": "D",
+     "manos": 4
+    },
+    {
+     "letra": "H",
+     "manos": 4
+    },
+    {
+     "letra": "E",
+     "manos": 4
+    }
+   ]
+  }
+ }
+}

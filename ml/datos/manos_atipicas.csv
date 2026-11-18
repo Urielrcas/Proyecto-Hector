@@ -1,0 +1,190 @@
+id,letra,giro,escala,grupo,nombre_grupo,distancia_centroide,silueta,atipica
+3359,X,21.0,,5,Estirados: índice · X,18.6077,-0.0137,True
+3398,X,24.0,,5,Estirados: índice · X,18.4962,-0.061,True
+3365,X,13.0,,5,Estirados: índice · X,18.2115,0.0529,True
+3353,X,14.0,,5,Estirados: índice · X,17.4341,0.2052,True
+3423,X,12.0,,5,Estirados: índice · X,17.1144,-0.0784,True
+3334,X,12.0,,5,Estirados: índice · X,16.8677,0.2288,True
+3322,X,8.0,,5,Estirados: índice · X,16.8349,0.1195,True
+3320,X,24.0,,5,Estirados: índice · X,16.5035,0.0048,True
+3401,X,8.0,,5,Estirados: índice · X,16.4068,0.0045,True
+3416,X,22.0,,3,Mezcla de letras,15.2574,0.1288,True
+3361,X,16.0,,5,Estirados: índice · X,14.9047,0.1657,True
+3329,X,15.0,,5,Estirados: índice · X,14.4446,0.0153,True
+3428,X,20.0,,3,Mezcla de letras,14.4349,0.0946,True
+3336,X,23.0,,1,Mano curva,14.3389,0.0776,True
+3338,X,8.0,,5,Estirados: índice · X,14.1198,0.2079,True
+3344,X,17.0,,5,Estirados: índice · X,14.0751,0.0666,True
+3374,X,18.0,,5,Estirados: índice · X,13.9665,0.1838,True
+3410,X,14.0,,5,Estirados: índice · X,13.9381,-0.0552,True
+3357,X,26.0,,1,Mano curva,13.8764,0.0612,True
+3370,X,21.0,,3,Mezcla de letras,13.8119,0.1364,True
+3339,X,26.0,,5,Estirados: índice · X,13.7015,-0.0643,True
+3302,X,16.0,,5,Estirados: índice · X,13.6349,-0.0701,True
+3369,X,19.0,,5,Estirados: índice · X,13.4367,0.0074,True
+3304,X,24.0,,5,Estirados: índice · X,13.394,-0.1119,True
+3313,X,13.0,,5,Estirados: índice · X,13.3418,-0.1288,True
+3376,X,19.0,,5,Estirados: índice · X,13.2896,0.055,True
+3351,X,24.0,,5,Estirados: índice · X,13.2825,0.1479,True
+3409,X,24.0,,5,Estirados: índice · X,13.2585,-0.0647,True
+3393,X,11.0,,5,Estirados: índice · X,13.0369,-0.0327,True
+3425,X,14.0,,5,Estirados: índice · X,12.9596,0.2434,True
+3440,X,26.0,,5,Estirados: índice · X,12.929,-0.0942,True
+3323,X,18.0,,5,Estirados: índice · X,12.8562,-0.0448,True
+3326,X,28.0,,5,Estirados: índice · X,12.8498,-0.1137,True
+3438,X,15.0,,5,Estirados: índice · X,12.8497,0.1408,True
+3377,X,8.0,,5,Estirados: índice · X,12.826,0.0307,True
+3368,X,20.0,,3,Mezcla de letras,12.8156,0.0223,True
+3303,X,23.0,,5,Estirados: índice · X,12.7502,-0.0074,True
+3358,X,28.0,,5,Estirados: índice · X,12.7157,0.0519,True
+3362,X,8.0,,5,Estirados: índice · X,12.6793,0.0757,True
+3315,X,21.0,,2,"Estirados: índice · G, L, Z",12.6544,0.0315,True
+3310,X,16.0,,5,Estirados: índice · X,12.6178,0.1862,True
+3333,X,16.0,,2,"Estirados: índice · G, L, Z",12.5803,0.0079,True
+3356,X,16.0,,2,"Estirados: índice · G, L, Z",12.545,0.0414,True
+3422,X,30.0,,5,Estirados: índice · X,12.4892,-0.1045,True
+3332,X,7.0,,5,Estirados: índice · X,12.3887,0.0768,True
+3352,X,27.0,,5,Estirados: índice · X,12.3362,-0.0216,True
+3394,X,17.0,,5,Estirados: índice · X,12.3005,0.1955,True
+3389,X,12.0,,2,"Estirados: índice · G, L, Z",12.2336,0.0463,True
+3448,X,33.0,,5,Estirados: índice · X,12.1567,0.1638,True
+3437,X,29.0,,5,Estirados: índice · X,12.0199,0.2412,True
+3306,X,16.0,,5,Estirados: índice · X,11.9422,0.3178,True
+3429,X,33.0,,5,Estirados: índice · X,11.9366,0.2211,True
+3391,X,8.0,,5,Estirados: índice · X,11.865,0.1765,True
+3402,X,20.0,,5,Estirados: índice · X,11.8503,0.1713,True
+3404,X,21.0,,5,Estirados: índice · X,11.772,0.2281,True
+3405,X,25.0,,3,Mezcla de letras,11.7272,0.1183,True
+3308,X,15.0,,5,Estirados: índice · X,11.5986,0.3155,True
+3403,X,17.0,,2,"Estirados: índice · G, L, Z",11.3431,0.0399,True
+3350,X,13.0,,2,"Estirados: índice · G, L, Z",11.2893,0.0578,True
+3397,X,16.0,,5,Estirados: índice · X,11.1759,-0.0495,True
+4904,I/J,-8.2,1.17,2,"Estirados: índice · G, L, Z",11.172,0.0449,True
+3346,X,20.0,,2,"Estirados: índice · G, L, Z",11.1693,0.0271,True
+3349,X,31.0,,5,Estirados: índice · X,11.1669,-0.0233,True
+3341,X,9.0,,5,Estirados: índice · X,11.1483,0.1849,True
+3355,X,35.0,,5,Estirados: índice · X,11.1055,0.0436,True
+3431,X,12.0,,5,Estirados: índice · X,11.0402,-0.1753,True
+3420,X,20.0,,5,Estirados: índice · X,10.986,0.2945,True
+3388,X,10.0,,2,"Estirados: índice · G, L, Z",10.8587,0.059,True
+3415,X,28.0,,5,Estirados: índice · X,10.8176,0.1585,True
+3378,X,19.0,,2,"Estirados: índice · G, L, Z",10.7821,0.0326,True
+3305,X,34.0,,5,Estirados: índice · X,10.7539,0.1524,True
+4269,E,-12.3,1.19,1,Mano curva,10.7246,0.1251,True
+3367,X,26.0,,5,Estirados: índice · X,10.7029,0.1512,True
+3419,X,3.0,,5,Estirados: índice · X,10.6729,0.0931,True
+3312,X,22.0,,2,"Estirados: índice · G, L, Z",10.5317,0.0862,True
+3324,X,23.0,,2,"Estirados: índice · G, L, Z",10.5272,0.0391,True
+3408,X,20.0,,5,Estirados: índice · X,10.5251,0.1398,True
+3360,X,25.0,,5,Estirados: índice · X,10.522,0.2557,True
+3418,X,15.0,,5,Estirados: índice · X,10.4525,-0.0418,True
+3383,X,21.0,,5,Estirados: índice · X,10.4049,0.1527,True
+3382,X,5.0,,5,Estirados: índice · X,10.3657,-0.0303,True
+3372,X,30.0,,5,Estirados: índice · X,10.3134,0.1072,True
+3430,X,17.0,,5,Estirados: índice · X,10.2135,-0.0908,True
+3447,X,12.0,,5,Estirados: índice · X,10.2078,-0.0534,True
+3396,X,15.0,,5,Estirados: índice · X,10.2058,0.3222,True
+3347,X,14.0,,5,Estirados: índice · X,10.1996,-0.0073,True
+3379,X,17.0,,5,Estirados: índice · X,10.1635,0.3133,True
+3354,X,13.0,,2,"Estirados: índice · G, L, Z",10.0341,0.0698,True
+3412,X,11.0,,5,Estirados: índice · X,10.0247,0.1589,True
+3433,X,21.0,,5,Estirados: índice · X,9.987,0.2937,True
+3348,X,28.0,,5,Estirados: índice · X,9.9386,0.2802,True
+4284,E,-12.6,1.09,5,Estirados: índice · X,9.9334,0.0753,True
+3307,X,32.0,,5,Estirados: índice · X,9.9296,0.1526,True
+3321,X,3.0,,5,Estirados: índice · X,9.9139,-0.0642,True
+3314,X,12.0,,2,"Estirados: índice · G, L, Z",9.8944,0.0392,True
+3318,X,30.0,,5,Estirados: índice · X,9.8647,0.1262,True
+3434,X,27.0,,5,Estirados: índice · X,9.8164,0.1548,True
+3325,X,23.0,,5,Estirados: índice · X,9.778,0.2065,True
+3328,X,12.0,,2,"Estirados: índice · G, L, Z",9.7556,0.0839,True
+3384,X,12.0,,2,"Estirados: índice · G, L, Z",9.7271,0.0902,True
+3316,X,27.0,,5,Estirados: índice · X,9.6793,0.2266,True
+3441,X,5.0,,5,Estirados: índice · X,9.6785,-0.0896,True
+3443,X,18.0,,5,Estirados: índice · X,9.625,0.3143,True
+3366,X,21.0,,2,"Estirados: índice · G, L, Z",9.5471,0.059,True
+3342,X,18.0,,2,"Estirados: índice · G, L, Z",9.474,0.0773,True
+3421,X,2.0,,5,Estirados: índice · X,9.4297,0.0498,True
+3450,X,30.0,,5,Estirados: índice · X,9.4202,0.2166,True
+3426,X,21.0,,2,"Estirados: índice · G, L, Z",9.4183,0.0527,True
+3414,X,17.0,,2,"Estirados: índice · G, L, Z",9.3468,0.0813,True
+3445,X,7.0,,5,Estirados: índice · X,9.2895,-0.114,True
+3427,X,24.0,,5,Estirados: índice · X,9.2806,0.296,True
+3317,X,27.0,,5,Estirados: índice · X,9.2785,0.2479,True
+3392,X,13.0,,5,Estirados: índice · X,9.2173,-0.0158,True
+3390,X,13.0,,5,Estirados: índice · X,9.1874,-0.1983,True
+3331,X,24.0,,5,Estirados: índice · X,9.0879,0.2845,True
+1965,O,33.0,,1,Mano curva,8.9264,0.0587,True
+3373,X,7.0,,5,Estirados: índice · X,8.8184,0.1858,True
+3411,X,25.0,,2,"Estirados: índice · G, L, Z",8.7634,0.0641,True
+3436,X,16.0,,2,"Estirados: índice · G, L, Z",8.7201,0.1047,True
+710,E,25.0,,4,Puño cerrado,8.7051,0.1264,True
+3335,X,25.0,,2,"Estirados: índice · G, L, Z",8.6458,0.0605,True
+3439,X,25.0,,5,Estirados: índice · X,8.6213,0.297,True
+3446,X,34.0,,2,"Estirados: índice · G, L, Z",8.4655,0.0437,True
+2366,Q,7.0,,4,Puño cerrado,8.4627,0.0782,True
+3400,X,35.0,,5,Estirados: índice · X,8.4283,0.184,True
+1150,H,20.0,,6,"Estirados: índice, medio",8.4267,0.09,True
+3413,X,17.0,,5,Estirados: índice · X,8.4071,-0.1822,True
+3387,X,32.0,,5,Estirados: índice · X,8.3972,0.0875,True
+3371,X,24.0,,2,"Estirados: índice · G, L, Z",8.3866,0.0789,True
+3327,X,22.0,,5,Estirados: índice · X,8.3809,0.2695,True
+3442,X,19.0,,2,"Estirados: índice · G, L, Z",8.3535,0.1181,True
+3364,X,19.0,,2,"Estirados: índice · G, L, Z",8.342,0.0903,True
+3337,X,23.0,,2,"Estirados: índice · G, L, Z",8.2987,0.1207,True
+369,C,21.0,,1,Mano curva,8.2379,0.3887,True
+3283,W,34.0,,8,"Estirados: índice, medio, anular",8.2316,0.0904,True
+3301,X,21.0,,2,"Estirados: índice · G, L, Z",8.1947,0.0964,True
+3375,X,24.0,,2,"Estirados: índice · G, L, Z",8.1667,0.0859,True
+4878,I/J,-3.0,1.19,5,Estirados: índice · X,8.1216,-0.1829,True
+3340,X,17.0,,2,"Estirados: índice · G, L, Z",8.1148,0.1068,True
+2196,P,24.0,,1,Mano curva,7.9878,0.2116,True
+3449,X,6.0,,5,Estirados: índice · X,7.9221,0.2038,True
+3721,Z,23.0,,2,"Estirados: índice · G, L, Z",7.9105,0.0491,True
+2248,P,22.0,,3,Mezcla de letras,7.8983,0.0342,True
+3386,X,15.0,,2,"Estirados: índice · G, L, Z",7.8966,0.1335,True
+746,E,24.0,,4,Puño cerrado,7.8625,0.1237,True
+951,G,23.0,,2,"Estirados: índice · G, L, Z",7.7665,0.1309,True
+3644,Z,21.0,,2,"Estirados: índice · G, L, Z",7.7579,0.0614,True
+3385,X,27.0,,2,"Estirados: índice · G, L, Z",7.7506,0.0804,True
+2192,P,21.0,,3,Mezcla de letras,7.7386,0.0112,True
+1142,H,27.0,,6,"Estirados: índice, medio",7.7062,0.0579,True
+2312,Q,35.0,,2,"Estirados: índice · G, L, Z",7.6821,0.0455,True
+2177,P,16.0,,1,Mano curva,7.6511,0.2017,True
+4863,I/J,2.5,1.15,5,Estirados: índice · X,7.651,-0.1105,True
+3689,Z,23.0,,2,"Estirados: índice · G, L, Z",7.6499,0.0015,True
+949,G,27.0,,2,"Estirados: índice · G, L, Z",7.6424,0.1167,True
+2223,P,22.0,,3,Mezcla de letras,7.6334,0.1323,True
+598,D,11.0,,0,"Estirados: medio, anular, meñique",7.6323,0.1058,True
+3092,V,34.0,,6,"Estirados: índice, medio",7.631,0.1712,True
+3311,X,16.0,,2,"Estirados: índice · G, L, Z",7.6204,0.138,True
+2124,P,23.0,,3,Mezcla de letras,7.5909,0.1388,True
+2153,P,25.0,,3,Mezcla de letras,7.5811,-0.0174,True
+1841,N/Ñ,35.0,,6,"Estirados: índice, medio",7.5793,0.173,True
+2237,P,30.0,,3,Mezcla de letras,7.5589,0.0073,True
+2370,Q,24.0,,2,"Estirados: índice · G, L, Z",7.5237,0.013,True
+3577,Y,17.0,,7,Estirados: meñique,7.5142,0.1847,True
+480,D,16.0,,0,"Estirados: medio, anular, meñique",7.5127,0.051,True
+3635,Z,24.0,,2,"Estirados: índice · G, L, Z",7.5091,0.0604,True
+2268,Q,4.0,,4,Puño cerrado,7.4951,0.0801,True
+1035,G,34.0,,2,"Estirados: índice · G, L, Z",7.4614,0.1518,True
+2752,T,23.0,,4,Puño cerrado,7.4508,0.1827,True
+1025,G,30.0,,2,"Estirados: índice · G, L, Z",7.4454,0.1609,True
+2185,P,25.0,,6,"Estirados: índice, medio",7.4278,0.0549,True
+2403,R,21.0,,6,"Estirados: índice, medio",7.4276,0.1588,True
+3533,Y,25.0,,7,Estirados: meñique,7.4166,0.2116,True
+2749,T,24.0,,4,Puño cerrado,7.4155,0.1438,True
+1075,H,33.0,,6,"Estirados: índice, medio",7.4081,0.1086,True
+481,D,7.0,,0,"Estirados: medio, anular, meñique",7.3761,0.1743,True
+3741,Z,30.0,,2,"Estirados: índice · G, L, Z",7.3602,-0.009,True
+2159,P,12.0,,1,Mano curva,7.3453,0.2256,True
+2209,P,15.0,,1,Mano curva,7.3432,0.2242,True
+2624,S,22.0,,4,Puño cerrado,7.3417,0.1562,True
+1040,G,33.0,,2,"Estirados: índice · G, L, Z",7.3364,0.1547,True
+2174,P,12.0,,3,Mezcla de letras,7.288,0.1209,True
+2317,Q,17.0,,4,Puño cerrado,7.2786,0.0805,True
+2234,P,31.0,,3,Mezcla de letras,7.2783,-0.0163,True
+2118,P,2.0,,1,Mano curva,7.2766,0.1375,True
+2306,Q,15.0,,2,"Estirados: índice · G, L, Z",7.2714,-0.0214,True
+484,D,1.0,,0,"Estirados: medio, anular, meñique",7.2628,0.1727,True
+1190,H,22.0,,6,"Estirados: índice, medio",7.2614,0.1005,True

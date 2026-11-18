@@ -64,6 +64,9 @@ import { cumple } from '../../lib/logica/reglas'
 //     compararConLetra → ¿tu mano es TU forma recordada de esta letra?
 //     pareceOtraLetra → avisa si la forma que vas a guardar se parece mucho a otra letra
 import { compararConLetra, pareceOtraLetra } from '../../lib/ia/memoria'
+// ▸ Desde nuestro proyecto (grupos de K-Means, práctica 07):
+//     letrasParecidas → letras con una forma de mano parecida a esta
+import { letrasParecidas } from '../../lib/ia/grupos/grupos'
 // ▸ Desde nuestro proyecto: src/components/ia/PanelFormaPersonal.tsx:
 //     PanelFormaPersonal → «¿Haces esta letra a tu manera? La IA la puede recordar»
 import { PanelFormaPersonal } from '../../components/ia/PanelFormaPersonal'
@@ -99,6 +102,8 @@ export default function PracticarLetra() {
   const letra = letras[indice]
   const anterior = letras[indice - 1]
   const siguiente = letras[indice + 1]
+  // Letras con forma de mano parecida (K-Means, práctica 07). Los grupos salieron de manos de LSM.
+  const parecidas = letra && lengua !== 'ASL' ? letrasParecidas(letra.letra).slice(0, 5) : []
 
   const [evaluacion, setEvaluacion] = useState<Evaluacion | null>(null) // resultado que se muestra (dedos y consejo)
   const [logradaAhora, setLogradaAhora] = useState(false) // muestra el mensaje "¡Muy bien!"
@@ -310,6 +315,11 @@ export default function PracticarLetra() {
               </>
             )}
           </p>
+          {parecidas.length > 0 && (
+            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+              <strong>Cuidado, se parece a:</strong> {parecidas.join(', ')}. Fíjate bien en los dedos que las hacen distintas.
+            </p>
+          )}
           <p className="mt-3 text-sm text-stone-500">Fuente: {lengua === 'ASL' ? FUENTE_ASL : FUENTE_LSM}.</p>
 
           <div className="mt-auto grid grid-cols-2 gap-3 pt-6">

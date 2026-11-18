@@ -1,0 +1,331 @@
+{
+ "fecha": "2026-11-17",
+ "manos": {
+  "busqueda": 3012,
+  "prueba": 753
+ },
+ "particiones": 5,
+ "busquedas": [
+  {
+   "modelo": "arbol",
+   "grid": {
+    "max_depth": [
+     8,
+     12,
+     16,
+     20,
+     null
+    ],
+    "min_samples_split": [
+     2,
+     5,
+     10
+    ],
+    "min_samples_leaf": [
+     1,
+     3,
+     5
+    ],
+    "criterion": [
+     "gini",
+     "entropy"
+    ]
+   },
+   "combinaciones": 90,
+   "mejores": {
+    "criterion": "entropy",
+    "max_depth": 20,
+    "min_samples_leaf": 1,
+    "min_samples_split": 2
+   },
+   "f1": 0.882,
+   "segundos": 23.6,
+   "top": [
+    {
+     "params": {
+      "criterion": "entropy",
+      "max_depth": 20,
+      "min_samples_leaf": 1,
+      "min_samples_split": 2
+     },
+     "f1": 0.882,
+     "desviacion": 0.0215
+    },
+    {
+     "params": {
+      "criterion": "gini",
+      "max_depth": 16,
+      "min_samples_leaf": 5,
+      "min_samples_split": 10
+     },
+     "f1": 0.8802,
+     "desviacion": 0.0091
+    },
+    {
+     "params": {
+      "criterion": "gini",
+      "max_depth": 16,
+      "min_samples_leaf": 5,
+      "min_samples_split": 5
+     },
+     "f1": 0.8802,
+     "desviacion": 0.0091
+    },
+    {
+     "params": {
+      "criterion": "gini",
+      "max_depth": 16,
+      "min_samples_leaf": 5,
+      "min_samples_split": 2
+     },
+     "f1": 0.8802,
+     "desviacion": 0.0091
+    },
+    {
+     "params": {
+      "criterion": "gini",
+      "max_depth": null,
+      "min_samples_leaf": 5,
+      "min_samples_split": 5
+     },
+     "f1": 0.8802,
+     "desviacion": 0.0091
+    }
+   ],
+   "azar": {
+    "iteraciones": 15,
+    "mejores": {
+     "criterion": "gini",
+     "max_depth": 29,
+     "min_samples_leaf": 5,
+     "min_samples_split": 5
+    },
+    "f1": 0.8802,
+    "segundos": 3.2
+   }
+  },
+  {
+   "modelo": "bosque",
+   "grid": {
+    "n_estimators": [
+     100,
+     200
+    ],
+    "max_depth": [
+     20,
+     null
+    ],
+    "min_samples_leaf": [
+     1,
+     2
+    ],
+    "max_features": [
+     "sqrt",
+     "log2"
+    ]
+   },
+   "combinaciones": 16,
+   "mejores": {
+    "max_depth": 20,
+    "max_features": "log2",
+    "min_samples_leaf": 1,
+    "n_estimators": 200
+   },
+   "f1": 0.9338,
+   "segundos": 22.5,
+   "top": [
+    {
+     "params": {
+      "max_depth": 20,
+      "max_features": "log2",
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+     },
+     "f1": 0.9338,
+     "desviacion": 0.0088
+    },
+    {
+     "params": {
+      "max_depth": null,
+      "max_features": "log2",
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+     },
+     "f1": 0.9335,
+     "desviacion": 0.0079
+    },
+    {
+     "params": {
+      "max_depth": null,
+      "max_features": "sqrt",
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+     },
+     "f1": 0.9326,
+     "desviacion": 0.006
+    },
+    {
+     "params": {
+      "max_depth": 20,
+      "max_features": "sqrt",
+      "min_samples_leaf": 1,
+      "n_estimators": 200
+     },
+     "f1": 0.9323,
+     "desviacion": 0.0081
+    },
+    {
+     "params": {
+      "max_depth": null,
+      "max_features": "log2",
+      "min_samples_leaf": 1,
+      "n_estimators": 100
+     },
+     "f1": 0.9317,
+     "desviacion": 0.0106
+    }
+   ],
+   "azar": {
+    "iteraciones": 15,
+    "mejores": {
+     "max_depth": null,
+     "max_features": "log2",
+     "min_samples_leaf": 1,
+     "n_estimators": 210
+    },
+    "f1": 0.9338,
+    "segundos": 38.5
+   }
+  },
+  {
+   "modelo": "knn",
+   "grid": {
+    "n_neighbors": [
+     1,
+     3,
+     5,
+     7,
+     9,
+     11,
+     15
+    ],
+    "weights": [
+     "uniform",
+     "distance"
+    ],
+    "metric": [
+     "euclidean",
+     "manhattan"
+    ]
+   },
+   "combinaciones": 28,
+   "mejores": {
+    "metric": "manhattan",
+    "n_neighbors": 15,
+    "weights": "distance"
+   },
+   "f1": 0.9176,
+   "segundos": 1.6,
+   "top": [
+    {
+     "params": {
+      "metric": "manhattan",
+      "n_neighbors": 15,
+      "weights": "distance"
+     },
+     "f1": 0.9176,
+     "desviacion": 0.007
+    },
+    {
+     "params": {
+      "metric": "manhattan",
+      "n_neighbors": 11,
+      "weights": "distance"
+     },
+     "f1": 0.9157,
+     "desviacion": 0.008
+    },
+    {
+     "params": {
+      "metric": "manhattan",
+      "n_neighbors": 9,
+      "weights": "distance"
+     },
+     "f1": 0.9145,
+     "desviacion": 0.0066
+    },
+    {
+     "params": {
+      "metric": "manhattan",
+      "n_neighbors": 5,
+      "weights": "distance"
+     },
+     "f1": 0.9145,
+     "desviacion": 0.0117
+    },
+    {
+     "params": {
+      "metric": "manhattan",
+      "n_neighbors": 9,
+      "weights": "uniform"
+     },
+     "f1": 0.9129,
+     "desviacion": 0.0095
+    }
+   ],
+   "azar": {
+    "iteraciones": 15,
+    "mejores": {
+     "metric": "manhattan",
+     "n_neighbors": 15,
+     "weights": "distance"
+    },
+    "f1": 0.9176,
+    "segundos": 1.8
+   }
+  }
+ ],
+ "examen": [
+  {
+   "modelo": "arbol",
+   "antes": {
+    "exactitud": 0.8911,
+    "f1": 0.8915
+   },
+   "despues": {
+    "exactitud": 0.8871,
+    "f1": 0.8861
+   }
+  },
+  {
+   "modelo": "bosque",
+   "antes": {
+    "exactitud": 0.9336,
+    "f1": 0.9324
+   },
+   "despues": {
+    "exactitud": 0.9389,
+    "f1": 0.938
+   }
+  },
+  {
+   "modelo": "knn",
+   "antes": {
+    "exactitud": 0.8977,
+    "f1": 0.8963
+   },
+   "despues": {
+    "exactitud": 0.919,
+    "f1": 0.9181
+   }
+  }
+ ],
+ "ganador": "bosque",
+ "particionesGanador": [
+  0.9221,
+  0.9363,
+  0.938,
+  0.9262,
+  0.9466
+ ]
+}
