@@ -1,0 +1,69 @@
+{
+ "descripcion": "CNN 1D de regresi\u00f3n (ml/p27_entrenar_prediccion.py): puntaje del siguiente intento a partir de los dos anteriores.",
+ "canales": [
+  "puntaje",
+  "segundos",
+  "logro"
+ ],
+ "maxSegundos": 30,
+ "mae": 17.01,
+ "capas": {
+  "red.0.weight": {
+   "forma": [
+    16,
+    3,
+    2
+   ],
+   "datos": "AN+mPmkn1b7gnJa99lJ+vppui75Kd7Q9b71IvqCRHj1cQu2+2qyNvmB1+z3mhSG+LNVLPiN72D75y8k9JR9XPfgloT5zlES+/XCuPj5xwT6mg62+/awAvunyFD5yzN66PVjGPqFpO739QHo+ivsMuzB4lj7Yejc8+z6evl/Pk77R4rs+lil6Pvpegb6GwZK++u3hPZvpVr2ydc+8evcTvegkSz6MrBK+UNCcvkLdlr5ga5Q8GGWFPiCMKj5KJBG+w3uLvo7WLT6KuLG87OjBPr4Ofr7U14M+tGdZvdrUW75FXE++xHOZvjyPjL0a2bk+rwxUvZ9GHT4140q8P569vnrCX76LaFC9AWGhPtJioj1HIau+IezqvpgSyL7Ra9G9YB0UvmoWgD47iY++UY/3u0avgr3adFc99CLqvtll5z66QSm+eTTHvmK2Db5DJNQ7kMgFPhYKHr6gIRG8S7ibvtmWTb6KBEq+DmSDvlDCV73sjdK9wCjwvMU3sr6ApQC9"
+  },
+  "red.0.bias": {
+   "forma": [
+    16
+   ],
+   "datos": "5ECsPSynyz4k3+07bPYtvjzpyT5xKHE9EZuyvj4Bdb7pWCm+TikCP8zD6z3ySpE+RJNXPmMaP75K8Va+gLqZvg=="
+  },
+  "red.3.weight": {
+   "forma": [
+    16,
+    16
+   ],
+   "datos": "NInlPNstHz4k6mU8br/bvWeH+D1PZTY+kw0fPuYyIL7kCKG9S2ZSviyldL700Ki9ai4VvgRsZz5cDTa+eP5yPX+D/r3YOlA+6psWvTwjDL5cQIu9WcUTvyCFPj4YHhM9QNJdPv9BQT5iVps+yM2XPjYpYD6DsB4+egEWPqSq2r306Aq+pReMvgzr5LuXDsG9AW0mvEShez1TY6I9MONuvRi4rDw5Wqo9H+7HPL41S75YApU8kMu2PRjbiz1eFks+AiEEvTE3Cz+vLd+9RIGjPhTPaj5q5S++NYoEPejRNz5i6z0+EQvRPhoWFT0AqsU+RUu7PpaLLD3q+0o+Xl00PvprUjlOmti8H3LYvO+eX708yYe9Y+CePao2jDy0AMC9AvKrvm7Ntb6A3R69QRQFvlALhL44WAu+CmFLPqhIHb1oXA29KgL2vMP8/TwB6V2+oFGXvPAxV74YRga+OK48veboOr4zL4c9xQsrvvrbFz05AhW+qVY8Pg4MML4A9BW8UHaVvdDDKz5+chy91KkvPqfbGj3IrC69ULkjvVRwBb4smLu9ikexvRQnMD44mjw+xkJ0vjApFb2o0xU+NLbqPbqtzr0w3Py9zF1HvgREXL50R5C+gMyVvLJWYT7gMT29N3mKvcUnDr3Wu+Q92xVGPtuGcL07VzK+TI7SvYS1aL5W3qO9O9qRvT1ukr58gDC+Y4kbvkzSvbvMbN09vvo7vnrZjr4J5BQ+fJQgPsu6Tz7uD6G8BP9jvTjzXr1Iz7+9PQdAvuCAH7x+Jk+8ohwFvhSaH750+pO9gFQvvKBOpT1T6iA+3KSdPWKOsL049u29c7GZPMYMLT7wvq09/ONrPtMGMj5BgJY9cwjLPIvMQT6G3aY6rCiUvljTbz0gkMK8RV+2PBdNkj6Jk8o+nSgPPtVYsD02z6M+cG0pPdzwHL7QMEY94cyFPlGPsD6AzAq+sZq8PqXTCL+yuxC+wPASPZw7C73tbHk8d9ETPp0DFz7/HFU9AG4fPlZcNb541mM+aCvIvZnHC70cOhg+oRogvoXJMb3MGNw9FBZKPnSRET5sDcG94NVFvIfiCrz0l3a+HtVTvoDkATsGLwm+6OC8PeY9QD4Iodu9fHB5Pbgkgz333n2+uW4cPvhw+L1wFN68tEBUvgftFT7wF2K+RyMdPgDE3DwsFdu9kJx6vd4XYr5EzH++wEdhPnStjL2w+S6+oNymvOSBP75kmrE9APv7vKDb0L2gG709tCgiPtB4qr0Yezu+rH4HvlZ/Cb4wy6m962+VPaRRxD0vd5M+IoJ5PmYYdD6iQp2+WHxkvXBV2L25PRK+2dfcPeTcUb0/9Ro+N6xqPqAJHj6ADya74GVKvA=="
+  },
+  "red.3.bias": {
+   "forma": [
+    16
+   ],
+   "datos": "TUMNviTqqD5VjaS9tzBhPp+E4T1Km/m8rnmOvlM0ubx+Ygq9G4WdvWzSWD7a8IQ9ZSHivRaCI70gZ3+97a9kPg=="
+  },
+  "red.5.weight": {
+   "forma": [
+    1,
+    16
+   ],
+   "datos": "T3NMPLVxUj5k0dS9z0q2PgitCL7ncnu9Ta4wOvTDKb24Xr29UavjvEblRz4ZR50+yUDAvazqaDzKUgM+A+WbPg=="
+  },
+  "red.5.bias": {
+   "forma": [
+    1
+   ],
+   "datos": "WjbUvQ=="
+  }
+ },
+ "prueba": {
+  "entrada": [
+   [
+    0.800000011920929,
+    1.0
+   ],
+   [
+    0.07000000029802322,
+    0.09333333373069763
+   ],
+   [
+    0.0,
+    1.0
+   ]
+  ],
+  "salida": 93.5242
+ }
+}

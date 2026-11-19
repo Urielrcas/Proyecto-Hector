@@ -21,6 +21,8 @@
  *      (la red aprendió cómo hace las letras ESTA persona).
  *   7. Árbol de decisión (machine learning, entrenado en Python con scikit-learn: ml/p03_modelo.py):
  *      solo en LSM; con el mismo seguro que la red, confirma letras cuya forma ya casi se cumple.
+ *   7b. Red convolucional 1D (PyTorch, ml/p24_entrenar_cnn1d.py; 96 % en el examen): solo en LSM y con el
+ *      mismo seguro que el árbol; lee los 21 puntos como una secuencia, dedo por dedo.
  *   8. Memoria de tus señas: si la mano coincide con la forma PERSONAL que el usuario le enseñó
  *      a la IA (ej.: su A con los dedos un poco distintos), esa letra también cuenta (lib/ia/memoria.ts).
  */
@@ -55,9 +57,15 @@ import { reconocerPersonal, type Memoria } from '../ia/memoria'
 // ▸ Desde nuestro proyecto: src/lib/ia/arbol/arbol.ts:
 //     predecirConArbol → recorre el árbol de decisión entrenado con scikit-learn
 import { predecirConArbol } from '../ia/arbol/arbol'
+// ▸ Desde nuestro proyecto: src/lib/ia/cnn1d/cnn1d.ts:
+//     predecirConCnn1d → la red convolucional 1D entrenada con PyTorch (prácticas 23 a 25)
+import { predecirConCnn1d } from '../ia/cnn1d/cnn1d'
 
 /** Seguridad mínima de la hoja del árbol para sumar su opinión. */
 export const UMBRAL_ARBOL = 0.8
+
+/** Probabilidad mínima de la red 1D para sumar su opinión. */
+export const UMBRAL_CNN1D = 0.9
 
 /** Probabilidad mínima de la red neuronal para sumar su opinión a las reglas. */
 export const UMBRAL_IA = 0.9
@@ -107,6 +115,8 @@ export interface EstadoReconocedor {
   personal: string | null
   /** Lo que dice el árbol de decisión (solo LSM). Ej.: { nombre: 'B', seguridad: 0.97 }. */
   arbol: { nombre: string; seguridad: number } | null
+  /** Lo que dice la red convolucional 1D (solo LSM). Ej.: { nombre: 'B', probabilidad: 0.99 }. */
+  cnn1d: { nombre: string; probabilidad: number } | null
 }
 
 export class ReconocedorDeletreo {
@@ -143,7 +153,7 @@ export class ReconocedorDeletreo {
 
   /** Procesa un cuadro de la cámara: los 21 puntos (o null si no hay mano) y el tiempo en ms. */
   procesar(puntos: Punto[] | null, tiempo: number): EstadoReconocedor {
-    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null, ia: null, personal: null, arbol: null }
+    const vacio = { candidata: null, confianza: 0, gemelaConMovimiento: null, letraNueva: null, ia: null, personal: null, arbol: null, cnn1d: null }
 
     // ── Sin mano: reiniciar y, si pasó el tiempo, cerrar la palabra (regla s ∧ u) ──
     if (!puntos) {
@@ -186,6 +196,19 @@ export class ReconocedorDeletreo {
       const p = predecirConArbol(puntos)
       arbol = { nombre: p.nombre, seguridad: p.seguridad }
       if (p.seguridad >= UMBRAL_ARBOL) {
+        for (const nombre of p.letras) {
+          const letra = this.letras.find((l) => l.letra === nombre)
+          const r = letra && evaluar(puntos, letra.objetivo)
+          if (r && r.dedosOk.pulgar && r.consejos.length <= MAX_DIFERENCIAS_IA) cumplen.add(nombre)
+        }
+      }
+    }
+    // Red convolucional 1D: mismo seguro que el árbol.
+    let cnn1d: EstadoReconocedor['cnn1d'] = null
+    if (this.usarArbol) {
+      const p = predecirConCnn1d(puntos)
+      cnn1d = { nombre: p.nombre, probabilidad: p.probabilidad }
+      if (p.probabilidad >= UMBRAL_CNN1D) {
         for (const nombre of p.letras) {
           const letra = this.letras.find((l) => l.letra === nombre)
           const r = letra && evaluar(puntos, letra.objetivo)
@@ -267,7 +290,7 @@ export class ReconocedorDeletreo {
       this.seguidos.clear()
       this.detectores.clear()
       this.letraDesdeEspacio = true
-      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0, ia, personal, arbol }
+      return { hayMano: true, candidata: aceptada, confianza: 1, aviso: 'aceptada', gemelaConMovimiento: null, letraNueva: aceptada.letra, espacio: false, msSinMano: 0, ia, personal, arbol, cnn1d }
     }
 
     const aviso: Aviso = !candidata
@@ -289,6 +312,7 @@ export class ReconocedorDeletreo {
       ia,
       personal,
       arbol,
+      cnn1d,
     }
   }
 }

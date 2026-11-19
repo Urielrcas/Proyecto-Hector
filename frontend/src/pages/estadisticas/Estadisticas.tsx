@@ -41,6 +41,8 @@ import type { Lengua } from '../../lib/tipos'
 //     NombreGrafica → tipo: 'registros' | 'usuarios' | 'letras' | 'avance'
 //     ResumenEstadisticas → tipo: los números de las tarjetas
 import { obtenerGrafica, obtenerResumen, type NombreGrafica, type ResumenEstadisticas } from '../../services/estadisticas'
+// ▸ Desde nuestro proyecto: el tablero de práctica (intentos de todos los usuarios)
+import { TableroIntentos } from './TableroIntentos'
 
 // Textos de cada gráfica: la pregunta que responde y cómo leerla.
 const GRAFICAS: Record<NombreGrafica, { titulo: string; pregunta: string; comoLeer: string }> = {
@@ -235,6 +237,15 @@ export default function Estadisticas() {
         <TarjetaGrafica nombre="letras" lengua={lengua} recarga={recarga} />
         <TarjetaGrafica nombre="avance" lengua={lengua} recarga={recarga} />
       </div>
+
+      {/* Tablero de práctica: intentos de todos los usuarios (prácticas 16 y 17) */}
+      <div className="mt-10 mb-4">
+        <h2 className="text-xl font-bold">Tablero de práctica ({lengua})</h2>
+        <p className="text-stone-600">
+          Cada intento de practicar una letra, también los fallidos: qué letras cuestan más, con qué se confunden y quién necesita ayuda.
+        </p>
+      </div>
+      <TableroIntentos lengua={lengua} recarga={recarga} />
 
       {/* Inteligencia artificial: modelo del estudiante, red neuronal y autocorrector (de todos los usuarios) */}
       <div className="mt-10 mb-4">

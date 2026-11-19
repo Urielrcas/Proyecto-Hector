@@ -35,6 +35,9 @@ async def conectar(uri: str, nombre_db: str) -> AsyncDatabase:
     await _conexion.db.historial.create_index([("usuario_id", 1), ("actualizado_en", -1)])
     await _conexion.db.modelos_ia.create_index([("usuario_id", 1), ("lengua", 1)], unique=True)
     await _conexion.db.partidas.create_index([("usuario_id", 1), ("fecha", -1)])
+    # Intentos de práctica: se consultan por persona y lengua, en orden de fecha (expediente).
+    await _conexion.db.intentos.create_index([("usuario_id", 1), ("lengua", 1), ("fecha", 1)])
+    await _conexion.db.intentos.create_index([("lengua", 1), ("fecha", 1)])
     return _conexion.db
 
 

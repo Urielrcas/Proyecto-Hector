@@ -410,3 +410,137 @@ class ModeloIAEntrada(BaseModel):
 
 class ModeloIASalida(BaseModel):
     modelo: ModeloIA | None
+
+
+# ── Intentos de práctica, expediente y consejos (prácticas 16, 18, 19, 26 y 27) ──
+Dedo = Literal["pulgar", "indice", "medio", "anular", "menique"]
+
+
+# Un intento de hacer una letra en «Practicar letra».
+class IntentoEntrada(BaseModel):
+    lengua: Lengua
+    letra: str = Field(min_length=1, max_length=2)
+    acierto: bool  # ¿la logró?
+    puntaje: int = Field(ge=0, le=100)  # qué tanto de la seña estuvo bien en su mejor momento (dedos × 20)
+    segundos: float = Field(ge=0, le=600)  # cuánto duró el intento
+    letra_detectada: str | None = Field(default=None, max_length=5)  # si falló: con qué letra la confundió la IA
+    dedos_fallados: list[Dedo] = Field(default_factory=list, max_length=5)
+
+
+class ConfusionSalida(BaseModel):
+    letra: str
+    veces: int
+
+
+class PrediccionSalida(BaseModel):
+    puntaje: int  # puntaje esperado del siguiente intento (0 a 100)
+    mensaje: str
+
+
+# El resumen de una letra en el expediente.
+class LetraExpediente(BaseModel):
+    letra: str
+    intentos: int
+    aciertos: int
+    tasa: float  # aciertos / intentos (0 a 1)
+    puntaje_promedio: float
+    ultimo_puntaje: int
+    lograda: bool  # está en el progreso (colección «progreso»)
+    estado: Literal["dominada", "en progreso", "difícil", "sin practicar"]
+    tendencia: Literal["mejorando", "estable", "bajando"]
+    confundida_con: list[ConfusionSalida]
+    dedo_mas_fallado: Dedo | None
+    ultima_vez: datetime | None
+    prediccion: PrediccionSalida | None
+
+
+class Recomendacion(BaseModel):
+    tipo: Literal["dificil", "confusion", "grupo", "repaso", "mejorando", "siguiente", "inactividad", "inicio"]
+    prioridad: int  # 1 = lo más importante
+    letra: str | None
+    mensaje: str
+
+
+class ResumenExpediente(BaseModel):
+    intentos: int
+    aciertos: int
+    tasa: float
+    puntaje_promedio: float
+    letras_practicadas: int
+    letras_logradas: int
+    total_letras: int
+    dias_practicados: int
+    ultima_practica: datetime | None
+
+
+# El expediente de aprendizaje de una persona (práctica 19: registro integral).
+class ExpedienteSalida(BaseModel):
+    usuario_id: str
+    nombre: str
+    lengua: Lengua
+    resumen: ResumenExpediente
+    letras: list[LetraExpediente]  # en orden del alfabeto (incluye las no practicadas)
+    recomendaciones: list[Recomendacion]
+    siguiente: str | None  # la letra que conviene practicar ahora
+
+
+# Tablero del administrador (práctica 16: consultas con aggregate).
+class LetraTablero(BaseModel):
+    letra: str
+    intentos: int
+    aciertos: int
+    tasa: float
+    puntaje: float
+    personas: int
+
+
+class ConfusionTablero(BaseModel):
+    letra: str
+    confundida_con: str
+    veces: int
+
+
+class PersonaTablero(BaseModel):
+    usuario_id: str
+    nombre: str
+    correo: str
+    intentos: int
+    aciertos: int
+    tasa: float
+    puntaje: float
+    letras: int
+    ultima_vez: datetime | None
+    necesita_ayuda: bool
+
+
+class GrupoTablero(BaseModel):
+    grupo: str
+    letras: list[str]
+    intentos: int
+    tasa: float
+
+
+class DiaTablero(BaseModel):
+    fecha: str  # AAAA-MM-DD
+    intentos: int
+    aciertos: int
+
+
+class DedoTablero(BaseModel):
+    dedo: Dedo
+    veces: int
+
+
+class TableroIntentos(BaseModel):
+    intentos: int
+    aciertos: int
+    tasa: float
+    puntaje: float
+    personas: int
+    necesitan_ayuda: int
+    letras: list[LetraTablero]  # de la más difícil a la más fácil
+    confusiones: list[ConfusionTablero]
+    personas_detalle: list[PersonaTablero]  # quien necesita ayuda primero
+    grupos: list[GrupoTablero]
+    por_dia: list[DiaTablero]
+    dedos: list[DedoTablero]  # qué dedo se falla más

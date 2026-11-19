@@ -1,0 +1,949 @@
+{
+ "spark": {
+  "fecha": "2026-11-19",
+  "leidas": 50500,
+  "rechazadas": {
+   "sin medidas": 200,
+   "fuera de rango": 150
+  },
+  "duplicadas": 496,
+  "finales": 49654,
+  "letras": 25,
+  "nucleos": 12,
+  "segundos": 69.0,
+  "pesoCsvMB": 23.0,
+  "pesoParquetMB": 13.1,
+  "porGiro": [
+   {
+    "tramo": "0-10°",
+    "manos": 5128,
+    "reglas": 75.4
+   },
+   {
+    "tramo": "10-20°",
+    "manos": 16442,
+    "reglas": 70.9
+   },
+   {
+    "tramo": "20-35°",
+    "manos": 28084,
+    "reglas": 61.6
+   }
+  ],
+  "porLetra": [
+   {
+    "letra": "A",
+    "manos": 1987,
+    "estirados": 0.35,
+    "pulgar": 172.6,
+    "reglas": 97.3
+   },
+   {
+    "letra": "B",
+    "manos": 1994,
+    "estirados": 4.0,
+    "pulgar": 169.7,
+    "reglas": 70.5
+   },
+   {
+    "letra": "C",
+    "manos": 1985,
+    "estirados": 0.28,
+    "pulgar": 167.9,
+    "reglas": 22.1
+   },
+   {
+    "letra": "D",
+    "manos": 1985,
+    "estirados": 2.26,
+    "pulgar": 169.6,
+    "reglas": 70.7
+   },
+   {
+    "letra": "E",
+    "manos": 1989,
+    "estirados": 0.36,
+    "pulgar": 169.8,
+    "reglas": 91.8
+   },
+   {
+    "letra": "F",
+    "manos": 1980,
+    "estirados": 3.41,
+    "pulgar": 167.7,
+    "reglas": 82.9
+   },
+   {
+    "letra": "G",
+    "manos": 1987,
+    "estirados": 1.47,
+    "pulgar": 173.6,
+    "reglas": 87.9
+   },
+   {
+    "letra": "H",
+    "manos": 1987,
+    "estirados": 2.29,
+    "pulgar": 173.5,
+    "reglas": 57.1
+   },
+   {
+    "letra": "I/J",
+    "manos": 1990,
+    "estirados": 1.26,
+    "pulgar": 172.8,
+    "reglas": 92.6
+   },
+   {
+    "letra": "K",
+    "manos": 1987,
+    "estirados": 2.21,
+    "pulgar": 171.2,
+    "reglas": 70.1
+   },
+   {
+    "letra": "L",
+    "manos": 1989,
+    "estirados": 1.26,
+    "pulgar": 173.6,
+    "reglas": 81.0
+   },
+   {
+    "letra": "M",
+    "manos": 1983,
+    "estirados": 3.08,
+    "pulgar": 169.6,
+    "reglas": 71.4
+   },
+   {
+    "letra": "N/Ñ",
+    "manos": 1977,
+    "estirados": 2.19,
+    "pulgar": 169.4,
+    "reglas": 71.9
+   },
+   {
+    "letra": "O",
+    "manos": 1987,
+    "estirados": 0.29,
+    "pulgar": 169.8,
+    "reglas": 51.8
+   },
+   {
+    "letra": "P",
+    "manos": 1987,
+    "estirados": 1.99,
+    "pulgar": 171.7,
+    "reglas": 0.0
+   },
+   {
+    "letra": "Q",
+    "manos": 1993,
+    "estirados": 0.68,
+    "pulgar": 162.3,
+    "reglas": 48.1
+   },
+   {
+    "letra": "R",
+    "manos": 1986,
+    "estirados": 2.18,
+    "pulgar": 172.7,
+    "reglas": 59.3
+   },
+   {
+    "letra": "S",
+    "manos": 1979,
+    "estirados": 0.34,
+    "pulgar": 172.8,
+    "reglas": 51.3
+   },
+   {
+    "letra": "T",
+    "manos": 1987,
+    "estirados": 0.39,
+    "pulgar": 171.4,
+    "reglas": 52.7
+   },
+   {
+    "letra": "U",
+    "manos": 1989,
+    "estirados": 2.18,
+    "pulgar": 172.8,
+    "reglas": 66.5
+   },
+   {
+    "letra": "V",
+    "manos": 1990,
+    "estirados": 2.2,
+    "pulgar": 173.2,
+    "reglas": 91.2
+   },
+   {
+    "letra": "W",
+    "manos": 1987,
+    "estirados": 3.12,
+    "pulgar": 172.9,
+    "reglas": 90.1
+   },
+   {
+    "letra": "X",
+    "manos": 1987,
+    "estirados": 1.01,
+    "pulgar": 158.4,
+    "reglas": 0.8
+   },
+   {
+    "letra": "Y",
+    "manos": 1980,
+    "estirados": 1.28,
+    "pulgar": 173.6,
+    "reglas": 81.5
+   },
+   {
+    "letra": "Z",
+    "manos": 1982,
+    "estirados": 1.27,
+    "pulgar": 172.9,
+    "reglas": 92.5
+   }
+  ]
+ },
+ "mongo": {
+  "fecha": "2026-11-19",
+  "coleccion": "manos_masivas",
+  "documentos": 49654,
+  "nuevas": 49654,
+  "actualizadas": 0,
+  "particiones": 4,
+  "lote": 1000,
+  "segundos": 94.4
+ },
+ "preparacion": {
+  "fecha": "2026-11-19",
+  "manos": {
+   "entrenamiento": 51913,
+   "deP03": 2259,
+   "masivas": 49654,
+   "validacion": 753,
+   "prueba": 753
+  },
+  "forma": [
+   3,
+   21
+  ],
+  "canales": [
+   "u",
+   "v",
+   "r"
+  ],
+  "clases": 25
+ },
+ "entrenamiento": {
+  "fecha": "2026-11-19",
+  "dispositivo": "cpu",
+  "parametros": 31801,
+  "epocas": 53,
+  "epocaMejor": 45,
+  "paciencia": 8,
+  "lote": 128,
+  "segundos": 288.6,
+  "historia": [
+   {
+    "epoca": 1,
+    "perdida": 0.7966,
+    "exactitud": 0.7219,
+    "perdidaVal": 0.1965,
+    "exactitudVal": 0.915
+   },
+   {
+    "epoca": 2,
+    "perdida": 0.2189,
+    "exactitud": 0.9052,
+    "perdidaVal": 0.1553,
+    "exactitudVal": 0.927
+   },
+   {
+    "epoca": 3,
+    "perdida": 0.1816,
+    "exactitud": 0.9188,
+    "perdidaVal": 0.1598,
+    "exactitudVal": 0.9243
+   },
+   {
+    "epoca": 4,
+    "perdida": 0.159,
+    "exactitud": 0.9264,
+    "perdidaVal": 0.1442,
+    "exactitudVal": 0.9469
+   },
+   {
+    "epoca": 5,
+    "perdida": 0.151,
+    "exactitud": 0.9286,
+    "perdidaVal": 0.1573,
+    "exactitudVal": 0.9309
+   },
+   {
+    "epoca": 6,
+    "perdida": 0.1402,
+    "exactitud": 0.9321,
+    "perdidaVal": 0.1385,
+    "exactitudVal": 0.9495
+   },
+   {
+    "epoca": 7,
+    "perdida": 0.1365,
+    "exactitud": 0.9336,
+    "perdidaVal": 0.1417,
+    "exactitudVal": 0.9522
+   },
+   {
+    "epoca": 8,
+    "perdida": 0.1293,
+    "exactitud": 0.9376,
+    "perdidaVal": 0.1306,
+    "exactitudVal": 0.9562
+   },
+   {
+    "epoca": 9,
+    "perdida": 0.1247,
+    "exactitud": 0.939,
+    "perdidaVal": 0.1337,
+    "exactitudVal": 0.9522
+   },
+   {
+    "epoca": 10,
+    "perdida": 0.1203,
+    "exactitud": 0.9417,
+    "perdidaVal": 0.1354,
+    "exactitudVal": 0.9509
+   },
+   {
+    "epoca": 11,
+    "perdida": 0.1178,
+    "exactitud": 0.942,
+    "perdidaVal": 0.1318,
+    "exactitudVal": 0.9495
+   },
+   {
+    "epoca": 12,
+    "perdida": 0.1128,
+    "exactitud": 0.9433,
+    "perdidaVal": 0.1288,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 13,
+    "perdida": 0.1105,
+    "exactitud": 0.9442,
+    "perdidaVal": 0.1279,
+    "exactitudVal": 0.9522
+   },
+   {
+    "epoca": 14,
+    "perdida": 0.1063,
+    "exactitud": 0.9477,
+    "perdidaVal": 0.1383,
+    "exactitudVal": 0.9495
+   },
+   {
+    "epoca": 15,
+    "perdida": 0.1065,
+    "exactitud": 0.9467,
+    "perdidaVal": 0.1277,
+    "exactitudVal": 0.9509
+   },
+   {
+    "epoca": 16,
+    "perdida": 0.1048,
+    "exactitud": 0.9461,
+    "perdidaVal": 0.1266,
+    "exactitudVal": 0.9615
+   },
+   {
+    "epoca": 17,
+    "perdida": 0.101,
+    "exactitud": 0.948,
+    "perdidaVal": 0.1241,
+    "exactitudVal": 0.9641
+   },
+   {
+    "epoca": 18,
+    "perdida": 0.1012,
+    "exactitud": 0.9486,
+    "perdidaVal": 0.1362,
+    "exactitudVal": 0.9535
+   },
+   {
+    "epoca": 19,
+    "perdida": 0.1015,
+    "exactitud": 0.9476,
+    "perdidaVal": 0.1212,
+    "exactitudVal": 0.9562
+   },
+   {
+    "epoca": 20,
+    "perdida": 0.0961,
+    "exactitud": 0.9508,
+    "perdidaVal": 0.13,
+    "exactitudVal": 0.9548
+   },
+   {
+    "epoca": 21,
+    "perdida": 0.0984,
+    "exactitud": 0.9496,
+    "perdidaVal": 0.1307,
+    "exactitudVal": 0.9588
+   },
+   {
+    "epoca": 22,
+    "perdida": 0.0936,
+    "exactitud": 0.9512,
+    "perdidaVal": 0.1301,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 23,
+    "perdida": 0.0966,
+    "exactitud": 0.9493,
+    "perdidaVal": 0.1294,
+    "exactitudVal": 0.9615
+   },
+   {
+    "epoca": 24,
+    "perdida": 0.0939,
+    "exactitud": 0.9509,
+    "perdidaVal": 0.1316,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 25,
+    "perdida": 0.0909,
+    "exactitud": 0.9522,
+    "perdidaVal": 0.1308,
+    "exactitudVal": 0.9522
+   },
+   {
+    "epoca": 26,
+    "perdida": 0.0944,
+    "exactitud": 0.9509,
+    "perdidaVal": 0.1247,
+    "exactitudVal": 0.9588
+   },
+   {
+    "epoca": 27,
+    "perdida": 0.0927,
+    "exactitud": 0.9521,
+    "perdidaVal": 0.1186,
+    "exactitudVal": 0.9615
+   },
+   {
+    "epoca": 28,
+    "perdida": 0.0913,
+    "exactitud": 0.9517,
+    "perdidaVal": 0.1246,
+    "exactitudVal": 0.9681
+   },
+   {
+    "epoca": 29,
+    "perdida": 0.0892,
+    "exactitud": 0.9537,
+    "perdidaVal": 0.1165,
+    "exactitudVal": 0.9708
+   },
+   {
+    "epoca": 30,
+    "perdida": 0.0905,
+    "exactitud": 0.9529,
+    "perdidaVal": 0.1229,
+    "exactitudVal": 0.9615
+   },
+   {
+    "epoca": 31,
+    "perdida": 0.0893,
+    "exactitud": 0.9536,
+    "perdidaVal": 0.1189,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 32,
+    "perdida": 0.0884,
+    "exactitud": 0.9538,
+    "perdidaVal": 0.1239,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 33,
+    "perdida": 0.0865,
+    "exactitud": 0.9544,
+    "perdidaVal": 0.1179,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 34,
+    "perdida": 0.0871,
+    "exactitud": 0.9539,
+    "perdidaVal": 0.1298,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 35,
+    "perdida": 0.0868,
+    "exactitud": 0.954,
+    "perdidaVal": 0.1187,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 36,
+    "perdida": 0.0859,
+    "exactitud": 0.9541,
+    "perdidaVal": 0.1248,
+    "exactitudVal": 0.9628
+   },
+   {
+    "epoca": 37,
+    "perdida": 0.0855,
+    "exactitud": 0.9539,
+    "perdidaVal": 0.1156,
+    "exactitudVal": 0.9655
+   },
+   {
+    "epoca": 38,
+    "perdida": 0.084,
+    "exactitud": 0.9548,
+    "perdidaVal": 0.1177,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 39,
+    "perdida": 0.0839,
+    "exactitud": 0.9546,
+    "perdidaVal": 0.119,
+    "exactitudVal": 0.9588
+   },
+   {
+    "epoca": 40,
+    "perdida": 0.0822,
+    "exactitud": 0.9549,
+    "perdidaVal": 0.1222,
+    "exactitudVal": 0.9588
+   },
+   {
+    "epoca": 41,
+    "perdida": 0.0823,
+    "exactitud": 0.9569,
+    "perdidaVal": 0.1197,
+    "exactitudVal": 0.9548
+   },
+   {
+    "epoca": 42,
+    "perdida": 0.0817,
+    "exactitud": 0.9564,
+    "perdidaVal": 0.1296,
+    "exactitudVal": 0.9575
+   },
+   {
+    "epoca": 43,
+    "perdida": 0.0809,
+    "exactitud": 0.9558,
+    "perdidaVal": 0.1202,
+    "exactitudVal": 0.9641
+   },
+   {
+    "epoca": 44,
+    "perdida": 0.0816,
+    "exactitud": 0.9566,
+    "perdidaVal": 0.1243,
+    "exactitudVal": 0.9628
+   },
+   {
+    "epoca": 45,
+    "perdida": 0.0825,
+    "exactitud": 0.9561,
+    "perdidaVal": 0.1103,
+    "exactitudVal": 0.9681
+   },
+   {
+    "epoca": 46,
+    "perdida": 0.0797,
+    "exactitud": 0.957,
+    "perdidaVal": 0.1219,
+    "exactitudVal": 0.9655
+   },
+   {
+    "epoca": 47,
+    "perdida": 0.0799,
+    "exactitud": 0.9571,
+    "perdidaVal": 0.1298,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 48,
+    "perdida": 0.0822,
+    "exactitud": 0.9563,
+    "perdidaVal": 0.1247,
+    "exactitudVal": 0.9641
+   },
+   {
+    "epoca": 49,
+    "perdida": 0.0793,
+    "exactitud": 0.957,
+    "perdidaVal": 0.1187,
+    "exactitudVal": 0.9628
+   },
+   {
+    "epoca": 50,
+    "perdida": 0.0798,
+    "exactitud": 0.957,
+    "perdidaVal": 0.1289,
+    "exactitudVal": 0.9602
+   },
+   {
+    "epoca": 51,
+    "perdida": 0.0808,
+    "exactitud": 0.9585,
+    "perdidaVal": 0.1265,
+    "exactitudVal": 0.9588
+   },
+   {
+    "epoca": 52,
+    "perdida": 0.0801,
+    "exactitud": 0.9574,
+    "perdidaVal": 0.1397,
+    "exactitudVal": 0.9509
+   },
+   {
+    "epoca": 53,
+    "perdida": 0.0781,
+    "exactitud": 0.9582,
+    "perdidaVal": 0.1226,
+    "exactitudVal": 0.9602
+   }
+  ],
+  "examen": {
+   "exactitud": 0.9602,
+   "precision": 0.9606,
+   "recall": 0.96,
+   "f1": 0.9599
+  },
+  "confusiones": [
+   {
+    "real": "L",
+    "dijo": "G",
+    "veces": 13
+   },
+   {
+    "real": "G",
+    "dijo": "L",
+    "veces": 11
+   },
+   {
+    "real": "U",
+    "dijo": "N/Ñ",
+    "veces": 3
+   },
+   {
+    "real": "S",
+    "dijo": "E",
+    "veces": 1
+   },
+   {
+    "real": "U",
+    "dijo": "V",
+    "veces": 1
+   },
+   {
+    "real": "W",
+    "dijo": "F",
+    "veces": 1
+   }
+  ]
+ },
+ "comparacion": {
+  "fecha": "2026-11-19",
+  "modelos": {
+   "cnn1d": {
+    "exactitud": 0.9602,
+    "precision": 0.9606,
+    "recall": 0.96,
+    "f1": 0.9599,
+    "validacion": 0.9679,
+    "segundosEntrenar": 288.6,
+    "msPorMano": 0.0406,
+    "parametros": 31801
+   },
+   "bosque": {
+    "exactitud": 0.9509,
+    "precision": 0.9517,
+    "recall": 0.9508,
+    "f1": 0.9504,
+    "validacion": 0.9598,
+    "segundosEntrenar": 14.39,
+    "msPorMano": 0.1581,
+    "parametros": 913446
+   }
+  },
+  "app": {
+   "votacion": {
+    "exactitud": 0.9243,
+    "precision": 0.9288,
+    "recall": 0.9241,
+    "f1": 0.9234
+   },
+   "arbol": {
+    "exactitud": 0.8911,
+    "precision": 0.8941,
+    "recall": 0.891,
+    "f1": 0.8915
+   },
+   "knn": {
+    "exactitud": 0.8977,
+    "precision": 0.8986,
+    "recall": 0.8975,
+    "f1": 0.8963
+   },
+   "reglas": {
+    "exactitud": 0.6574,
+    "precision": 0.802,
+    "recall": 0.6313,
+    "f1": 0.6817
+   }
+  },
+  "porGiro": [
+   {
+    "tramo": "0-10°",
+    "manos": 85,
+    "cnn1d": 0.9412,
+    "bosque": 0.9529
+   },
+   {
+    "tramo": "10-20°",
+    "manos": 241,
+    "cnn1d": 0.9668,
+    "bosque": 0.9502
+   },
+   {
+    "tramo": "20-35°",
+    "manos": 425,
+    "cnn1d": 0.9624,
+    "bosque": 0.9553
+   }
+  ],
+  "ganador": "cnn1d",
+  "superaApp": true
+ },
+ "prediccionDatos": {
+  "fecha": "2026-11-19",
+  "intentos": 66349,
+  "personas": 2000,
+  "ejemplos": 29176,
+  "entrenamiento": 20163,
+  "validacion": 4768,
+  "prueba": 4245
+ },
+ "prediccion": {
+  "fecha": "2026-11-19",
+  "epocas": 26,
+  "segundos": 19.5,
+  "parametros": 401,
+  "historia": [
+   {
+    "epoca": 1,
+    "perdida": 0.38982,
+    "perdidaVal": 0.05657
+   },
+   {
+    "epoca": 2,
+    "perdida": 0.05174,
+    "perdidaVal": 0.05126
+   },
+   {
+    "epoca": 3,
+    "perdida": 0.05015,
+    "perdidaVal": 0.05032
+   },
+   {
+    "epoca": 4,
+    "perdida": 0.04951,
+    "perdidaVal": 0.04983
+   },
+   {
+    "epoca": 5,
+    "perdida": 0.04911,
+    "perdidaVal": 0.04944
+   },
+   {
+    "epoca": 6,
+    "perdida": 0.04884,
+    "perdidaVal": 0.04907
+   },
+   {
+    "epoca": 7,
+    "perdida": 0.04863,
+    "perdidaVal": 0.04891
+   },
+   {
+    "epoca": 8,
+    "perdida": 0.04852,
+    "perdidaVal": 0.04878
+   },
+   {
+    "epoca": 9,
+    "perdida": 0.04842,
+    "perdidaVal": 0.04864
+   },
+   {
+    "epoca": 10,
+    "perdida": 0.04834,
+    "perdidaVal": 0.04895
+   },
+   {
+    "epoca": 11,
+    "perdida": 0.04855,
+    "perdidaVal": 0.0488
+   },
+   {
+    "epoca": 12,
+    "perdida": 0.04844,
+    "perdidaVal": 0.04889
+   },
+   {
+    "epoca": 13,
+    "perdida": 0.04835,
+    "perdidaVal": 0.04866
+   },
+   {
+    "epoca": 14,
+    "perdida": 0.0484,
+    "perdidaVal": 0.04883
+   },
+   {
+    "epoca": 15,
+    "perdida": 0.04851,
+    "perdidaVal": 0.04863
+   },
+   {
+    "epoca": 16,
+    "perdida": 0.04838,
+    "perdidaVal": 0.04873
+   },
+   {
+    "epoca": 17,
+    "perdida": 0.04844,
+    "perdidaVal": 0.04857
+   },
+   {
+    "epoca": 18,
+    "perdida": 0.04832,
+    "perdidaVal": 0.04848
+   },
+   {
+    "epoca": 19,
+    "perdida": 0.04836,
+    "perdidaVal": 0.04847
+   },
+   {
+    "epoca": 20,
+    "perdida": 0.04832,
+    "perdidaVal": 0.04843
+   },
+   {
+    "epoca": 21,
+    "perdida": 0.04836,
+    "perdidaVal": 0.04848
+   },
+   {
+    "epoca": 22,
+    "perdida": 0.04837,
+    "perdidaVal": 0.04847
+   },
+   {
+    "epoca": 23,
+    "perdida": 0.04831,
+    "perdidaVal": 0.04849
+   },
+   {
+    "epoca": 24,
+    "perdida": 0.0484,
+    "perdidaVal": 0.04853
+   },
+   {
+    "epoca": 25,
+    "perdida": 0.04844,
+    "perdidaVal": 0.04862
+   },
+   {
+    "epoca": 26,
+    "perdida": 0.04844,
+    "perdidaVal": 0.04851
+   }
+  ],
+  "examen": {
+   "cnn": {
+    "mae": 17.014,
+    "rmse": 21.566,
+    "r2": 0.23
+   },
+   "ultimo": {
+    "mae": 21.55,
+    "rmse": 29.27,
+    "r2": -0.419
+   },
+   "promedio": {
+    "mae": 20.08,
+    "rmse": 26.008,
+    "r2": -0.12
+   }
+  },
+  "ejemplos": [
+   {
+    "intento1": 80,
+    "intento2": 100,
+    "real": 100,
+    "predicho": 94
+   },
+   {
+    "intento1": 60,
+    "intento2": 100,
+    "real": 100,
+    "predicho": 84
+   },
+   {
+    "intento1": 60,
+    "intento2": 60,
+    "real": 100,
+    "predicho": 72
+   },
+   {
+    "intento1": 100,
+    "intento2": 60,
+    "real": 60,
+    "predicho": 85
+   },
+   {
+    "intento1": 100,
+    "intento2": 80,
+    "real": 60,
+    "predicho": 83
+   },
+   {
+    "intento1": 20,
+    "intento2": 40,
+    "real": 80,
+    "predicho": 52
+   },
+   {
+    "intento1": 60,
+    "intento2": 40,
+    "real": 60,
+    "predicho": 65
+   },
+   {
+    "intento1": 40,
+    "intento2": 60,
+    "real": 100,
+    "predicho": 79
+   }
+  ]
+ }
+}

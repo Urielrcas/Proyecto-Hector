@@ -10,6 +10,9 @@
  * guarda algunas posturas reales de tu mano para aprender cómo la haces TÚ.
  * Forma personal: si te cuesta hacerla como en el dibujo (ej.: tu A con los dedos un poco distintos),
  * la IA puede RECORDAR tu forma; desde entonces cuenta como correcta (regla g ∨ (p ∧ c ∧ u)).
+ * Intentos y consejos (prácticas 16, 18, 19, 26 y 27): cada intento (también los fallidos) se guarda
+ * en el servidor con su puntaje, los dedos que fallaron y con qué letra lo confundió la red 1D;
+ * con eso el panel «Consejos de tu IA» muestra consejos y la predicción del próximo intento.
  */
 
 // ▸ Desde Framer Motion (librería de animaciones):
@@ -81,6 +84,17 @@ import { DetectorMovimiento, INSTRUCCION_MOVIMIENTO } from '../../lib/vision/mov
 //     Evaluacion → tipo: resultado de evaluar una seña (correcto, dedos, consejos)
 //     Punto → tipo: un punto de la mano (x, y)
 import { DEDOS, NOMBRE_DEDO, evaluar, type Evaluacion, type Punto } from '../../lib/vision/postura'
+// ▸ Desde nuestro proyecto (intentos, expediente y consejos):
+//     SeguidorIntentos → decide cuándo empieza y termina cada intento (lib/aprendizaje/seguidorIntentos.ts)
+//     registrarIntento → guarda el intento en el servidor (services/intentos.ts)
+//     useExpediente → trae el expediente con los consejos (hooks/useExpediente.ts)
+//     PanelConsejosLetra → «Consejos de tu IA» para esta letra
+//     predecirConCnn1d → la red 1D: con qué letra confunde tu intento (solo LSM)
+import { SeguidorIntentos, type ResultadoIntento } from '../../lib/aprendizaje/seguidorIntentos'
+import { registrarIntento } from '../../services/intentos'
+import { useExpediente } from '../../hooks/useExpediente'
+import { PanelConsejosLetra } from '../../components/ia/PanelConsejosLetra'
+import { predecirConCnn1d } from '../../lib/ia/cnn1d/cnn1d'
 
 /** Cuadros seguidos con la postura correcta para darla por lograda (~0.6 s). */
 const CUADROS_PARA_LOGRAR = 18
@@ -88,6 +102,10 @@ const CUADROS_PARA_LOGRAR = 18
 const CUADROS_PARA_OFRECER = 180
 /** Segundos que se graba tu forma personal. */
 const SEGUNDOS_GRABAR = 3
+/** Cada cuántos cuadros se le pregunta a la red 1D qué letra ve (para anotar confusiones). */
+const CUADROS_ENTRE_PREGUNTAS = 6
+/** Probabilidad mínima de la red 1D para anotar la letra que vio. */
+const PROB_CONFUSION = 0.6
 
 export default function PracticarLetra() {
   const { letra: parametro = '' } = useParams() // la letra de la dirección: /aprender/L → "L"
@@ -95,6 +113,7 @@ export default function PracticarLetra() {
   const navegar = useNavigate()
   const { logradas, marcarLograda } = useProgresoAprendizaje()
   const ia = useModeloIA()
+  const { expediente, recargar, conCuenta } = useExpediente()
 
   // Buscar la letra en el alfabeto de la lengua elegida, y sus vecinas (para "Letra anterior/siguiente").
   const letras = alfabeto(lengua ?? 'LSM')
@@ -120,7 +139,32 @@ export default function PracticarLetra() {
     intentosFallidos: 0, // cuadros con la mano visible sin lograrla
     porMemoria: false, // la última forma correcta la reconoció tu memoria personal (no las reglas)
     grabacion: null as { hasta: number; posturas: Punto[][]; cuadro: number } | null,
+    cuadro: 0, // número de cuadro (para preguntarle a la red 1D solo de vez en cuando)
+    tiempo: 0, // tiempo del último cuadro (ms)
   })
+  // Intentos: el seguidor avisa cuando termina uno y se guarda en el servidor (solo con cuenta).
+  const contextoIntento = useRef({ letra: parametro.toUpperCase(), lengua: lengua ?? 'LSM', conCuenta })
+  useEffect(() => {
+    contextoIntento.current = { letra: parametro.toUpperCase(), lengua: lengua ?? 'LSM', conCuenta }
+  }, [parametro, lengua, conCuenta])
+  const seguidor = useRef<SeguidorIntentos | null>(null)
+  // Se crea la primera vez que se necesita (en alDetectar, no al dibujar la pantalla).
+  const obtenerSeguidor = () => (seguidor.current ??= new SeguidorIntentos(guardarIntento))
+  const guardarIntento = (r: ResultadoIntento) => {
+    const c = contextoIntento.current
+    if (!c.conCuenta || !c.letra) return
+    registrarIntento({
+      lengua: c.lengua,
+      letra: c.letra,
+      acierto: r.acierto,
+      puntaje: r.puntaje,
+      segundos: r.segundos,
+      letra_detectada: r.letraDetectada,
+      dedos_fallados: r.dedosFallados,
+    })
+      .then(recargar)
+      .catch(() => {}) // sin conexión: la práctica sigue igual
+  }
   // Forma personal: ofrecer recordarla, grabarla y avisar.
   const [ofrecer, setOfrecer] = useState(false)
   const [grabando, setGrabando] = useState(0) // segundos que faltan (0 = no está grabando)
@@ -152,6 +196,7 @@ export default function PracticarLetra() {
 
   // Marca la letra como lograda (guarda el progreso y muestra el mensaje de felicitación).
   const lograr = () => {
+    obtenerSeguidor().lograda(seguimiento.current.tiempo)
     seguimiento.current.lograda = true
     setLogradaAhora(true)
     marcarLograda(letra.letra)
@@ -207,7 +252,10 @@ export default function PracticarLetra() {
         porMemoria: false,
         grabacion: null,
       })
+      obtenerSeguidor().reiniciar()
     }
+    s.tiempo = tiempo
+    s.cuadro++
 
     // 0) Grabando tu forma personal: solo se guardan posturas (una de cada 3 cuadros).
     const grab = s.grabacion
@@ -228,6 +276,17 @@ export default function PracticarLetra() {
     // Regla «forma aceptada»: g ∨ (p ∧ c ∧ u)
     const correcto = !!puntos && cumple('formaAceptada', { g, p: !!personal?.p, c: !!personal?.c, u: !!personal?.u })
     const conMemoria = correcto && !g
+
+    // Intento en curso (mientras no esté lograda): qué dedos van bien y, de vez en cuando,
+    // con qué letra lo confunde la red 1D (solo LSM: se entrenó con manos de LSM).
+    if (!s.lograda) {
+      let detectada: string | null = null
+      if (puntos && lengua !== 'ASL' && s.cuadro % CUADROS_ENTRE_PREGUNTAS === 0) {
+        const p = predecirConCnn1d(puntos)
+        if (p.probabilidad >= PROB_CONFUSION && !p.letras.includes(letra.letra)) detectada = p.letras[0]
+      }
+      obtenerSeguidor().cuadro(r ? r.dedosOk : null, detectada, tiempo)
+    }
 
     // ¿Lleva rato intentando sin lograrla? → ofrecer recordar su forma.
     if (puntos && !correcto && !s.lograda) {
@@ -427,6 +486,8 @@ export default function PracticarLetra() {
               setAvisoForma(`La IA olvidó tu forma de la ${letra.letra}: ahora se pide como en el dibujo.`)
             }}
           />
+
+          <PanelConsejosLetra letra={letra.letra} expediente={expediente} conCuenta={conCuenta} />
 
           <p className="mt-4 text-sm text-stone-500">
             Evaluación aproximada según la posición de tus dedos{letra.movimiento ? ' y el movimiento de tu mano' : ''}. Cada intento le

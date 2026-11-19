@@ -38,7 +38,8 @@ from .db import conectar, desconectar
 #     frase → corrector de frases deletreadas con Ollama (app/rutas/frase.py)
 #     progreso → letras logradas por cada usuario (app/rutas/progreso.py)
 #     usuarios → rutas del CRUD de usuarios (app/rutas/usuarios.py)
-from .rutas import auth, busqueda, estadisticas, frase, historial, ia, juegos, progreso, usuarios
+#     intentos → intentos de práctica, expediente, consejos y tablero (app/rutas/intentos.py)
+from .rutas import auth, busqueda, estadisticas, frase, historial, ia, intentos, juegos, progreso, usuarios
 # ▸ Desde nuestro proyecto (carpeta app/seguridad):
 #     hashear_contrasena → cifra una contraseña con bcrypt (app/seguridad.py)
 from .seguridad import hashear_contrasena
@@ -100,6 +101,7 @@ app.include_router(frase.router)
 app.include_router(historial.router)
 app.include_router(ia.router)
 app.include_router(juegos.router)
+app.include_router(intentos.router)
 
 
 @app.get("/", include_in_schema=False)

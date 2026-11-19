@@ -177,4 +177,6 @@ async def eliminar(id_usuario: str, db: AsyncDatabase = Depends(get_db), admin: 
     # Y lo que la IA aprendió de él y sus partidas.
     await db.modelos_ia.delete_many({"usuario_id": oid})
     await db.partidas.delete_many({"usuario_id": oid})
+    # Y sus intentos de práctica (expediente y tablero).
+    await db.intentos.delete_many({"usuario_id": oid})
     return Response(status_code=status.HTTP_204_NO_CONTENT)

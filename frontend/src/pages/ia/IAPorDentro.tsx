@@ -7,12 +7,14 @@
  *      Validación y comparación de algoritmos (prácticas 04 y 05): profundidad, Random Forest, KNN.
  *      Optimización de hiperparámetros (práctica 06): GridSearchCV y RandomizedSearchCV.
  *      Señas parecidas (prácticas 07, 08 y 09): K-Means, análisis de los grupos y PCA.
+ *      Datos masivos y red neuronal 1D (prácticas 20 a 25): Spark, MongoDB, PyTorch y comparación.
+ *      Predicción del siguiente intento (prácticas 26 y 27): CNN 1D de regresión.
  *   3. Autocorrector: cómo decide y un probador.
  * El usuario normal ve la versión sencilla en «Mi IA».
  */
 
 // ▸ Desde Lucide (íconos):
-import { Cpu, GitBranch, Network, Scale, ScatterChart, SlidersHorizontal, Sparkles, Zap } from 'lucide-react'
+import { Activity, Cpu, Database, GitBranch, Network, Scale, ScatterChart, SlidersHorizontal, Sparkles, Zap } from 'lucide-react'
 // ▸ Desde React:
 import { useMemo, useState } from 'react'
 // ▸ Desde nuestro proyecto:
@@ -30,6 +32,8 @@ import { GruposSenas } from './GruposSenas'
 import { Hiperparametros } from './Hiperparametros'
 import { LaboratorioRed } from './LaboratorioRed'
 import { pct, Tarjeta } from './Tarjeta'
+import { PrediccionIntentos } from './PrediccionIntentos'
+import { RedCNN1D } from './RedCNN1D'
 import { ValidacionModelos } from './ValidacionModelos'
 
 export default function IAPorDentro() {
@@ -127,6 +131,16 @@ export default function IAPorDentro() {
         {/* 2d. Señas parecidas: K-Means, análisis de grupos y PCA (prácticas 07, 08 y 09) */}
         <Tarjeta titulo="Señas parecidas (K-Means y PCA)" icono={ScatterChart}>
           <GruposSenas />
+        </Tarjeta>
+
+        {/* 2e. Datos masivos y red neuronal 1D (prácticas 20 a 25) */}
+        <Tarjeta titulo="Datos masivos y red neuronal 1D" icono={Database}>
+          <RedCNN1D />
+        </Tarjeta>
+
+        {/* 2f. Predicción del siguiente intento (prácticas 26 y 27) */}
+        <Tarjeta titulo="Predicción del siguiente intento" icono={Activity}>
+          <PrediccionIntentos />
         </Tarjeta>
 
         {/* 3. Autocorrector */}

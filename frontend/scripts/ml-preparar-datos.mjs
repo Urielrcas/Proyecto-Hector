@@ -13,6 +13,11 @@
 // Se usa Vite para cargar el código TypeScript de la app sin compilarlo aparte.
 //
 // Uso (desde frontend/):  node scripts/ml-preparar-datos.mjs
+//
+// Modo masivo (práctica 20, lo llama ml/p20_generar_manos_masivas.py):
+//   node scripts/ml-preparar-datos.mjs --masivo 2000
+// Solo manos del avatar (2000 por letra), con OTRA semilla para que no repita las manos de la tabla
+// normal (ni las de la prueba de p03), y las guarda en ml/datos/manos_masivas_crudas.csv.
 import fs from 'node:fs'
 import path from 'node:path'
 import { createServer } from 'vite'
@@ -38,8 +43,13 @@ function reglas(puntos) {
   return letras.filter((l) => evaluar(puntos, l.objetivo).correcto).map((l) => l.letra)
 }
 
-// Números al azar repetibles (los datos salen iguales cada vez).
-let semilla = 2026
+// Modo masivo: --masivo N (N manos por letra, solo del avatar).
+const posMasivo = process.argv.indexOf('--masivo')
+const MASIVO = posMasivo > 0 ? Number(process.argv[posMasivo + 1]) : 0
+if (posMasivo > 0 && !(MASIVO > 0)) throw new Error('Uso: --masivo <manos por letra>')
+
+// Números al azar repetibles (los datos salen iguales cada vez). El modo masivo usa otra semilla.
+let semilla = MASIVO ? 7919 : 2026
 const azar = () => ((semilla = (semilla * 1664525 + 1013904223) >>> 0) / 4294967296)
 const normal = () => Math.sqrt(-2 * Math.log(Math.max(azar(), 1e-12))) * Math.cos(2 * Math.PI * azar())
 const entre = (a, b) => a + (b - a) * azar()
@@ -68,7 +78,7 @@ function manoDelAvatar(forma) {
 }
 
 const filas = []
-const MANOS_POR_LETRA = 150
+const MANOS_POR_LETRA = MASIVO || 150
 /** Qué tanto de la imagen ocupa la mano (0 a 1): sirve para descubrir detecciones falsas. */
 const tamanoDe = (puntos) => {
   const xs = puntos.map((p) => p.x)
@@ -104,7 +114,8 @@ for (const clase of clases) {
 }
 
 // 2) Los dibujos de LSM pasados por MediaPipe (ml/datos/puntos_dibujos.json)
-const dibujos = JSON.parse(fs.readFileSync(path.join(DATOS, 'puntos_dibujos.json'), 'utf8'))
+// (En modo masivo solo van las manos del avatar.)
+const dibujos = MASIVO ? [] : JSON.parse(fs.readFileSync(path.join(DATOS, 'puntos_dibujos.json'), 'utf8'))
 for (const d of dibujos) {
   const puntos = d.puntos && normalizarMano(d.puntos.map(([x, y, z]) => ({ x, y, z })), d.lado)
   agregar(
@@ -115,7 +126,7 @@ for (const d of dibujos) {
 
 // 3) Grabaciones reales (botón «¿Se equivocó de letra?» y calibración), ya vienen normalizadas.
 const carpetaReales = path.join(DATOS, 'reales')
-for (const archivo of fs.existsSync(carpetaReales) ? fs.readdirSync(carpetaReales) : []) {
+for (const archivo of !MASIVO && fs.existsSync(carpetaReales) ? fs.readdirSync(carpetaReales) : []) {
   const datos = JSON.parse(fs.readFileSync(path.join(carpetaReales, archivo), 'utf8'))
   if (Array.isArray(datos.cuadros)) {
     // Grabación de una letra (mano-LSM-O-….json)
@@ -137,8 +148,14 @@ filas.forEach((f, i) => {
   const medidas = f.medidas ?? NOMBRES_CARACTERISTICAS.map(() => '')
   lineas.push([i + 1, f.origen, f.letra, f.variacion, f.giro, f.escala, f.espejo, f.grueso, f.detectada, f.confianza, f.tamano_mano, f.prediccion_reglas, f.reglas_todas, ...medidas].join(','))
 })
-fs.writeFileSync(path.join(DATOS, 'manos_crudas.csv'), lineas.join('\n') + '\n', 'utf8')
-console.log(`Listo: ${filas.length} manos en ml/datos/manos_crudas.csv (${columnas.length} columnas)`)
+const salida = MASIVO ? 'manos_masivas_crudas.csv' : 'manos_crudas.csv'
+fs.writeFileSync(path.join(DATOS, salida), lineas.join('\n') + '\n', 'utf8')
+console.log(`Listo: ${filas.length} manos en ml/datos/${salida} (${columnas.length} columnas)`)
+if (MASIVO) {
+  // En modo masivo no se rehace el grafo de letras.
+  await vite.close()
+  process.exit(0)
+}
 
 // 5) El grafo de letras parecidas (práctica 1: BFS)
 fs.writeFileSync(path.join(DATOS, 'grafo_letras.json'), JSON.stringify(grafoLetras('LSM').grafo, null, 1), 'utf8')

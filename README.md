@@ -6,7 +6,7 @@ Aplicación web que traduce entre lengua de señas (LSM/ASL) y español.
 |---|---|
 | `frontend/` | React + Vite + TypeScript + Tailwind |
 | `backend/` | FastAPI + MongoDB |
-| `ml/` | (próximamente) entrenamiento de modelos |
+| `ml/` | Prácticas de machine learning (Python): árbol, KNN, K-Means, PCA, Spark, redes CNN 1D con PyTorch (ver `ml/README.md`) |
 
 ## Requisitos
 - Node 20+ y Python 3.11+

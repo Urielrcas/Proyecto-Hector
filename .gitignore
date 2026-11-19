@@ -10,3 +10,13 @@ Thumbs.db
 Manuales/
 Ejemplos/
 Señas-image/
+
+# Datos pesados que se regeneran con las prácticas de ml/ (20 a 27 y 16)
+ml/datos/manos_masivas.csv
+ml/datos/manos_masivas_crudas.csv
+ml/datos/spark_manos/
+ml/datos/intentos_simulados.csv
+ml/resultados_cnn1d/
+ml/resultados_prediccion/
+ml/resultados/p16_historial.csv
+__pycache__/
