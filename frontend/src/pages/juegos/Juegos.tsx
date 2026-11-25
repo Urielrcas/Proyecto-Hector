@@ -96,7 +96,7 @@ export default function Juegos() {
             return (
               letra && (
                 <motion.div key={l} className="size-20" animate={{ y: [0, -10, 0], rotate: [0, i % 2 ? 6 : -6, 0] }} transition={{ duration: 3 + i, repeat: Infinity, ease: 'easeInOut' }}>
-                  <ManoIlustrada forma={letra.forma} etiqueta="" />
+                  <ManoIlustrada forma={letra.forma} etiqueta="" sinLetra />
                 </motion.div>
               )
             )
@@ -180,7 +180,7 @@ export default function Juegos() {
                       transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                       aria-hidden
                     >
-                      <ManoIlustrada forma={letra.forma} etiqueta="" />
+                      <ManoIlustrada forma={letra.forma} etiqueta="" sinLetra />
                     </motion.div>
                   )}
                 </Link>

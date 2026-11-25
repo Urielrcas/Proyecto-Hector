@@ -264,7 +264,7 @@ export default function JuegoAdivina() {
                         animate={respuesta === null ? { y: [0, -6, 0] } : { y: 0 }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                       >
-                        <ManoIlustrada forma={pregunta.correcta.forma} etiqueta="Dibujo de la seña a adivinar" />
+                        <ManoIlustrada forma={pregunta.correcta.forma} etiqueta="Dibujo de la seña a adivinar" sinLetra />
                       </motion.div>
                     </RelojCircular>
                   </div>
@@ -303,7 +303,7 @@ export default function JuegoAdivina() {
                           etiqueta={`Opción ${i + 1}${respuesta !== null ? `: letra ${o.letra}` : ''}`}
                         >
                           <span className="block aspect-square w-full p-1">
-                            <ManoIlustrada forma={o.forma} etiqueta="" />
+                            <ManoIlustrada forma={o.forma} etiqueta="" sinLetra />
                           </span>
                           {respuesta !== null && <span className="absolute bottom-1.5 left-2.5 text-lg font-bold">{o.letra}</span>}
                         </Opcion>

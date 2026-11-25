@@ -179,6 +179,8 @@ const FORMAS: Record<Lengua, Record<string, FormaMano>> = {
 /**
  * Dibujos propios del equipo para las letras de LSM (carpeta public/senas-lsm, de la A a la Z;
  * la Ñ todavía no tiene). ManoIlustrada los muestra en lugar del dibujo hecho con código.
+ * En public/senas-lsm/sin-letra están los mismos dibujos sin la letra escrita: los usan los juegos
+ * (ManoIlustrada con `sinLetra`) para no mostrar la respuesta.
  */
 const LETRAS_CON_DIBUJO = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 export const DIBUJO_PROPIO = new WeakMap<FormaMano, string>(

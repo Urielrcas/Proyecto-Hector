@@ -294,11 +294,23 @@ const ENCUADRE_PERFIL = 'translate(-8 -6)'
 /**
  * Ilustración de una seña con la mano derecha, orientada como en el alfabeto (palma, dorso o de lado).
  * `tonos` colorea cada dedo como correcto o incorrecto al comparar con el intento del usuario.
+ * `sinLetra` usa la versión del dibujo que no trae la letra escrita (para los juegos).
  */
-export function ManoIlustrada({ forma, tonos, etiqueta }: { forma: FormaMano; tonos?: Partial<Record<Dedo, Tono>>; etiqueta: string }) {
+export function ManoIlustrada({
+  forma,
+  tonos,
+  etiqueta,
+  sinLetra = false,
+}: {
+  forma: FormaMano
+  tonos?: Partial<Record<Dedo, Tono>>
+  etiqueta: string
+  sinLetra?: boolean
+}) {
   // Letras de LSM con dibujo propio del equipo: se muestra ese dibujo. Con `tonos` (comparar dedo por
   // dedo en la práctica) se usa el dibujo hecho con código, porque ahí se pinta cada dedo de un color.
-  const dibujo = !tonos ? DIBUJO_PROPIO.get(forma) : undefined
+  const propio = !tonos ? DIBUJO_PROPIO.get(forma) : undefined
+  const dibujo = propio && sinLetra ? propio.replace('/senas-lsm/', '/senas-lsm/sin-letra/') : propio
   if (dibujo) {
     return <img src={dibujo} alt={etiqueta} className="size-full object-contain" draggable={false} {...(etiqueta ? {} : { 'aria-hidden': true })} />
   }

@@ -271,7 +271,7 @@ export default function JuegoMemorama() {
                       <span className="text-4xl font-bold text-marca-800 sm:text-5xl">{c.letra.letra}</span>
                     ) : (
                       <span className="block size-full">
-                        <ManoIlustrada forma={c.letra.forma} etiqueta="" />
+                        <ManoIlustrada forma={c.letra.forma} etiqueta="" sinLetra />
                       </span>
                     )}
                   </span>
