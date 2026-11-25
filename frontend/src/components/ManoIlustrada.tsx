@@ -312,7 +312,17 @@ export function ManoIlustrada({
   const propio = !tonos ? DIBUJO_PROPIO.get(forma) : undefined
   const dibujo = propio && (sinLetra ? propio.sinLetra : propio.conLetra)
   if (dibujo) {
-    return <img src={dibujo} alt={etiqueta} className="size-full object-contain" draggable={false} {...(etiqueta ? {} : { 'aria-hidden': true })} />
+    // place-self-stretch + min-*-0: dentro de un contenedor grid (place-items-center) el alto al 100 %
+    // no se respeta y el dibujo crecía a su tamaño natural, saliéndose del recuadro y tapando el texto.
+    return (
+      <img
+        src={dibujo}
+        alt={etiqueta}
+        className="size-full min-h-0 min-w-0 place-self-stretch object-contain"
+        draggable={false}
+        {...(etiqueta ? {} : { 'aria-hidden': true })}
+      />
+    )
   }
   return <ManoDibujada forma={forma} tonos={tonos} etiqueta={etiqueta} />
 }
