@@ -177,15 +177,26 @@ const FORMAS: Record<Lengua, Record<string, FormaMano>> = {
 }
 
 /**
- * Dibujos propios del equipo para las letras de LSM (carpeta public/senas-lsm, de la A a la Z;
- * la Ñ todavía no tiene). ManoIlustrada los muestra en lugar del dibujo hecho con código.
- * En public/senas-lsm/sin-letra están los mismos dibujos sin la letra escrita: los usan los juegos
- * (ManoIlustrada con `sinLetra`) para no mostrar la respuesta.
+ * Dibujos propios del equipo. ManoIlustrada los muestra en lugar del dibujo hecho con código.
+ *   - LSM: public/senas-lsm, de la A a la Z y la Ñ. No traen la letra escrita.
+ *   - ASL: public/senas-asl, de la A a la Z, con la letra escrita abajo; en public/senas-asl/sin-letra
+ *     están los mismos sin la letra.
+ * `sinLetra` es el dibujo que usan los juegos (ManoIlustrada con `sinLetra`) para no mostrar la respuesta.
  */
-const LETRAS_CON_DIBUJO = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-export const DIBUJO_PROPIO = new WeakMap<FormaMano, string>(
-  [...LETRAS_CON_DIBUJO].filter((l) => FORMAS_LSM[l]).map((l) => [FORMAS_LSM[l], `/senas-lsm/${l}.svg`]),
-)
+export interface DibujoPropio {
+  conLetra: string
+  sinLetra: string
+}
+const LETRAS_CON_DIBUJO: Record<Lengua, string> = { LSM: 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ', ASL: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' }
+const archivo = (carpeta: string, letra: string) => `${carpeta}/${encodeURIComponent(letra)}.svg`
+export const DIBUJO_PROPIO = new WeakMap<FormaMano, DibujoPropio>([
+  ...[...LETRAS_CON_DIBUJO.LSM]
+    .filter((l) => FORMAS.LSM[l])
+    .map((l): [FormaMano, DibujoPropio] => [FORMAS.LSM[l], { conLetra: archivo('/senas-lsm', l), sinLetra: archivo('/senas-lsm', l) }]),
+  ...[...LETRAS_CON_DIBUJO.ASL]
+    .filter((l) => FORMAS.ASL[l])
+    .map((l): [FormaMano, DibujoPropio] => [FORMAS.ASL[l], { conLetra: archivo('/senas-asl', l), sinLetra: archivo('/senas-asl/sin-letra', l) }]),
+])
 
 export function alfabeto(lengua: Lengua): Letra[] {
   return Object.entries(GUIAS[lengua]).map(([letra, guia]) => {
