@@ -270,7 +270,7 @@ export default function JuegoMemorama() {
                     {c.cara === 'letra' ? (
                       <span className="text-4xl font-bold text-marca-800 sm:text-5xl">{c.letra.letra}</span>
                     ) : (
-                      <span className="block size-full">
+                      <span className="block size-full min-h-0 min-w-0 place-self-stretch">
                         <ManoIlustrada forma={c.letra.forma} etiqueta="" sinLetra />
                       </span>
                     )}
