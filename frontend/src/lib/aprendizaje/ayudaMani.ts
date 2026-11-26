@@ -6,7 +6,8 @@
  *   1. El resumen de tus fallos y el dedo que más falla (consejoDedos.ts).
  *   2. Un globo por cada consejo de dedos y por la confusión con otra letra.
  *   3. Los consejos del motor de recomendaciones que no repiten lo anterior (repaso, mejorando...).
- *   4. La predicción de tu próximo intento (red neuronal de la práctica 27), para cerrar con ánimo.
+ *   4. Lo que les pasó con esta letra a las personas que aprenden como tú (KNN, práctica 29).
+ *   5. La predicción de tu próximo intento (red neuronal de la práctica 27), para cerrar con ánimo.
  */
 import type { Animo } from '../../components/Mascota'
 import type { Expediente } from '../../services/intentos'
@@ -35,6 +36,17 @@ export function globosDeAyuda(letra: Letra, expediente: Expediente | null, letra
     (c) => c.letra === letra.letra && c.tipo !== 'siguiente' && !(personal && (c.tipo === 'dificil' || c.tipo === 'confusion')),
   )
   for (const c of delMotor) globos.push({ texto: c.mensaje, animo: c.tipo === 'mejorando' ? 'feliz' : 'atento' })
+
+  // KNN (práctica 29): qué les pasó con esta letra a las personas que aprenden como tú.
+  const vecinos = expediente?.vecinos?.por_letra[letra.letra]
+  if (vecinos && expediente?.vecinos) {
+    const leCuesta = !!info && (info.fallidos >= 3 || info.estado === 'difícil')
+    if (leCuesta && vecinos.les_costo >= 2) {
+      globos.push({ texto: `No eres el único: a ${vecinos.les_costo} de ${vecinos.vecinos_con_dato} personas que aprenden como tú también les costó la ${letra.letra}. Con práctica sale.`, animo: 'atento' })
+    } else if (!leCuesta && vecinos.nivel_vecinos >= 75) {
+      globos.push({ texto: `A las personas que aprenden como tú la ${letra.letra} les salió bien (≈ ${Math.round(vecinos.nivel_vecinos)} %). ¡Tú también puedes!`, animo: 'feliz' })
+    }
+  }
 
   if (info?.prediccion) globos.push({ texto: info.prediccion.mensaje, animo: info.prediccion.puntaje >= 60 ? 'feliz' : 'atento' })
 

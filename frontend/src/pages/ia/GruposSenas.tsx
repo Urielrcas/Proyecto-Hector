@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { DEMO } from '../../lib/ia/demo/demo'
 import { claseDeLetra, COLORES_FAMILIA, COLORES_GRUPO, describirMedida, familiaDeLetra, familiasDe, GRUPOS as G, PCA } from '../../lib/ia/grupos/grupos'
 import { obtenerConfusiones, type ConfusionesPersonas } from '../../services/intentos'
-import { DetalleLetra, Dendrograma, ListaFamilias, SelectorFuente, TablaConfusiones } from './FamiliasSenas'
+import { DetalleLetra, Dendrograma, ListaFamilias, PcaPorGrupo, SelectorFuente, TablaConfusiones } from './FamiliasSenas'
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
 const color = (g: number) => COLORES_GRUPO[g % COLORES_GRUPO.length]
@@ -289,15 +289,15 @@ export function GruposSenas() {
       <div className="rounded-2xl border border-stone-200 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 max-w-3xl">
-            <h3 className="font-bold">Familias de señas: agrupar los grupos (práctica 08b)</h3>
+            <h3 className="font-bold">Los {G.familias.defecto} grupos de la app: agrupamiento jerárquico (práctica 08b)</h3>
             <p className="mt-1 text-sm text-stone-600">
               K-Means dejó algunas letras casi solas, como la <b>X</b>. Con el <b>agrupamiento jerárquico</b> (método de Ward) empezamos con cada
               letra sola y vamos juntando, paso a paso, las dos más parecidas, hasta que todas quedan juntas. El árbol muestra ese proceso: entre más
-              abajo se unen dos letras, más se parecen. Al <b>cortar</b> el árbol salen las familias.
+              abajo se unen dos letras, más se parecen. Al <b>cortar</b> el árbol salen los grupos.
             </p>
           </div>
           <label className="flex min-w-48 flex-col text-sm font-bold">
-            Número de familias: {n}
+            Número de grupos: {n}
             <input type="range" min={2} max={9} value={n} onChange={(e) => setN(Number(e.target.value))} className="mt-1 accent-marca-700" />
             <span className="flex justify-between text-xs font-normal text-stone-500">
               <span>2 · muy generales</span>
@@ -311,18 +311,28 @@ export function GruposSenas() {
         </div>
         <p className="mt-3 rounded-xl bg-marca-50/60 p-3 text-sm text-stone-700">
           <b>¿Y la X?</b> Es la letra cuyas manos varían más (la mayoría de las manos atípicas son X), por eso K-Means la dejó aparte. En el árbol
-          es de las últimas en unirse, y con {n} familias queda en la familia {familiaX + 1}
+          es de las últimas en unirse, y con {n} grupos queda en el grupo {familiaX + 1}
           {companerasX.length ? (
             <>
               {' '}
               junto con <b>{companerasX.join(', ')}</b>
             </>
           ) : (
-            ' todavía sola (prueba con menos familias)'
+            ' todavía sola (prueba con menos grupos)'
           )}
           . Sus letras más parecidas son {G.familias.parecidas.X.slice(0, 3).map((p) => p.letra).join(', ')}: dedos doblados como en un puño, con
           el índice en gancho.
         </p>
+
+        {/* El PCA de cada uno de los 4 grupos de la app */}
+        <div className="mt-5">
+          <h4 className="font-bold">El PCA de cada grupo</h4>
+          <p className="mb-3 text-sm text-stone-600">
+            La app usa {G.familias.defecto} grupos (antes eran {G.k}). Para cada uno se hizo un PCA solo con sus manos: así se ve qué letras del grupo se
+            separan bien y cuáles se enciman (esas son las que más se confunden).
+          </p>
+          <PcaPorGrupo />
+        </div>
 
         {/* Detalle de la letra elegida */}
         <div className="mt-5">
@@ -358,7 +368,7 @@ export function GruposSenas() {
           <h4 className="font-bold">¿Cuántas personas confunden cada letra?</h4>
           <p className="mb-3 text-sm text-stone-600">
             Cada vez que alguien practica y falla, se guarda qué letra vio la IA. Aquí se cuenta cuántas personas <b>distintas</b> confundieron cada par
-            de letras, de las que practicaron esa letra. Si la mayoría de las confusiones son dentro de la misma familia, las familias sí explican los
+            de letras, de las que practicaron esa letra. Si la mayoría de las confusiones son dentro del mismo grupo, los grupos sí explican los
             errores.
           </p>
           <TablaConfusiones n={n} datos={datosPersonas} fuente={fuente} alElegir={elegir} />
@@ -386,7 +396,7 @@ export function GruposSenas() {
                   onClick={() => setColorPor(c)}
                   className={`min-h-9 rounded-lg px-3 font-bold ${colorPor === c ? 'bg-marca-700 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
                 >
-                  {c === 'familia' ? `Familia (${n})` : `Grupo K-Means (${G.k})`}
+                  {c === 'familia' ? `Grupos (${n})` : `K-Means (${G.k})`}
                 </button>
               ))}
             </div>
@@ -402,7 +412,7 @@ export function GruposSenas() {
               ? familiasDe(n).map((f) => (
                   <li key={f.id} className="flex items-center gap-1.5">
                     <span className="inline-block size-3 rounded-full" style={{ background: colorFamilia(f.id) }} aria-hidden />
-                    Familia {f.id + 1}: {f.letras.join(' ')}
+                    Grupo {f.id + 1}: {f.letras.join(' ')}
                   </li>
                 ))
               : G.grupos.map((g) => (

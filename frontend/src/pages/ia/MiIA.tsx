@@ -11,7 +11,7 @@
 // ▸ Desde Framer Motion (animaciones):
 import { motion } from 'framer-motion'
 // ▸ Desde Lucide (íconos):
-import { Brain, Cpu, GraduationCap, Hand, Heart, RotateCcw, Sparkles, SpellCheck, Trash2, Zap } from 'lucide-react'
+import { Brain, Cpu, GraduationCap, Hand, Heart, Map as IconoMapa, RotateCcw, Sparkles, SpellCheck, Trash2, Zap } from 'lucide-react'
 // ▸ Desde React Router:
 import { Link } from 'react-router-dom'
 // ▸ Desde nuestro proyecto:
@@ -24,6 +24,7 @@ import { dominioEfectivo, nivelLetra } from '../../lib/ia/dominio'
 import { totalMuestras } from '../../lib/ia/modeloIA'
 import { IA_POR_DENTRO } from '../../lib/navegacion'
 import { LaboratorioRed } from './LaboratorioRed'
+import { MapaDeMiMano } from './MapaDeMiMano'
 import { SenasPersonales } from './SenasPersonales'
 import { pct, Tarjeta } from './Tarjeta'
 
@@ -36,7 +37,7 @@ function queTanBien(precision: number | undefined): string {
 }
 
 export default function MiIA() {
-  const { esAdmin } = useApp()
+  const { esAdmin, lengua } = useApp()
   const ia = useModeloIA()
   const { config, cambiar } = useConfiguracion()
   const { modelo, letras, entrenamiento } = ia
@@ -189,6 +190,17 @@ export default function MiIA() {
             </Boton>
           </div>
         </Tarjeta>
+
+        {/* Tu mano en el mapa: el PCA de las letras, con tu mano en vivo (solo LSM: el mapa salió de manos de LSM) */}
+        {lengua === 'LSM' && (
+          <Tarjeta titulo="Tu mano en el mapa" icono={IconoMapa}>
+            <p className="mb-4 text-stone-600">
+              Cada letra tiene su lugar en este mapa; las parecidas quedan juntas. Haz una seña y mira a cuál se acerca tu mano: así ves por qué la
+              IA a veces confunde unas letras con otras.
+            </p>
+            <MapaDeMiMano />
+          </Tarjeta>
+        )}
 
         {/* 4. Tus señas personales */}
         <Tarjeta titulo="Tus señas personales" icono={Sparkles}>

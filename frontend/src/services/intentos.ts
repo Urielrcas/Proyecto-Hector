@@ -72,6 +72,34 @@ export interface Expediente {
   letras: LetraExpediente[]
   recomendaciones: Recomendacion[]
   siguiente: string | null
+  /** Tu perfil de aprendizaje (cluster, práctica 28); null si todavía tienes pocos intentos. */
+  perfil: PerfilAprendizaje | null
+  /** Personas que aprenden como tú (KNN, práctica 29); null si todavía no hay con quién compararte. */
+  vecinos: Vecinos | null
+}
+
+export interface PerfilAprendizaje {
+  id: number
+  nombre: string
+  descripcion: string
+  consejo: string
+  /** Tu lugar en el mapa PCA de perfiles. */
+  x: number
+  y: number
+  rasgos: Record<'tasa' | 'puntaje' | 'intentos_por_letra' | 'letras' | 'mejora' | 'segundos', number>
+}
+
+export interface Vecinos {
+  k: number
+  poblacion: number
+  /** «simulada» mientras no haya suficientes usuarios reales. */
+  origen: string
+  /** Qué tanto se parecen a ti (0 a 100). */
+  parecido: number
+  faciles: { letra: string; nivel: number }[]
+  dificiles: { letra: string; nivel: number }[]
+  por_debajo: { letra: string; nivel: number; tuyo: number | null }[]
+  por_letra: Record<string, { nivel_vecinos: number; vecinos_con_dato: number; les_costo: number }>
 }
 
 export interface Tablero {

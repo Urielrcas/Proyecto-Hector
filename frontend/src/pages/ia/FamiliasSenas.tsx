@@ -79,7 +79,7 @@ export function Dendrograma({ n, elegida, alElegir }: { n: number; elegida: stri
   })
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Árbol de las letras: cómo se juntan hasta formar ${n} familias`}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Árbol de las letras: cómo se juntan hasta formar ${n} grupos`}>
       {[0, maxD / 2, maxD].map((d) => (
         <g key={d}>
           <line x1={izq} x2={W - 4} y1={y(d)} y2={y(d)} className="stroke-stone-200" strokeDasharray="3 3" />
@@ -102,14 +102,14 @@ export function Dendrograma({ n, elegida, alElegir }: { n: number; elegida: stri
       })}
       <line x1={izq} x2={W - 4} y1={y(corte)} y2={y(corte)} stroke="#be123c" strokeDasharray="6 4" strokeWidth={1.5} />
       <text x={W - 6} y={y(corte) - 5} textAnchor="end" className="fill-red-700 text-[11px] font-bold">
-        corte: {n} familias
+        corte: {n} grupos
       </text>
       {orden.map((h) => {
         const letra = F.letras[h]
         const activa = elegida === letra
         return (
           <g key={h} className="cursor-pointer" onClick={() => alElegir(letra)}>
-            <title>{`${letra}: familia ${nivel[h] + 1}. Toca para ver su detalle.`}</title>
+            <title>{`${letra}: grupo ${nivel[h] + 1}. Toca para ver su detalle.`}</title>
             <rect x={xHoja.get(h)! - 11} y={H - abajo + 4} width={22} height={22} rx={6} fill={activa ? colorFamilia(nivel[h]) : 'white'} stroke={colorFamilia(nivel[h])} strokeWidth={2} />
             <text x={xHoja.get(h)!} y={H - abajo + 19} textAnchor="middle" className={`text-[10px] font-bold ${activa ? 'fill-white' : 'fill-stone-800'}`}>
               {letra}
@@ -133,7 +133,7 @@ export function ListaFamilias({ n, elegida, alElegir }: { n: number; elegida: st
         return (
           <li key={f.id} className="rounded-2xl border-l-4 bg-stone-50 p-3" style={{ borderColor: colorFamilia(f.id) }}>
             <p className="font-bold">
-              Familia {f.id + 1}: <span className="font-normal text-stone-700">{f.nombre}</span>
+              Grupo {f.id + 1}: <span className="font-normal text-stone-700">{f.nombre}</span>
             </p>
             <p className="mt-2 flex flex-wrap gap-1">
               {f.letras.map((l) => (
@@ -177,11 +177,11 @@ export function DetalleLetra({ letra, n, datos, fuente }: { letra: string; n: nu
         </span>
         <div className="min-w-0 text-sm">
           <p>
-            <b>Familia {fam + 1}</b> ({familia?.nombre}): {familia?.letras.filter((l) => l !== letra).join(', ') || 'ninguna más'}
+            <b>Grupo {fam + 1}</b> ({familia?.nombre}): {familia?.letras.filter((l) => l !== letra).join(', ') || 'ninguna más'}
           </p>
           {grupo !== undefined && (
             <p className="text-stone-600">
-              Grupo de K-Means: <b>{grupo + 1}</b> · {G.grupos.find((g) => g.id === grupo)?.nombre}
+              Antes, con K-Means de {G.k} grupos: grupo <b>{grupo + 1}</b> · {G.grupos.find((g) => g.id === grupo)?.nombre}
             </p>
           )}
         </div>
@@ -245,7 +245,7 @@ export function DetalleLetra({ letra, n, datos, fuente }: { letra: string; n: nu
                     </span>
                     <span className="text-xs text-stone-500">
                       {p.veces} {p.veces === 1 ? 'vez' : 'veces'}
-                      {familiaDeLetra(p.con, n) === fam ? ' · misma familia' : ' · otra familia'}
+                      {familiaDeLetra(p.con, n) === fam ? ' · mismo grupo' : ' · otro grupo'}
                     </span>
                   </li>
                 ))}
@@ -294,7 +294,7 @@ export function TablaConfusiones({ n, datos, fuente, alElegir }: { n: number; da
         </div>
         <div className="rounded-2xl bg-stone-50 p-3">
           <p className="text-2xl font-bold tabular-nums text-marca-800">{porcentaje(mismaFamilia, total)} %</p>
-          <p className="text-sm text-stone-600">de las confusiones fueron entre letras de la misma familia (con {n} familias)</p>
+          <p className="text-sm text-stone-600">de las confusiones fueron entre letras del mismo grupo (con {n} grupos)</p>
         </div>
       </div>
       <div className="mt-3 overflow-x-auto rounded-2xl border border-stone-200">
@@ -305,7 +305,7 @@ export function TablaConfusiones({ n, datos, fuente, alElegir }: { n: number; da
               <th className="p-2">La IA vio</th>
               <th className="p-2">Personas</th>
               <th className="p-2">Veces</th>
-              <th className="p-2">Familia</th>
+              <th className="p-2">Grupo</th>
             </tr>
           </thead>
           <tbody>
@@ -336,3 +336,57 @@ export function TablaConfusiones({ n, datos, fuente, alElegir }: { n: number; da
     </div>
   )
 }
+
+/** El PCA de cada uno de los 4 grupos (hecho solo con sus manos): qué tan separadas quedan sus letras. */
+export function PcaPorGrupo() {
+  const PALETA = ['#0f766e', '#b45309', '#7c3aed', '#be123c', '#1d4ed8', '#4d7c0f', '#a21caf', '#0e7490', '#c2410c']
+  const W = 260
+  const H = 210
+  const m = 12
+  const rango = (v: number[]) => {
+    const orden = [...v].sort((a, b) => a - b)
+    const lo = orden[Math.floor(orden.length * 0.02)]
+    const hi = orden[Math.floor(orden.length * 0.98)]
+    const margen = (hi - lo) * 0.15 || 1
+    return [lo - margen, hi + margen] as const
+  }
+  return (
+    <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {F.pcaPorGrupo.map((pg) => {
+        const g = F.grupos[pg.grupo]
+        const [x0, x1] = rango(pg.puntos.x)
+        const [y0, y1] = rango(pg.puntos.y)
+        const px = (v: number) => m + ((Math.min(x1, Math.max(x0, v)) - x0) / (x1 - x0)) * (W - 2 * m)
+        const py = (v: number) => H - m - ((Math.min(y1, Math.max(y0, v)) - y0) / (y1 - y0)) * (H - 2 * m)
+        return (
+          <li key={pg.grupo} className="rounded-2xl border-l-4 bg-stone-50 p-3" style={{ borderColor: colorFamilia(pg.grupo) }}>
+            <p className="font-bold">
+              Grupo {pg.grupo + 1}: <span className="font-normal">{g?.nombre}</span>
+            </p>
+            <p className="text-xs text-stone-500">{g?.descripcion}</p>
+            <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full rounded-xl bg-white" role="img" aria-label={`PCA del grupo ${pg.grupo + 1}: letras ${pg.letras.join(', ')}`}>
+              {pg.puntos.x.map((v, i) => (
+                <circle key={i} cx={px(v)} cy={py(pg.puntos.y[i])} r={1.8} fill={PALETA[pg.puntos.letra[i] % PALETA.length]} opacity={0.45}>
+                  <title>{`Una mano de la ${pg.letras[pg.puntos.letra[i]]}`}</title>
+                </circle>
+              ))}
+              {pg.centros.map((c, i) => (
+                <g key={c.letra}>
+                  <circle cx={px(c.x)} cy={py(c.y)} r={10} fill={PALETA[i % PALETA.length]} stroke="white" strokeWidth={2} />
+                  <text x={px(c.x)} y={py(c.y) + 3.5} textAnchor="middle" className="fill-white text-[9px] font-bold">
+                    {c.letra}
+                  </text>
+                </g>
+              ))}
+            </svg>
+            <p className="mt-1 text-xs text-stone-600">
+              Este mapa guarda el {Math.round((pg.varianza[0] + pg.varianza[1]) * 100)} % de la información del grupo.{' '}
+              {pg.letras.length > 3 ? 'Letras encimadas = fáciles de confundir.' : ''}
+            </p>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+

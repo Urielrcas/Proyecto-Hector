@@ -17,7 +17,8 @@
 #   5. Cargas: qué medidas forman cada componente
 #   6. Gráficas en 2D y 3D, y comparación con dos medidas originales
 #   7. Error de reconstrucción
-#   8. Exportar coordenadas, datos reconstruidos y los puntos para la app
+#   8. Exportar coordenadas, datos reconstruidos, los puntos para la app y las cuentas para proyectar
+#      la mano del usuario en el mapa (Mi IA)
 
 import json
 import sys
@@ -223,6 +224,14 @@ salida = {
         "letra": [letras.index(l) for l in df["letra"].iloc[muestra]],
     },
     "centros": [{"grupo": g, "x": round(float(c[0]), 2), "y": round(float(c[1]), 2)} for g, c in enumerate(centros_pca)],
+    # Para poner TU mano en el mapa (Mi IA → «Tu mano en el mapa»): con estas cuentas la app pasa las 57
+    # medidas de la cámara a las mismas 2 coordenadas: z = (medida - media) / escala → CP = z · componentes.
+    "proyeccion": {
+        "medidas": COLUMNAS_X,
+        "media": [round(float(v), 6) for v in escala.mean_],
+        "escala": [round(float(v), 6) for v in escala.scale_],
+        "componentes": [[round(float(v), 6) for v in fila] for fila in pca.components_[:2]],
+    },
 }
 (DESTINO_APP / "pca.json").write_text(json.dumps(salida, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 

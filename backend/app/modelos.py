@@ -482,6 +482,41 @@ class ResumenExpediente(BaseModel):
 
 
 # El expediente de aprendizaje de una persona (práctica 19: registro integral).
+class PerfilSalida(BaseModel):
+    """Perfil de aprendizaje (cluster de K-Means, práctica 28) y su lugar en el mapa PCA de perfiles."""
+    id: int
+    nombre: str
+    descripcion: str
+    consejo: str
+    x: float
+    y: float
+    rasgos: dict[str, float]
+
+
+class LetraVecinos(BaseModel):
+    letra: str
+    nivel: float  # nivel promedio de tus vecinos en esa letra (0 a 100)
+    tuyo: float | None = None
+
+
+class InfoLetraVecinos(BaseModel):
+    nivel_vecinos: float
+    vecinos_con_dato: int
+    les_costo: int  # cuántos de tus vecinos tienen menos de 60 % en esa letra
+
+
+class VecinosSalida(BaseModel):
+    """Personas que aprenden como tú (KNN, práctica 29)."""
+    k: int
+    poblacion: int
+    origen: str  # «simulada» mientras no haya suficientes usuarios reales
+    parecido: float  # qué tanto se parecen a ti (0 a 100)
+    faciles: list[LetraVecinos]  # letras que aún no practicas y que a ellos les salieron bien
+    dificiles: list[LetraVecinos]  # letras que les costaron
+    por_debajo: list[LetraVecinos]  # letras que practicas y en las que vas por debajo de ellos
+    por_letra: dict[str, InfoLetraVecinos]
+
+
 class ExpedienteSalida(BaseModel):
     usuario_id: str
     nombre: str
@@ -490,6 +525,8 @@ class ExpedienteSalida(BaseModel):
     letras: list[LetraExpediente]  # en orden del alfabeto (incluye las no practicadas)
     recomendaciones: list[Recomendacion]
     siguiente: str | None  # la letra que conviene practicar ahora
+    perfil: PerfilSalida | None = None
+    vecinos: VecinosSalida | None = None
 
 
 # Tablero del administrador (práctica 16: consultas con aggregate).

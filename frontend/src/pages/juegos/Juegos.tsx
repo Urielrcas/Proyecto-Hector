@@ -3,6 +3,7 @@
  *   - Arriba: tu nivel y la barra de experiencia (XP) hacia el siguiente.
  *   - Los 4 juegos en tarjetas animadas, con el récord y las estrellas de cada uno.
  *   - Insignias: las ganadas a color y las que faltan con candado (y cómo ganarlas).
+ *   - Lo que dicen tus partidas: si vas mejorando, cada juego, en qué grupo de letras fallas y qué te recomienda la IA.
  *   - Tu avance: últimas partidas y letras que más se fallan (para repasarlas).
  */
 
@@ -20,6 +21,7 @@ import { useRegistroJuegos } from '../../hooks/useRegistroJuegos'
 import { alfabeto } from '../../lib/aprendizaje/alfabeto'
 import { letrasParaRepasar, mejorPuntaje, type NombreJuego } from '../../lib/juegos/juegos'
 import { LOGROS } from '../../lib/juegos/logros'
+import { EstadisticasJuegos } from './EstadisticasJuegos'
 
 const JUEGOS: {
   id: NombreJuego
@@ -215,6 +217,9 @@ export default function Juegos() {
           })}
         </ul>
       </section>
+
+      {/* Lo que dicen tus partidas: si vas mejorando, cada juego, fallos por grupo y recomendación por KNN */}
+      <EstadisticasJuegos partidas={partidas} />
 
       {/* Avance: últimas partidas y letras para repasar */}
       <section aria-labelledby="titulo-avance" className="mt-6 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-7">

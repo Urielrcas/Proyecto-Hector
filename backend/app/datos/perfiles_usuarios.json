@@ -1,0 +1,142 @@
+{
+ "fecha": "2026-11-26",
+ "origen": "1944 personas simuladas (ml/p28_perfiles_usuarios.py)",
+ "caracteristicas": [
+  "tasa",
+  "puntaje",
+  "intentos_por_letra",
+  "letras",
+  "mejora",
+  "segundos"
+ ],
+ "k": 3,
+ "siluetas": {
+  "3": 0.2421,
+  "4": 0.2084,
+  "5": 0.1975
+ },
+ "media": [
+  0.2598,
+  69.0455,
+  3.0089,
+  11.6533,
+  21.4776,
+  5.8385
+ ],
+ "escala": [
+  0.165,
+  14.1964,
+  1.1643,
+  4.5547,
+  15.879,
+  1.268
+ ],
+ "centros": [
+  [
+   -0.9747,
+   -1.0348,
+   -0.6105,
+   0.0294,
+   -0.4989,
+   0.9954
+  ],
+  [
+   -0.2333,
+   -0.155,
+   0.9709,
+   -0.1263,
+   0.9004,
+   0.1327
+  ],
+  [
+   0.8833,
+   0.8679,
+   -0.2888,
+   0.0739,
+   -0.3166,
+   -0.8224
+  ]
+ ],
+ "perfiles": [
+  {
+   "id": 0,
+   "nombre": "Necesita apoyo",
+   "descripcion": "Las letras te están costando: varios intentos sin lograrlas todavía.",
+   "consejo": "Practica pocas letras a la vez, mira el dibujo con calma y pídele ayuda a Mani: te dice qué dedo corregir.",
+   "color": "#0f766e",
+   "personas": 569,
+   "centro": {
+    "tasa": 0.099,
+    "puntaje": 54.3553,
+    "intentos_por_letra": 2.2982,
+    "letras": 11.7873,
+    "mejora": 13.5552,
+    "segundos": 7.1006
+   }
+  },
+  {
+   "id": 1,
+   "nombre": "Va mejorando",
+   "descripcion": "Empiezas con trabajo pero subes mucho de un intento a otro.",
+   "consejo": "Sigue así: repite cada letra unas veces más antes de pasar a la siguiente.",
+   "color": "#b45309",
+   "personas": 591,
+   "centro": {
+    "tasa": 0.2213,
+    "puntaje": 66.8447,
+    "intentos_por_letra": 4.1393,
+    "letras": 11.0778,
+    "mejora": 35.7749,
+    "segundos": 6.0067
+   }
+  },
+  {
+   "id": 2,
+   "nombre": "Avanza rápido",
+   "descripcion": "Aciertas casi siempre y con pocos intentos por letra.",
+   "consejo": "Ve por letras nuevas y prueba los juegos contra reloj: ya estás listo para retos.",
+   "color": "#7c3aed",
+   "personas": 784,
+   "centro": {
+    "tasa": 0.4056,
+    "puntaje": 81.3661,
+    "intentos_por_letra": 2.6727,
+    "letras": 11.9898,
+    "mejora": 16.4497,
+    "segundos": 4.7956
+   }
+  }
+ ],
+ "pca": {
+  "media": [
+   0.0,
+   -0.0,
+   -0.0,
+   -0.0,
+   0.0,
+   0.0
+  ],
+  "componentes": [
+   [
+    0.5655,
+    0.5912,
+    -0.0105,
+    -0.0131,
+    -0.032,
+    -0.5739
+   ],
+   [
+    0.015,
+    0.0137,
+    0.7056,
+    -0.1136,
+    0.6989,
+    -0.0204
+   ]
+  ],
+  "varianza": [
+   0.4556,
+   0.2441
+  ]
+ }
+}

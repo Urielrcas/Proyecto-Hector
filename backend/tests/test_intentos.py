@@ -112,7 +112,7 @@ def test_tablero(cliente, admin):
     assert primera["usuario_id"] == id_ana and primera["nombre"] == "Ana" and primera["necesita_ayuda"]
     assert t["dedos"][0] == {"dedo": "indice", "veces": 10} or t["dedos"][0]["veces"] == 10
     assert sum(d["intentos"] for d in t["por_dia"]) == 13
-    assert any(g["grupo"] == "Puño cerrado" for g in t["grupos"])  # la S es del grupo de puño cerrado (K-Means)
+    assert any("S" in g["letras"] and "A" in g["letras"] for g in t["grupos"])  # la S va en el grupo del puño, con la A
 
     # Filtro de fechas: mañana no hay intentos.
     manana = (datetime.now(UTC) + timedelta(days=1)).date().isoformat()
@@ -135,7 +135,7 @@ def test_consejo_de_grupo_e_inactividad():
     ]
     exp = construir_expediente("x", "Prueba", "LSM", intentos, set())
     tipos = [c["tipo"] for c in exp["recomendaciones"]]
-    assert "grupo" in tipos  # A, E y S son del grupo «Puño cerrado»
+    assert "grupo" in tipos  # A, E y S son del mismo grupo («Puño o un dedo»)
     assert "inactividad" in tipos
     assert exp["siguiente"] == "B"  # la primera sin lograr que no es difícil
 
@@ -179,3 +179,21 @@ def test_dominio_confusiones_y_dedos(cliente, admin):
     assert {"letra": "E", "con": "S", "veces": 1, "personas": 1} in c["pares"]
     # Solo el administrador.
     assert cliente.get("/api/intentos/confusiones", params={"lengua": "LSM"}, headers=ana).status_code == 403
+
+
+def test_perfil_y_vecinos():
+    # Una persona que ya practicó varias letras: le toca un perfil y tiene vecinos (KNN).
+    ahora = datetime.now(UTC)
+    intentos = []
+    for n, (letra, puntajes) in enumerate({"A": [80, 100, 100], "B": [60, 80, 100], "E": [20, 40, 40, 40], "S": [40, 40, 60]}.items()):
+        for m, p in enumerate(puntajes):
+            intentos.append({"letra": letra, "acierto": p == 100, "puntaje": p, "segundos": 5.0, "letra_detectada": None,
+                             "dedos_fallados": [], "fecha": ahora - timedelta(minutes=100 - n * 10 - m)})
+    exp = construir_expediente("1", "Ana", "LSM", intentos, set())
+    assert exp["perfil"] is not None and exp["perfil"]["nombre"]
+    assert set(exp["perfil"]["rasgos"]) == {"tasa", "puntaje", "intentos_por_letra", "letras", "mejora", "segundos"}
+    v = exp["vecinos"]
+    assert v is not None and v["k"] > 0 and v["origen"] == "simulada"
+    assert all(f["letra"] not in "ABES" for f in v["faciles"])  # las fáciles son letras que aún no practica
+    # Con muy pocos intentos todavía no hay perfil.
+    assert construir_expediente("1", "Ana", "LSM", intentos[:3], set())["perfil"] is None

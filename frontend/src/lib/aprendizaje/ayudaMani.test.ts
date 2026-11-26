@@ -17,6 +17,8 @@ function expediente(letra: Partial<LetraExpediente>, recomendaciones: Expediente
     }],
     recomendaciones,
     siguiente: null,
+    perfil: null,
+    vecinos: null,
   }
 }
 
@@ -45,5 +47,12 @@ describe('globos de ayuda de Mani', () => {
   it('sin nada de esta letra da el consejo más importante de otra', () => {
     const g = globosDeAyuda(E, expediente({ fallidos: 0, dedos_fallados: [] }, [{ tipo: 'dificil', prioridad: 1, letra: 'S', mensaje: 'Te cuesta la S' }]), LSM)
     expect(g).toEqual([{ texto: 'Te cuesta la S', animo: 'atento', letra: 'S' }])
+  })
+
+  it('cuenta cuántas personas que aprenden como tú también batallaron con la letra (KNN)', () => {
+    const exp = expediente({})
+    exp.vecinos = { k: 60, poblacion: 600, origen: 'simulada', parecido: 80, faciles: [], dificiles: [], por_debajo: [], por_letra: { E: { nivel_vecinos: 52, vecinos_con_dato: 40, les_costo: 23 } } }
+    const g = globosDeAyuda(E, exp, LSM)
+    expect(g.some((x) => x.texto.startsWith('No eres el único: a 23 de 40 personas que aprenden como tú'))).toBe(true)
   })
 })

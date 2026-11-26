@@ -7,14 +7,15 @@
 #     qué dedo falla más (y en qué % de los fallos falló cada dedo), su estado (dominada / en progreso / difícil / sin practicar) y la
 #     predicción de su próximo intento (red de la práctica 27, app/prediccion.py);
 #   - consejos en palabras sencillas, ordenados por importancia;
-#   - la letra que conviene practicar ahora.
+#   - la letra que conviene practicar ahora,
+#   - su perfil de aprendizaje (cluster, práctica 28) y sus vecinos más parecidos (KNN, práctica 29): app/perfiles.py.
 #
 # Es una función «pura» (no toca la base de datos): así se prueba fácil (tests/test_intentos.py).
 #
 # Reglas de los consejos (de más a menos importante):
 #   1. difícil     → la letra cuesta: ≥ 3 intentos y en los últimos 5 acierta menos de 1 de cada 3.
 #   2. confusión   → al fallar, la IA ve casi siempre la misma otra letra (≥ 2 veces).
-#   3. grupo       → 2 o más letras difíciles del mismo grupo de K-Means (práctica 07): practicarlas juntas.
+#   3. grupo       → 2 o más letras difíciles del mismo grupo (los 4 de la práctica 08b): practicarlas juntas.
 #   4. repaso      → ya la había logrado, pero sus últimos intentos van a la baja.
 #   5. mejorando   → su puntaje subió (felicitar también motiva).
 #   6. inactividad → hace más de 7 días que no practica.
@@ -32,6 +33,7 @@ from typing import Any
 # ▸ Desde nuestro proyecto:
 from .alfabeto import LETRAS
 from .prediccion import mensaje_prediccion, predecir_siguiente
+from .perfiles import perfil_de, vecinos_de
 
 NOMBRE_DEDO = {"pulgar": "el pulgar", "indice": "el índice", "medio": "el dedo medio", "anular": "el anular", "menique": "el meñique"}
 MIN_INTENTOS_DIFICIL = 3
@@ -39,7 +41,7 @@ TASA_DIFICIL = 1 / 3
 DIAS_INACTIVIDAD = 7
 MAX_CONSEJOS = 6
 
-# Archivo de los grupos de K-Means (lo escribe ml/p07_kmeans_manos.py para la app).
+# Archivo de los grupos (lo escriben ml/p07_kmeans_manos.py y ml/p08b_familias_senas.py para la app).
 ARCHIVO_GRUPOS = Path(__file__).resolve().parents[2] / "frontend" / "src" / "lib" / "ia" / "grupos" / "grupos.json"
 
 
@@ -49,6 +51,14 @@ def grupos_lsm() -> dict[str, tuple[str, list[str]]]:
     if not ARCHIVO_GRUPOS.exists():
         return {}
     datos = json.loads(ARCHIVO_GRUPOS.read_text(encoding="utf-8"))
+    # Los 4 grupos de la app (práctica 08b: familias por agrupamiento jerárquico; el profe pidió menos grupos).
+    if datos.get("familias", {}).get("grupos"):
+        salida: dict[str, tuple[str, list[str]]] = {}
+        for g in datos["familias"]["grupos"]:
+            letras = sorted(l for clase in g["letras"] for l in clase.split("/"))
+            for letra in letras:
+                salida[letra] = (g["nombre"], letras)
+        return salida
     miembros: dict[int, list[str]] = {}
     for clase, info in datos["letras"].items():
         miembros.setdefault(info["grupo"], []).extend(clase.split("/"))
@@ -232,4 +242,8 @@ def construir_expediente(usuario_id: str, nombre: str, lengua: str, intentos: li
         "letras": letras,
         "recomendaciones": consejos,
         "siguiente": siguiente,
+        # Práctica 28: tu perfil de aprendizaje (cluster) y dónde quedas en el mapa de perfiles.
+        "perfil": perfil_de(intentos),
+        # Práctica 29: personas que aprenden como tú (KNN) y lo que eso dice de tus próximas letras.
+        "vecinos": vecinos_de(intentos, lengua),
     }

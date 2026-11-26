@@ -5,7 +5,8 @@
  *   - confeti y fanfarria si fue récord o sacó 2 o más estrellas,
  *   - barra de nivel que se llena con la experiencia ganada («¡Subiste a nivel 3!»),
  *   - insignias nuevas desbloqueadas,
- *   - letras falladas (cada una lleva a practicarla).
+ *   - letras falladas (cada una lleva a practicarla),
+ *   - «Lo que dice tu IA»: cómo te fue contra tu promedio y de qué grupo de letras fueron tus fallos.
  */
 
 // ▸ Desde Framer Motion (animaciones):
@@ -20,8 +21,9 @@ import { Link } from 'react-router-dom'
 import { Boton, BotonEnlace } from '../../components/Boton'
 import { Confeti } from '../../components/juegos/Confeti'
 import { ContadorAnimado, Estrellas } from '../../components/juegos/PiezasJuego'
-import type { Recompensa } from '../../hooks/useRegistroJuegos'
+import { useRegistroJuegos, type Recompensa } from '../../hooks/useRegistroJuegos'
 import { sonidos } from '../../lib/juegos/sonidos'
+import { LoQueDiceTuIA } from './EstadisticasJuegos'
 
 const MENSAJES = ['¡Sigue practicando!', '¡Buen intento!', '¡Muy bien!', '¡Increíble!']
 
@@ -42,6 +44,7 @@ export function ResultadoJuego({
   falladas: string[]
   alRepetir: () => void
 }) {
+  const { partidas } = useRegistroJuegos()
   const record = puntos > mejorAnterior && puntos > 0
   const celebrar = record || estrellas >= 2
   const [confeti, setConfeti] = useState(0)
@@ -193,6 +196,9 @@ export function ResultadoJuego({
               </ul>
             </div>
           )}
+
+          {/* Cómo te fue contra tu promedio y de qué grupo fueron tus fallos */}
+          <LoQueDiceTuIA partidas={partidas} falladas={falladas} />
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Boton onClick={alRepetir} autoFocus>

@@ -9,6 +9,7 @@
  * Lo usan «Mi expediente» (el usuario) y el tablero de «Estadísticas» (el administrador, con conEnlaces=false).
  */
 import { AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight, CalendarClock, Lightbulb, Minus, PartyPopper, Repeat, Shapes, Sparkles, Target } from 'lucide-react'
+import { PerfilYVecinos } from './PerfilYVecinos'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { NOMBRE_DEDO_CORTO, type EstadoLetra, type Expediente, type Recomendacion } from '../../services/intentos'
@@ -82,6 +83,9 @@ export function VistaExpediente({ expediente, conEnlaces = true }: { expediente:
           </div>
         ))}
       </dl>
+
+      {/* Perfil de aprendizaje (clusters) y personas que aprenden como tú (KNN): prácticas 28 y 29 */}
+      <PerfilYVecinos perfil={expediente.perfil ?? null} vecinos={expediente.vecinos ?? null} conEnlaces={conEnlaces} />
 
       {/* 2. Consejos */}
       <section aria-labelledby="titulo-consejos">
