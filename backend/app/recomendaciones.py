@@ -4,7 +4,7 @@
 # Recibe TODOS los intentos de una persona en una lengua (colección «intentos») y las letras que
 # ya logró (colección «progreso»), y arma su expediente:
 #   - por letra: intentos, aciertos, puntaje, tendencia, con qué letra la confunde la IA,
-#     qué dedo falla más, su estado (dominada / en progreso / difícil / sin practicar) y la
+#     qué dedo falla más (y en qué % de los fallos falló cada dedo), su estado (dominada / en progreso / difícil / sin practicar) y la
 #     predicción de su próximo intento (red de la práctica 27, app/prediccion.py);
 #   - consejos en palabras sencillas, ordenados por importancia;
 #   - la letra que conviene practicar ahora.
@@ -68,7 +68,7 @@ def _resumen_letra(letra: str, intentos: list[dict[str, Any]], lograda: bool) ->
         return {
             "letra": letra, "intentos": 0, "aciertos": 0, "tasa": 0.0, "puntaje_promedio": 0.0, "ultimo_puntaje": 0,
             "lograda": lograda, "estado": "dominada" if lograda else "sin practicar", "tendencia": "estable",
-            "confundida_con": [], "dedo_mas_fallado": None, "ultima_vez": None, "prediccion": None,
+            "confundida_con": [], "dedo_mas_fallado": None, "fallidos": 0, "dedos_fallados": [], "ultima_vez": None, "prediccion": None,
         }
     n = len(intentos)
     aciertos = sum(1 for i in intentos if i["acierto"])
@@ -89,6 +89,8 @@ def _resumen_letra(letra: str, intentos: list[dict[str, Any]], lograda: bool) ->
     confusiones = Counter(i["letra_detectada"] for i in fallidos if i.get("letra_detectada") and i["letra_detectada"] != letra)
     dedos = Counter(d for i in fallidos for d in i.get("dedos_fallados", []))
     dedo, veces_dedo = dedos.most_common(1)[0] if dedos else (None, 0)
+    # En qué porcentaje de los intentos fallidos falló cada dedo (para «el 60 % fue por tu pulgar»).
+    dedos_fallados = [{"dedo": d, "veces": v, "porcentaje": round(v / len(fallidos), 3)} for d, v in dedos.most_common()]
 
     # Dominada: ya la logró, el último intento salió bien y al menos 2 de los últimos 3 también.
     if lograda and recientes[-1]["acierto"] and sum(1 for i in intentos[-3:] if i["acierto"]) >= min(2, n):
@@ -116,6 +118,8 @@ def _resumen_letra(letra: str, intentos: list[dict[str, Any]], lograda: bool) ->
         "tendencia": tendencia,
         "confundida_con": [{"letra": l, "veces": v} for l, v in confusiones.most_common(3)],
         "dedo_mas_fallado": dedo if veces_dedo >= 2 else None,
+        "fallidos": len(fallidos),
+        "dedos_fallados": dedos_fallados,
         "ultima_vez": _con_zona(intentos[-1].get("fecha")),
         "prediccion": prediccion,
         "_puntajes": puntajes,

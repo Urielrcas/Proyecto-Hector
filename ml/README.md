@@ -18,10 +18,12 @@ Aquí están las prácticas de la materia aplicadas a nuestro proyecto. El resul
 | `p06_hiperparametros.py` | 6 | GridSearchCV y RandomizedSearchCV (validación cruzada de 5 partes) para Árbol, Random Forest y KNN; compara con la configuración de la p03 en la misma prueba. |
 | `p07_kmeans_manos.py` | 7 | K-Means **sin usar la letra**: método del codo y silueta para elegir K, qué letras quedaron en cada grupo y cómo están los dedos. |
 | `p08_analisis_clusters.py` | 8 | K-Means++ contra random, StandardScaler contra MinMaxScaler, estabilidad con ARI, distancias entre centroides, silueta por grupo y manos atípicas. Exporta el reporte para MongoDB. |
+| `p08b_familias_senas.py` | 8b | Agrupamiento jerárquico (Ward) de las 25 letras: dendrograma, familias de 2 a 9 (la X ya no queda sola), las 4 letras más parecidas a cada una y cómo se reparten sus manos entre los grupos de K-Means. |
 | `p09_pca_manos.py` | 9 | PCA: varianza explicada, cuántas componentes hacen falta, cargas, mapas 2D/3D con los grupos, error de reconstrucción y exportación de coordenadas. |
 | `p16_consultas_intentos.py` | 16 | Consultas a MongoDB sobre los **intentos de práctica** de la app: `find`, `$match`, `$group`, `$sort`, `$facet`. Letras más difíciles, confusiones, quién necesita ayuda. `--demo` usa intentos simulados. |
 | *(en la app)* | 17 | El tablero: en **Estadísticas → Tablero de práctica** (filtros, gráficas, CSV y expediente de cada persona), en lugar de Streamlit. |
 | *(en la app)* | 18 y 19 | Expediente y motor de consejos: `backend/app/recomendaciones.py` y **Aprender → Mi expediente** / «Consejos de tu IA» al practicar. |
+| `demo_100_personas.py` | Demo | 100 personas simuladas practicando: cuántas dominan cada letra (Estadísticas) y cuántas confunden cada par (Señas parecidas). La app las muestra siempre como «Demostración». |
 | `p20_generar_manos_masivas.py` | 20 | 50,000 manos del avatar (2,000 por forma) con errores de cámara metidos a propósito. |
 | `p21_spark_manos.py` | 21 | PySpark: esquema, validación, duplicados, transformación, estadísticas distribuidas y Parquet. |
 | `p22_spark_mongo.py` | 22 | Spark → MongoDB por particiones, lotes de 1,000 con *upsert*, índices y validación (colección `manos_masivas`). |
@@ -63,6 +65,8 @@ python p06_hiperparametros.py      # después de p03 (compara contra sus resulta
 python p07_kmeans_manos.py
 python p08_analisis_clusters.py    # después de p07 (usa su K)
 python p09_pca_manos.py            # después de p07 (usa sus grupos)
+python p08b_familias_senas.py      # después de p07, p08 y p09 (familias de letras)
+python demo_100_personas.py        # después de p08b (datos de demostración para la app)
 ```
 
 Para guardar también los segmentos de la práctica 8 en MongoDB (usa `MONGODB_URI` y `MONGODB_DB` de

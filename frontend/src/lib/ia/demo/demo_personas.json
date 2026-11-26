@@ -1,0 +1,1014 @@
+{
+ "fecha": "2026-11-26",
+ "descripcion": "Demostración: 100 personas simuladas (ml/demo_100_personas.py). No son personas reales.",
+ "personas": 100,
+ "intentos": 3552,
+ "dominio": [
+  {
+   "letra": "A",
+   "personas": 53,
+   "rangos": [
+    2,
+    4,
+    7,
+    14,
+    26
+   ],
+   "promedio": 67.3
+  },
+  {
+   "letra": "B",
+   "personas": 42,
+   "rangos": [
+    0,
+    2,
+    8,
+    8,
+    24
+   ],
+   "promedio": 75.1
+  },
+  {
+   "letra": "C",
+   "personas": 43,
+   "rangos": [
+    1,
+    9,
+    12,
+    12,
+    9
+   ],
+   "promedio": 53.6
+  },
+  {
+   "letra": "D",
+   "personas": 48,
+   "rangos": [
+    1,
+    7,
+    8,
+    9,
+    23
+   ],
+   "promedio": 65.0
+  },
+  {
+   "letra": "E",
+   "personas": 35,
+   "rangos": [
+    0,
+    1,
+    3,
+    9,
+    22
+   ],
+   "promedio": 80.1
+  },
+  {
+   "letra": "F",
+   "personas": 53,
+   "rangos": [
+    1,
+    1,
+    11,
+    18,
+    22
+   ],
+   "promedio": 70.9
+  },
+  {
+   "letra": "G",
+   "personas": 53,
+   "rangos": [
+    1,
+    4,
+    5,
+    12,
+    31
+   ],
+   "promedio": 74.6
+  },
+  {
+   "letra": "H",
+   "personas": 34,
+   "rangos": [
+    0,
+    5,
+    7,
+    10,
+    12
+   ],
+   "promedio": 63.5
+  },
+  {
+   "letra": "I",
+   "personas": 48,
+   "rangos": [
+    0,
+    0,
+    8,
+    13,
+    27
+   ],
+   "promedio": 74.8
+  },
+  {
+   "letra": "J",
+   "personas": 43,
+   "rangos": [
+    1,
+    2,
+    6,
+    15,
+    19
+   ],
+   "promedio": 70.7
+  },
+  {
+   "letra": "K",
+   "personas": 51,
+   "rangos": [
+    2,
+    7,
+    8,
+    15,
+    19
+   ],
+   "promedio": 63.9
+  },
+  {
+   "letra": "L",
+   "personas": 42,
+   "rangos": [
+    0,
+    1,
+    3,
+    10,
+    28
+   ],
+   "promedio": 78.3
+  },
+  {
+   "letra": "M",
+   "personas": 39,
+   "rangos": [
+    2,
+    2,
+    4,
+    11,
+    20
+   ],
+   "promedio": 70.3
+  },
+  {
+   "letra": "N",
+   "personas": 49,
+   "rangos": [
+    0,
+    3,
+    8,
+    19,
+    19
+   ],
+   "promedio": 69.8
+  },
+  {
+   "letra": "Ñ",
+   "personas": 41,
+   "rangos": [
+    0,
+    3,
+    7,
+    18,
+    13
+   ],
+   "promedio": 64.2
+  },
+  {
+   "letra": "O",
+   "personas": 41,
+   "rangos": [
+    2,
+    1,
+    10,
+    12,
+    16
+   ],
+   "promedio": 66.0
+  },
+  {
+   "letra": "P",
+   "personas": 37,
+   "rangos": [
+    3,
+    5,
+    9,
+    14,
+    6
+   ],
+   "promedio": 53.8
+  },
+  {
+   "letra": "Q",
+   "personas": 39,
+   "rangos": [
+    0,
+    8,
+    12,
+    12,
+    7
+   ],
+   "promedio": 54.7
+  },
+  {
+   "letra": "R",
+   "personas": 47,
+   "rangos": [
+    1,
+    4,
+    7,
+    19,
+    16
+   ],
+   "promedio": 64.5
+  },
+  {
+   "letra": "S",
+   "personas": 46,
+   "rangos": [
+    4,
+    3,
+    7,
+    18,
+    14
+   ],
+   "promedio": 61.1
+  },
+  {
+   "letra": "T",
+   "personas": 37,
+   "rangos": [
+    2,
+    4,
+    4,
+    16,
+    11
+   ],
+   "promedio": 63.9
+  },
+  {
+   "letra": "U",
+   "personas": 42,
+   "rangos": [
+    1,
+    0,
+    5,
+    20,
+    16
+   ],
+   "promedio": 71.8
+  },
+  {
+   "letra": "V",
+   "personas": 51,
+   "rangos": [
+    0,
+    2,
+    6,
+    14,
+    29
+   ],
+   "promedio": 74.9
+  },
+  {
+   "letra": "W",
+   "personas": 48,
+   "rangos": [
+    0,
+    1,
+    7,
+    11,
+    29
+   ],
+   "promedio": 77.2
+  },
+  {
+   "letra": "X",
+   "personas": 35,
+   "rangos": [
+    6,
+    8,
+    12,
+    7,
+    2
+   ],
+   "promedio": 40.5
+  },
+  {
+   "letra": "Y",
+   "personas": 39,
+   "rangos": [
+    2,
+    1,
+    4,
+    10,
+    22
+   ],
+   "promedio": 72.2
+  },
+  {
+   "letra": "Z",
+   "personas": 37,
+   "rangos": [
+    2,
+    1,
+    8,
+    15,
+    11
+   ],
+   "promedio": 62.1
+  }
+ ],
+ "confusiones": {
+  "personas": 100,
+  "practicaron": {
+   "A": 53,
+   "B": 42,
+   "C": 43,
+   "D": 48,
+   "E": 35,
+   "F": 53,
+   "G": 53,
+   "H": 34,
+   "I": 48,
+   "J": 43,
+   "K": 51,
+   "L": 42,
+   "M": 39,
+   "N": 49,
+   "O": 41,
+   "P": 37,
+   "Q": 39,
+   "R": 47,
+   "S": 46,
+   "T": 37,
+   "U": 42,
+   "V": 51,
+   "W": 48,
+   "X": 35,
+   "Y": 39,
+   "Z": 37,
+   "Ñ": 41
+  },
+  "pares": [
+   {
+    "letra": "G",
+    "con": "L",
+    "veces": 33,
+    "personas": 26
+   },
+   {
+    "letra": "A",
+    "con": "T",
+    "veces": 30,
+    "personas": 24
+   },
+   {
+    "letra": "U",
+    "con": "N",
+    "veces": 30,
+    "personas": 22
+   },
+   {
+    "letra": "R",
+    "con": "U",
+    "veces": 29,
+    "personas": 22
+   },
+   {
+    "letra": "F",
+    "con": "B",
+    "veces": 31,
+    "personas": 21
+   },
+   {
+    "letra": "K",
+    "con": "R",
+    "veces": 24,
+    "personas": 21
+   },
+   {
+    "letra": "P",
+    "con": "O",
+    "veces": 30,
+    "personas": 20
+   },
+   {
+    "letra": "S",
+    "con": "E",
+    "veces": 29,
+    "personas": 20
+   },
+   {
+    "letra": "K",
+    "con": "V",
+    "veces": 25,
+    "personas": 20
+   },
+   {
+    "letra": "F",
+    "con": "M",
+    "veces": 20,
+    "personas": 20
+   },
+   {
+    "letra": "C",
+    "con": "O",
+    "veces": 29,
+    "personas": 19
+   },
+   {
+    "letra": "V",
+    "con": "U",
+    "veces": 28,
+    "personas": 19
+   },
+   {
+    "letra": "O",
+    "con": "C",
+    "veces": 26,
+    "personas": 19
+   },
+   {
+    "letra": "V",
+    "con": "N",
+    "veces": 25,
+    "personas": 19
+   },
+   {
+    "letra": "S",
+    "con": "Q",
+    "veces": 23,
+    "personas": 19
+   },
+   {
+    "letra": "U",
+    "con": "R",
+    "veces": 23,
+    "personas": 18
+   },
+   {
+    "letra": "Y",
+    "con": "I",
+    "veces": 23,
+    "personas": 18
+   },
+   {
+    "letra": "F",
+    "con": "D",
+    "veces": 22,
+    "personas": 18
+   },
+   {
+    "letra": "N",
+    "con": "V",
+    "veces": 22,
+    "personas": 18
+   },
+   {
+    "letra": "S",
+    "con": "A",
+    "veces": 21,
+    "personas": 18
+   },
+   {
+    "letra": "Z",
+    "con": "Q",
+    "veces": 20,
+    "personas": 18
+   },
+   {
+    "letra": "L",
+    "con": "G",
+    "veces": 24,
+    "personas": 17
+   },
+   {
+    "letra": "W",
+    "con": "M",
+    "veces": 24,
+    "personas": 17
+   },
+   {
+    "letra": "K",
+    "con": "N",
+    "veces": 22,
+    "personas": 17
+   },
+   {
+    "letra": "G",
+    "con": "Z",
+    "veces": 19,
+    "personas": 17
+   },
+   {
+    "letra": "I",
+    "con": "T",
+    "veces": 19,
+    "personas": 17
+   },
+   {
+    "letra": "W",
+    "con": "N",
+    "veces": 19,
+    "personas": 17
+   },
+   {
+    "letra": "D",
+    "con": "U",
+    "veces": 21,
+    "personas": 16
+   },
+   {
+    "letra": "X",
+    "con": "A",
+    "veces": 21,
+    "personas": 16
+   },
+   {
+    "letra": "G",
+    "con": "Q",
+    "veces": 20,
+    "personas": 16
+   },
+   {
+    "letra": "T",
+    "con": "E",
+    "veces": 20,
+    "personas": 16
+   },
+   {
+    "letra": "D",
+    "con": "F",
+    "veces": 19,
+    "personas": 16
+   },
+   {
+    "letra": "I",
+    "con": "Y",
+    "veces": 18,
+    "personas": 16
+   },
+   {
+    "letra": "J",
+    "con": "S",
+    "veces": 21,
+    "personas": 15
+   },
+   {
+    "letra": "P",
+    "con": "C",
+    "veces": 21,
+    "personas": 15
+   },
+   {
+    "letra": "C",
+    "con": "P",
+    "veces": 20,
+    "personas": 15
+   },
+   {
+    "letra": "D",
+    "con": "Z",
+    "veces": 20,
+    "personas": 15
+   },
+   {
+    "letra": "B",
+    "con": "F",
+    "veces": 19,
+    "personas": 15
+   },
+   {
+    "letra": "A",
+    "con": "E",
+    "veces": 18,
+    "personas": 15
+   },
+   {
+    "letra": "Z",
+    "con": "U",
+    "veces": 18,
+    "personas": 15
+   },
+   {
+    "letra": "T",
+    "con": "A",
+    "veces": 21,
+    "personas": 14
+   },
+   {
+    "letra": "P",
+    "con": "K",
+    "veces": 20,
+    "personas": 14
+   },
+   {
+    "letra": "K",
+    "con": "U",
+    "veces": 19,
+    "personas": 14
+   },
+   {
+    "letra": "C",
+    "con": "R",
+    "veces": 16,
+    "personas": 14
+   },
+   {
+    "letra": "E",
+    "con": "A",
+    "veces": 16,
+    "personas": 14
+   },
+   {
+    "letra": "Q",
+    "con": "A",
+    "veces": 16,
+    "personas": 14
+   },
+   {
+    "letra": "Q",
+    "con": "T",
+    "veces": 16,
+    "personas": 14
+   },
+   {
+    "letra": "D",
+    "con": "K",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "J",
+    "con": "E",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "S",
+    "con": "T",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "T",
+    "con": "S",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "V",
+    "con": "K",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "W",
+    "con": "V",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "Ñ",
+    "con": "K",
+    "veces": 15,
+    "personas": 14
+   },
+   {
+    "letra": "H",
+    "con": "N",
+    "veces": 14,
+    "personas": 14
+   },
+   {
+    "letra": "P",
+    "con": "U",
+    "veces": 20,
+    "personas": 13
+   },
+   {
+    "letra": "Y",
+    "con": "A",
+    "veces": 19,
+    "personas": 13
+   },
+   {
+    "letra": "Z",
+    "con": "L",
+    "veces": 19,
+    "personas": 13
+   },
+   {
+    "letra": "N",
+    "con": "U",
+    "veces": 16,
+    "personas": 13
+   },
+   {
+    "letra": "Q",
+    "con": "E",
+    "veces": 16,
+    "personas": 13
+   },
+   {
+    "letra": "R",
+    "con": "V",
+    "veces": 16,
+    "personas": 13
+   },
+   {
+    "letra": "V",
+    "con": "R",
+    "veces": 16,
+    "personas": 13
+   },
+   {
+    "letra": "M",
+    "con": "B",
+    "veces": 15,
+    "personas": 13
+   },
+   {
+    "letra": "O",
+    "con": "F",
+    "veces": 15,
+    "personas": 13
+   },
+   {
+    "letra": "N",
+    "con": "R",
+    "veces": 13,
+    "personas": 13
+   },
+   {
+    "letra": "U",
+    "con": "K",
+    "veces": 13,
+    "personas": 13
+   },
+   {
+    "letra": "Ñ",
+    "con": "R",
+    "veces": 17,
+    "personas": 12
+   },
+   {
+    "letra": "Y",
+    "con": "Q",
+    "veces": 15,
+    "personas": 12
+   },
+   {
+    "letra": "Y",
+    "con": "T",
+    "veces": 15,
+    "personas": 12
+   },
+   {
+    "letra": "A",
+    "con": "Q",
+    "veces": 14,
+    "personas": 12
+   },
+   {
+    "letra": "F",
+    "con": "W",
+    "veces": 14,
+    "personas": 12
+   },
+   {
+    "letra": "X",
+    "con": "S",
+    "veces": 14,
+    "personas": 12
+   },
+   {
+    "letra": "R",
+    "con": "K",
+    "veces": 13,
+    "personas": 12
+   },
+   {
+    "letra": "C",
+    "con": "D",
+    "veces": 12,
+    "personas": 12
+   },
+   {
+    "letra": "E",
+    "con": "T",
+    "veces": 12,
+    "personas": 12
+   },
+   {
+    "letra": "U",
+    "con": "V",
+    "veces": 12,
+    "personas": 12
+   },
+   {
+    "letra": "M",
+    "con": "W",
+    "veces": 20,
+    "personas": 11
+   },
+   {
+    "letra": "B",
+    "con": "W",
+    "veces": 16,
+    "personas": 11
+   },
+   {
+    "letra": "J",
+    "con": "Y",
+    "veces": 16,
+    "personas": 11
+   },
+   {
+    "letra": "L",
+    "con": "Q",
+    "veces": 16,
+    "personas": 11
+   },
+   {
+    "letra": "H",
+    "con": "U",
+    "veces": 15,
+    "personas": 11
+   },
+   {
+    "letra": "H",
+    "con": "G",
+    "veces": 14,
+    "personas": 11
+   },
+   {
+    "letra": "L",
+    "con": "Z",
+    "veces": 14,
+    "personas": 11
+   },
+   {
+    "letra": "Ñ",
+    "con": "U",
+    "veces": 14,
+    "personas": 11
+   },
+   {
+    "letra": "M",
+    "con": "N",
+    "veces": 13,
+    "personas": 11
+   },
+   {
+    "letra": "I",
+    "con": "E",
+    "veces": 12,
+    "personas": 11
+   },
+   {
+    "letra": "B",
+    "con": "M",
+    "veces": 11,
+    "personas": 11
+   },
+   {
+    "letra": "G",
+    "con": "H",
+    "veces": 11,
+    "personas": 11
+   },
+   {
+    "letra": "Z",
+    "con": "G",
+    "veces": 19,
+    "personas": 10
+   },
+   {
+    "letra": "R",
+    "con": "N",
+    "veces": 16,
+    "personas": 10
+   },
+   {
+    "letra": "E",
+    "con": "S",
+    "veces": 14,
+    "personas": 10
+   },
+   {
+    "letra": "H",
+    "con": "K",
+    "veces": 14,
+    "personas": 10
+   },
+   {
+    "letra": "X",
+    "con": "E",
+    "veces": 13,
+    "personas": 10
+   },
+   {
+    "letra": "O",
+    "con": "P",
+    "veces": 11,
+    "personas": 10
+   },
+   {
+    "letra": "A",
+    "con": "S",
+    "veces": 10,
+    "personas": 10
+   },
+   {
+    "letra": "B",
+    "con": "D",
+    "veces": 10,
+    "personas": 10
+   },
+   {
+    "letra": "N",
+    "con": "K",
+    "veces": 10,
+    "personas": 10
+   },
+   {
+    "letra": "Ñ",
+    "con": "V",
+    "veces": 12,
+    "personas": 9
+   },
+   {
+    "letra": "X",
+    "con": "Q",
+    "veces": 11,
+    "personas": 9
+   },
+   {
+    "letra": "I",
+    "con": "S",
+    "veces": 10,
+    "personas": 9
+   },
+   {
+    "letra": "J",
+    "con": "T",
+    "veces": 10,
+    "personas": 9
+   },
+   {
+    "letra": "O",
+    "con": "D",
+    "veces": 10,
+    "personas": 9
+   },
+   {
+    "letra": "T",
+    "con": "Q",
+    "veces": 10,
+    "personas": 9
+   },
+   {
+    "letra": "W",
+    "con": "U",
+    "veces": 10,
+    "personas": 9
+   },
+   {
+    "letra": "Q",
+    "con": "L",
+    "veces": 11,
+    "personas": 8
+   },
+   {
+    "letra": "E",
+    "con": "Q",
+    "veces": 9,
+    "personas": 8
+   },
+   {
+    "letra": "M",
+    "con": "U",
+    "veces": 8,
+    "personas": 7
+   },
+   {
+    "letra": "L",
+    "con": "H",
+    "veces": 5,
+    "personas": 5
+   }
+  ]
+ }
+}

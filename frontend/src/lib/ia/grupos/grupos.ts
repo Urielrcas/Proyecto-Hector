@@ -3,6 +3,8 @@
  *
  *   - grupos.json ← ml/p07_kmeans_manos.py (K-Means: qué letras tienen una forma de mano parecida)
  *                   + ml/p08_analisis_clusters.py (sección «analisis»: estabilidad, escaladores, atípicas)
+ *                   + ml/p08b_familias_senas.py (sección «familias»: agrupamiento jerárquico de las letras,
+ *                     letras más parecidas y cómo se reparten sus manos entre los grupos)
  *   - pca.json    ← ml/p09_pca_manos.py (las manos resumidas en 2 dimensiones para dibujarlas)
  *
  * La app los usa en «IA por dentro» (gráficas) y al practicar una letra («se parece a…»).
@@ -46,6 +48,24 @@ export const GRUPOS = gruposJson as unknown as {
     siluetaGrupo: { grupo: number; silueta: number; negativas: number }[]
     atipicas: { percentil: number; umbral: number; total: number; giroAtipicas: number; giroNormales: number; porLetra: { letra: string; manos: number }[] }
   }
+  familias: Familias
+}
+
+/** Agrupamiento jerárquico (Ward) de las letras: de cada letra sola hasta todas juntas. */
+export interface Familias {
+  metodo: string
+  /** Cuántas familias se muestran al abrir. */
+  defecto: number
+  /** Las 25 formas de letra, en el orden de «niveles» y de las hojas del árbol (0 a 24). */
+  letras: string[]
+  /** Cada unión del árbol: nodos a y b (0-24 = letras; 25 en adelante = la unión número n-25) y su distancia. */
+  uniones: { a: number; b: number; distancia: number }[]
+  /** «4» → la familia de cada letra (en el orden de «letras») si se corta el árbol en 4 familias. */
+  niveles: Record<string, number[]>
+  /** Las 4 letras más parecidas a cada letra (parecido de 0 a 100). */
+  parecidas: Record<string, { letra: string; distancia: number; parecido: number }[]>
+  /** En qué grupos de K-Means quedaron las manos de cada letra (≥ 5 %). */
+  reparto: Record<string, { grupo: number; porcentaje: number }[]>
 }
 
 export const PCA = pcaJson as {
@@ -74,4 +94,70 @@ export function letrasParecidas(letra: string): string[] {
   if (!clave) return []
   const gemelas = clave.split('/').filter((l) => l !== letra)
   return [...gemelas, ...GRUPOS.letras[clave].parecidas]
+}
+
+/** Colores de las familias (distintos de los de los grupos para no confundirlos). */
+export const COLORES_FAMILIA = ['#0f766e', '#b45309', '#7c3aed', '#be123c', '#1d4ed8', '#4d7c0f', '#a21caf', '#0e7490', '#57534e']
+
+/** La forma (clase) de una letra: I y J comparten forma («I/J»), igual que N y Ñ. */
+export function claseDeLetra(letra: string): string {
+  return letra === 'I' || letra === 'J' ? 'I/J' : letra === 'N' || letra === 'Ñ' ? 'N/Ñ' : letra
+}
+
+export interface Familia {
+  id: number
+  letras: string[]
+  nombre: string
+}
+
+/** Las familias al cortar el árbol en n (con un nombre sacado del grupo de K-Means que más letras aporta). */
+export function familiasDe(n: number): Familia[] {
+  const F = GRUPOS.familias
+  const nivel = F.niveles[String(n)] ?? F.niveles[String(F.defecto)]
+  const familias: Familia[] = []
+  F.letras.forEach((letra, i) => {
+    const f = nivel[i]
+    familias[f] ??= { id: f, letras: [], nombre: '' }
+    familias[f].letras.push(letra)
+  })
+  for (const f of familias) {
+    const cuenta = new Map<number, number>()
+    for (const l of f.letras) {
+      const g = GRUPOS.letras[l]?.grupo
+      if (g !== undefined) cuenta.set(g, (cuenta.get(g) ?? 0) + 1)
+    }
+    const [principal] = [...cuenta.entries()].sort((a, b) => b[1] - a[1])
+    const nombre = principal ? GRUPOS.grupos.find((g) => g.id === principal[0])?.nombre ?? '' : ''
+    f.nombre = f.letras.length === 1 ? `Sola: ${f.letras[0]}` : cuenta.size > 1 ? `${nombre} y parecidas` : nombre
+  }
+  return familias
+}
+
+/** Familia de una letra (forma «I/J», «N/Ñ» o letra suelta) al cortar en n. */
+export function familiaDeLetra(letra: string, n: number): number {
+  const F = GRUPOS.familias
+  const i = F.letras.indexOf(claseDeLetra(letra))
+  return i < 0 ? -1 : (F.niveles[String(n)] ?? F.niveles[String(F.defecto)])[i]
+}
+
+const PARTES_DEDO = ['de la base', 'del nudillo central', 'del nudillo de arriba', 'de la punta']
+const DEDOS_PUNTOS = ['pulgar', 'índice', 'medio', 'anular', 'meñique']
+
+/** Una medida de la tabla en palabras: «p12_v» → «altura de la punta del medio». */
+export function describirMedida(medida: string): string {
+  const punto = /^p(\d+)_([uv])$/.exec(medida)
+  if (punto) {
+    const n = Number(punto[1]) - 1
+    return `${punto[2] === 'v' ? 'altura' : 'posición a lo ancho'} ${PARTES_DEDO[n % 4]} del ${DEDOS_PUNTOS[Math.floor(n / 4)]}`
+  }
+  const angulo = /^angulo_(\w+?)(?:_(medio|punta))?$/.exec(medida)
+  if (angulo) {
+    const dedo = angulo[1] === 'menique' ? 'meñique' : angulo[1] === 'indice' ? 'índice' : angulo[1]
+    return `qué tan doblado está el ${dedo}${angulo[2] === 'punta' ? ' (en la punta)' : ''}`
+  }
+  const palma = /^punta_(\w+)_a_palma$/.exec(medida)
+  if (palma) return `qué tan estirado está el ${palma[1] === 'menique' ? 'meñique' : palma[1] === 'indice' ? 'índice' : palma[1]}`
+  const pulgar = /^pulgar_a_(\w+)$/.exec(medida)
+  if (pulgar) return `distancia del pulgar al ${pulgar[1].replace('nudillo_indice', 'nudillo del índice').replace('menique', 'meñique').replace('indice', 'índice')}`
+  return medida
 }

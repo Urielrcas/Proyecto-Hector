@@ -4,6 +4,7 @@
   GET  /api/intentos/expediente?lengua=LSM        → el expediente y los consejos del usuario de la sesión
   GET  /api/intentos/expediente/{id}?lengua=LSM   → el expediente de otra persona (solo administrador)
   GET  /api/intentos/tablero?lengua=&desde=&hasta= → consultas para el tablero (solo administrador)
+  GET  /api/intentos/confusiones?lengua=LSM       → qué letras se confunden y cuántas personas (solo administrador)
 
 Se guardan en la colección "intentos", un documento por intento:
     {usuario_id, lengua, letra, acierto, puntaje, segundos, letra_detectada, dedos_fallados, fecha}
@@ -30,7 +31,7 @@ from pymongo.asynchronous.database import AsyncDatabase
 from ..alfabeto import LETRAS
 from ..db import get_db
 from ..dependencias import requiere_admin, usuario_actual
-from ..modelos import ExpedienteSalida, IntentoEntrada, Lengua, TableroIntentos
+from ..modelos import ConfusionesPersonas, ExpedienteSalida, IntentoEntrada, Lengua, TableroIntentos
 from ..recomendaciones import construir_expediente, grupos_lsm
 
 router = APIRouter(prefix="/api/intentos", tags=["intentos"])
@@ -40,6 +41,13 @@ MIN_INTENTOS_AYUDA = 10
 MAX_TASA_AYUDA = 0.15
 # Cuántos intentos se leen como máximo para un expediente (los más recientes).
 MAX_INTENTOS_EXPEDIENTE = 5000
+# Nivel de una persona en una letra: el promedio de sus últimos N intentos (gráfica de dominio).
+INTENTOS_NIVEL = 5
+
+
+def rango_de(nivel: float) -> int:
+    """0–20 → 0, 20–40 → 1, 40–60 → 2, 60–80 → 3, 80–100 → 4 (el 100 va en el último)."""
+    return min(4, int(nivel // 20))
 
 
 # POST /api/intentos
@@ -141,6 +149,12 @@ async def tablero(lengua: Lengua, desde: date | None = None, hasta: date | None 
                 {"$sort": {"_id": 1}},
                 {"$project": {"_id": 0, "fecha": "$_id", "intentos": 1, "aciertos": 1}},
             ],
+            # Nivel de cada persona en cada letra: promedio de sus últimos intentos (para la gráfica de dominio).
+            "niveles": [
+                {"$sort": {"fecha": 1}},
+                {"$group": {"_id": {"usuario": "$usuario_id", "letra": "$letra"}, "puntajes": {"$push": "$puntaje"}}},
+                {"$project": {"_id": 0, "letra": "$_id.letra", "nivel": {"$avg": {"$slice": ["$puntajes", -INTENTOS_NIVEL]}}}},
+            ],
             # Qué dedo se falla más.
             "dedos": [
                 {"$match": {"acierto": False}},
@@ -174,6 +188,19 @@ async def tablero(lengua: Lengua, desde: date | None = None, hasta: date | None 
         key=lambda g: g["tasa"],
     )
 
+    # Dominio: cuántas personas quedan en cada rango de nivel, por letra (en orden del alfabeto).
+    dominio: dict[str, dict[str, Any]] = {}
+    for n in r["niveles"]:
+        d = dominio.setdefault(n["letra"], {"letra": n["letra"], "personas": 0, "rangos": [0] * 5, "suma": 0.0})
+        d["personas"] += 1
+        d["rangos"][rango_de(n["nivel"])] += 1
+        d["suma"] += n["nivel"]
+    orden = {letra: i for i, letra in enumerate(LETRAS.get(lengua, []))}
+    lista_dominio = [
+        {"letra": d["letra"], "personas": d["personas"], "rangos": d["rangos"], "promedio": round(d["suma"] / d["personas"], 1)}
+        for d in sorted(dominio.values(), key=lambda d: orden.get(d["letra"], 99))
+    ]
+
     return {
         "intentos": total["intentos"],
         "aciertos": total["aciertos"],
@@ -187,4 +214,37 @@ async def tablero(lengua: Lengua, desde: date | None = None, hasta: date | None 
         "grupos": lista_grupos,
         "por_dia": r["por_dia"],
         "dedos": r["dedos"],
+        "dominio": lista_dominio,
+    }
+
+
+# GET /api/intentos/confusiones?lengua=LSM
+# Para «IA por dentro → Señas parecidas»: con qué letra se confunde cada una y CUÁNTAS PERSONAS distintas
+# la confundieron así, junto con cuántas personas practicaron cada letra (para sacar el porcentaje).
+@router.get("/confusiones", response_model=ConfusionesPersonas, dependencies=[Depends(requiere_admin)])
+async def confusiones(lengua: Lengua, db: AsyncDatabase = Depends(get_db)):
+    resultado = await (await db.intentos.aggregate([
+        {"$match": {"lengua": lengua}},
+        {"$facet": {
+            "personas": [{"$group": {"_id": "$usuario_id"}}, {"$count": "n"}],
+            "practicaron": [
+                {"$group": {"_id": "$letra", "personas": {"$addToSet": "$usuario_id"}}},
+                {"$project": {"_id": 0, "letra": "$_id", "personas": {"$size": "$personas"}}},
+            ],
+            "pares": [
+                {"$match": {"acierto": False, "letra_detectada": {"$ne": None}}},
+                {"$match": {"$expr": {"$ne": ["$letra", "$letra_detectada"]}}},
+                {"$group": {"_id": {"letra": "$letra", "con": "$letra_detectada"}, "veces": {"$sum": 1},
+                            "personas": {"$addToSet": "$usuario_id"}}},
+                {"$project": {"_id": 0, "letra": "$_id.letra", "con": "$_id.con", "veces": 1, "personas": {"$size": "$personas"}}},
+                {"$sort": {"personas": -1, "veces": -1}},
+                {"$limit": 300},
+            ],
+        }},
+    ])).to_list()
+    r = resultado[0]
+    return {
+        "personas": r["personas"][0]["n"] if r["personas"] else 0,
+        "practicaron": {p["letra"]: p["personas"] for p in r["practicaron"]},
+        "pares": r["pares"],
     }

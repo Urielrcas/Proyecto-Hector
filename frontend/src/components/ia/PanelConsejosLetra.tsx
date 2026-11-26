@@ -4,11 +4,16 @@
  *   - cuántos intentos lleva y cuántos logró,
  *   - la predicción de su próximo intento (red neuronal de la práctica 27),
  *   - los consejos del motor de recomendaciones para esta letra (o el más importante en general),
- *   - con qué letra la confunde la IA y el dedo que más falla.
+ *   - con qué letra la confunde la IA y el dedo que más falla,
+ *   - un consejo personal por dedos: «Llevas 20 intentos fallidos con la E. En el 60 % de ellos falló tu
+ *     pulgar. Te aconsejo: …» (lib/aprendizaje/consejoDedos.ts).
  * Los invitados no tienen expediente: se les invita a iniciar sesión.
  */
-import { Brain, TrendingUp } from 'lucide-react'
+import { Brain, Hand, TrendingUp } from 'lucide-react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { alfabeto } from '../../lib/aprendizaje/alfabeto'
+import { consejoDedos } from '../../lib/aprendizaje/consejoDedos'
 import { NOMBRE_DEDO_CORTO, type Expediente } from '../../services/intentos'
 import { Consejo } from './VistaExpediente'
 
@@ -17,6 +22,13 @@ export function PanelConsejosLetra({ letra, expediente, conCuenta }: { letra: st
   const deLetra = expediente?.recomendaciones.filter((c) => c.letra === letra && c.tipo !== 'siguiente') ?? []
   const general = expediente?.recomendaciones.find((c) => c.tipo !== 'siguiente' && c.letra !== letra)
   const consejos = deLetra.length ? deLetra : general ? [general] : []
+  const lengua = expediente?.lengua
+  const personal = useMemo(() => {
+    if (!lengua || !info) return null
+    const letras = alfabeto(lengua)
+    const esta = letras.find((l) => l.letra === letra)
+    return esta ? consejoDedos(esta, info, letras) : null
+  }, [lengua, info, letra])
 
   return (
     <section aria-labelledby="titulo-consejos-letra" className="mt-4 rounded-2xl border border-marca-200 bg-marca-50/50 p-4">
@@ -59,6 +71,19 @@ export function PanelConsejosLetra({ letra, expediente, conCuenta }: { letra: st
             )}
             .
           </p>
+          {personal && (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-stone-800">
+              <p className="flex items-start gap-2 font-bold">
+                <Hand className="mt-0.5 size-4 shrink-0 text-amber-700" aria-hidden />
+                {personal.resumen}
+              </p>
+              <ul className="mt-1 list-disc space-y-1 pl-9">
+                {personal.consejos.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {info.prediccion && (
             <p className="mt-2 flex items-start gap-2 rounded-xl bg-white p-3 text-sm text-stone-800">
               <TrendingUp className="mt-0.5 size-4 shrink-0 text-marca-700" aria-hidden />

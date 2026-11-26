@@ -39,6 +39,10 @@ export interface LetraExpediente {
   tendencia: 'mejorando' | 'estable' | 'bajando'
   confundida_con: { letra: string; veces: number }[]
   dedo_mas_fallado: Dedo | null
+  /** Intentos sin lograrla. */
+  fallidos: number
+  /** En qué parte de los intentos fallidos falló cada dedo (porcentaje de 0 a 1), del que más al que menos. */
+  dedos_fallados: { dedo: Dedo; veces: number; porcentaje: number }[]
   ultima_vez: string | null
   prediccion: { puntaje: number; mensaje: string } | null
 }
@@ -94,6 +98,24 @@ export interface Tablero {
   grupos: { grupo: string; letras: string[]; intentos: number; tasa: number }[]
   por_dia: { fecha: string; intentos: number; aciertos: number }[]
   dedos: { dedo: Dedo; veces: number }[]
+  /** Cuántas personas hay en cada nivel de cada letra (promedio de sus últimos 5 intentos). */
+  dominio: DominioLetra[]
+}
+
+/** Personas por nivel en una letra: rangos = [0–20, 20–40, 40–60, 60–80, 80–100 %]. */
+export interface DominioLetra {
+  letra: string
+  personas: number
+  rangos: number[]
+  promedio: number
+}
+
+/** Con qué letra se confunde cada una y cuántas personas distintas la confundieron así. */
+export interface ConfusionesPersonas {
+  personas: number
+  /** Letra → personas que la practicaron. */
+  practicaron: Record<string, number>
+  pares: { letra: string; con: string; veces: number; personas: number }[]
 }
 
 export async function registrarIntento(intento: IntentoNuevo): Promise<void> {
@@ -110,4 +132,8 @@ export async function obtenerTablero(lengua: Lengua, desde?: string, hasta?: str
   if (desde) params.set('desde', desde)
   if (hasta) params.set('hasta', hasta)
   return api<Tablero>(`/intentos/tablero?${params}`)
+}
+
+export async function obtenerConfusiones(lengua: Lengua): Promise<ConfusionesPersonas> {
+  return api<ConfusionesPersonas>(`/intentos/confusiones?lengua=${lengua}`)
 }

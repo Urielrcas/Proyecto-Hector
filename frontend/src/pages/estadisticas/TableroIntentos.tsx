@@ -6,6 +6,7 @@
  *   - totales: intentos, % de aciertos, personas que practicaron y cuántas necesitan ayuda,
  *   - letras más difíciles, confusiones más comunes, grupos de señas parecidas (K-Means) y dedos que más fallan,
  *   - intentos por día,
+ *   - cuántas personas dominan cada letra, por niveles (GraficaDominio.tsx),
  *   - la lista de personas (primero las que necesitan ayuda) y el expediente de la que se elija.
  * En la práctica era una página aparte con Streamlit; aquí va dentro de la misma app.
  */
@@ -17,6 +18,7 @@ import { VistaExpediente } from '../../components/ia/VistaExpediente'
 import { useExpediente } from '../../hooks/useExpediente'
 import type { Lengua } from '../../lib/tipos'
 import { NOMBRE_DEDO_CORTO, obtenerTablero, type Tablero } from '../../services/intentos'
+import { GraficaDominio } from './GraficaDominio'
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
 
@@ -196,7 +198,13 @@ export function TableroIntentos({ lengua, recarga }: { lengua: Lengua; recarga: 
           Todavía no hay intentos de práctica en {lengua}
           {desde || hasta ? ' en estas fechas' : ''}. Se guardan cada vez que alguien con cuenta practica una letra con la cámara.
         </p>
-      ) : (
+      ) : null}
+      {tablero && tablero.intentos === 0 && (
+        <div className="mt-4">
+          <GraficaDominio key={lengua} real={tablero.dominio} lengua={lengua} />
+        </div>
+      )}
+      {tablero && tablero.intentos === 0 ? null : (
         tablero && (
           <>
             {/* Totales */}
@@ -240,6 +248,9 @@ export function TableroIntentos({ lengua, recarga }: { lengua: Lengua; recarga: 
             </div>
             <div className="mt-4">
               <PorDia datos={tablero.por_dia} />
+            </div>
+            <div className="mt-4">
+              <GraficaDominio key={lengua} real={tablero.dominio} lengua={lengua} />
             </div>
 
             {/* Personas */}

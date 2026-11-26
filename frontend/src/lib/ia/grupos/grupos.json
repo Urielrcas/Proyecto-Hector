@@ -686,5 +686,1108 @@
     }
    ]
   }
+ },
+ "familias": {
+  "metodo": "Ward",
+  "defecto": 4,
+  "letras": [
+   "A",
+   "B",
+   "C",
+   "D",
+   "E",
+   "F",
+   "G",
+   "H",
+   "I/J",
+   "K",
+   "L",
+   "M",
+   "N/Ñ",
+   "O",
+   "P",
+   "Q",
+   "R",
+   "S",
+   "T",
+   "U",
+   "V",
+   "W",
+   "X",
+   "Y",
+   "Z"
+  ],
+  "uniones": [
+   {
+    "a": 6,
+    "b": 10,
+    "distancia": 0.735
+   },
+   {
+    "a": 0,
+    "b": 18,
+    "distancia": 1.181
+   },
+   {
+    "a": 12,
+    "b": 19,
+    "distancia": 1.393
+   },
+   {
+    "a": 4,
+    "b": 17,
+    "distancia": 1.4
+   },
+   {
+    "a": 20,
+    "b": 27,
+    "distancia": 1.968
+   },
+   {
+    "a": 11,
+    "b": 21,
+    "distancia": 1.99
+   },
+   {
+    "a": 16,
+    "b": 29,
+    "distancia": 2.559
+   },
+   {
+    "a": 2,
+    "b": 13,
+    "distancia": 3.372
+   },
+   {
+    "a": 9,
+    "b": 31,
+    "distancia": 4.186
+   },
+   {
+    "a": 8,
+    "b": 23,
+    "distancia": 4.282
+   },
+   {
+    "a": 26,
+    "b": 28,
+    "distancia": 4.301
+   },
+   {
+    "a": 15,
+    "b": 24,
+    "distancia": 4.534
+   },
+   {
+    "a": 7,
+    "b": 25,
+    "distancia": 5.377
+   },
+   {
+    "a": 3,
+    "b": 5,
+    "distancia": 5.762
+   },
+   {
+    "a": 1,
+    "b": 30,
+    "distancia": 6.183
+   },
+   {
+    "a": 35,
+    "b": 36,
+    "distancia": 6.755
+   },
+   {
+    "a": 14,
+    "b": 32,
+    "distancia": 7.049
+   },
+   {
+    "a": 38,
+    "b": 39,
+    "distancia": 8.988
+   },
+   {
+    "a": 34,
+    "b": 40,
+    "distancia": 9.365
+   },
+   {
+    "a": 33,
+    "b": 37,
+    "distancia": 10.063
+   },
+   {
+    "a": 22,
+    "b": 43,
+    "distancia": 13.537
+   },
+   {
+    "a": 42,
+    "b": 44,
+    "distancia": 13.629
+   },
+   {
+    "a": 41,
+    "b": 46,
+    "distancia": 15.179
+   },
+   {
+    "a": 45,
+    "b": 47,
+    "distancia": 19.857
+   }
+  ],
+  "niveles": {
+   "2": [
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0
+   ],
+   "3": [
+    0,
+    1,
+    2,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    0,
+    1,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0
+   ],
+   "4": [
+    0,
+    1,
+    2,
+    1,
+    0,
+    1,
+    3,
+    3,
+    0,
+    3,
+    3,
+    1,
+    3,
+    2,
+    2,
+    0,
+    3,
+    0,
+    0,
+    3,
+    3,
+    1,
+    0,
+    0,
+    0
+   ],
+   "5": [
+    0,
+    1,
+    2,
+    1,
+    0,
+    1,
+    3,
+    3,
+    0,
+    3,
+    3,
+    1,
+    3,
+    2,
+    2,
+    0,
+    3,
+    0,
+    0,
+    3,
+    3,
+    1,
+    4,
+    0,
+    0
+   ],
+   "6": [
+    0,
+    1,
+    2,
+    1,
+    0,
+    1,
+    3,
+    3,
+    0,
+    4,
+    3,
+    1,
+    4,
+    2,
+    2,
+    0,
+    4,
+    0,
+    0,
+    4,
+    4,
+    1,
+    5,
+    0,
+    0
+   ],
+   "7": [
+    0,
+    1,
+    2,
+    1,
+    0,
+    1,
+    3,
+    3,
+    4,
+    5,
+    3,
+    1,
+    5,
+    2,
+    2,
+    0,
+    5,
+    0,
+    0,
+    5,
+    5,
+    1,
+    6,
+    4,
+    0
+   ],
+   "8": [
+    0,
+    1,
+    2,
+    3,
+    0,
+    3,
+    4,
+    4,
+    5,
+    6,
+    4,
+    1,
+    6,
+    2,
+    2,
+    0,
+    6,
+    0,
+    0,
+    6,
+    6,
+    1,
+    7,
+    5,
+    0
+   ],
+   "9": [
+    0,
+    1,
+    2,
+    3,
+    0,
+    3,
+    4,
+    4,
+    5,
+    6,
+    4,
+    1,
+    6,
+    2,
+    7,
+    0,
+    6,
+    0,
+    0,
+    6,
+    6,
+    1,
+    8,
+    5,
+    0
+   ]
+  },
+  "parecidas": {
+   "A": [
+    {
+     "letra": "T",
+     "distancia": 1.18,
+     "parecido": 92
+    },
+    {
+     "letra": "E",
+     "distancia": 3.13,
+     "parecido": 79
+    },
+    {
+     "letra": "S",
+     "distancia": 3.29,
+     "parecido": 78
+    },
+    {
+     "letra": "Q",
+     "distancia": 3.84,
+     "parecido": 74
+    }
+   ],
+   "B": [
+    {
+     "letra": "M",
+     "distancia": 5.16,
+     "parecido": 65
+    },
+    {
+     "letra": "W",
+     "distancia": 5.72,
+     "parecido": 61
+    },
+    {
+     "letra": "F",
+     "distancia": 5.83,
+     "parecido": 60
+    },
+    {
+     "letra": "D",
+     "distancia": 6.96,
+     "parecido": 53
+    }
+   ],
+   "C": [
+    {
+     "letra": "O",
+     "distancia": 3.37,
+     "parecido": 77
+    },
+    {
+     "letra": "P",
+     "distancia": 6.09,
+     "parecido": 59
+    },
+    {
+     "letra": "D",
+     "distancia": 8.1,
+     "parecido": 45
+    },
+    {
+     "letra": "R",
+     "distancia": 8.31,
+     "parecido": 44
+    }
+   ],
+   "D": [
+    {
+     "letra": "F",
+     "distancia": 5.76,
+     "parecido": 61
+    },
+    {
+     "letra": "K",
+     "distancia": 6.27,
+     "parecido": 57
+    },
+    {
+     "letra": "Z",
+     "distancia": 6.59,
+     "parecido": 55
+    },
+    {
+     "letra": "U",
+     "distancia": 6.66,
+     "parecido": 55
+    }
+   ],
+   "E": [
+    {
+     "letra": "S",
+     "distancia": 1.4,
+     "parecido": 91
+    },
+    {
+     "letra": "A",
+     "distancia": 3.13,
+     "parecido": 79
+    },
+    {
+     "letra": "T",
+     "distancia": 3.25,
+     "parecido": 78
+    },
+    {
+     "letra": "Q",
+     "distancia": 4.39,
+     "parecido": 70
+    }
+   ],
+   "F": [
+    {
+     "letra": "D",
+     "distancia": 5.76,
+     "parecido": 61
+    },
+    {
+     "letra": "B",
+     "distancia": 5.83,
+     "parecido": 60
+    },
+    {
+     "letra": "W",
+     "distancia": 7.62,
+     "parecido": 48
+    },
+    {
+     "letra": "M",
+     "distancia": 7.64,
+     "parecido": 48
+    }
+   ],
+   "G": [
+    {
+     "letra": "L",
+     "distancia": 0.73,
+     "parecido": 95
+    },
+    {
+     "letra": "H",
+     "distancia": 4.65,
+     "parecido": 68
+    },
+    {
+     "letra": "Q",
+     "distancia": 4.72,
+     "parecido": 68
+    },
+    {
+     "letra": "Z",
+     "distancia": 4.91,
+     "parecido": 67
+    }
+   ],
+   "H": [
+    {
+     "letra": "N/Ñ",
+     "distancia": 4.36,
+     "parecido": 70
+    },
+    {
+     "letra": "G",
+     "distancia": 4.65,
+     "parecido": 68
+    },
+    {
+     "letra": "U",
+     "distancia": 4.67,
+     "parecido": 68
+    },
+    {
+     "letra": "K",
+     "distancia": 4.67,
+     "parecido": 68
+    }
+   ],
+   "I/J": [
+    {
+     "letra": "Y",
+     "distancia": 4.28,
+     "parecido": 71
+    },
+    {
+     "letra": "S",
+     "distancia": 4.88,
+     "parecido": 67
+    },
+    {
+     "letra": "E",
+     "distancia": 4.96,
+     "parecido": 66
+    },
+    {
+     "letra": "T",
+     "distancia": 5.37,
+     "parecido": 64
+    }
+   ],
+   "K": [
+    {
+     "letra": "U",
+     "distancia": 3.07,
+     "parecido": 79
+    },
+    {
+     "letra": "V",
+     "distancia": 3.17,
+     "parecido": 79
+    },
+    {
+     "letra": "N/Ñ",
+     "distancia": 3.67,
+     "parecido": 75
+    },
+    {
+     "letra": "R",
+     "distancia": 4.12,
+     "parecido": 72
+    }
+   ],
+   "L": [
+    {
+     "letra": "G",
+     "distancia": 0.73,
+     "parecido": 95
+    },
+    {
+     "letra": "Q",
+     "distancia": 4.43,
+     "parecido": 70
+    },
+    {
+     "letra": "Z",
+     "distancia": 4.52,
+     "parecido": 69
+    },
+    {
+     "letra": "H",
+     "distancia": 4.69,
+     "parecido": 68
+    }
+   ],
+   "M": [
+    {
+     "letra": "W",
+     "distancia": 1.99,
+     "parecido": 87
+    },
+    {
+     "letra": "N/Ñ",
+     "distancia": 4.97,
+     "parecido": 66
+    },
+    {
+     "letra": "B",
+     "distancia": 5.16,
+     "parecido": 65
+    },
+    {
+     "letra": "U",
+     "distancia": 5.18,
+     "parecido": 65
+    }
+   ],
+   "N/Ñ": [
+    {
+     "letra": "U",
+     "distancia": 1.39,
+     "parecido": 91
+    },
+    {
+     "letra": "R",
+     "distancia": 2.06,
+     "parecido": 86
+    },
+    {
+     "letra": "V",
+     "distancia": 2.08,
+     "parecido": 86
+    },
+    {
+     "letra": "K",
+     "distancia": 3.67,
+     "parecido": 75
+    }
+   ],
+   "O": [
+    {
+     "letra": "C",
+     "distancia": 3.37,
+     "parecido": 77
+    },
+    {
+     "letra": "P",
+     "distancia": 6.57,
+     "parecido": 56
+    },
+    {
+     "letra": "D",
+     "distancia": 7.22,
+     "parecido": 51
+    },
+    {
+     "letra": "F",
+     "distancia": 7.81,
+     "parecido": 47
+    }
+   ],
+   "P": [
+    {
+     "letra": "C",
+     "distancia": 6.09,
+     "parecido": 59
+    },
+    {
+     "letra": "K",
+     "distancia": 6.34,
+     "parecido": 57
+    },
+    {
+     "letra": "O",
+     "distancia": 6.57,
+     "parecido": 56
+    },
+    {
+     "letra": "U",
+     "distancia": 6.57,
+     "parecido": 55
+    }
+   ],
+   "Q": [
+    {
+     "letra": "A",
+     "distancia": 3.84,
+     "parecido": 74
+    },
+    {
+     "letra": "T",
+     "distancia": 3.98,
+     "parecido": 73
+    },
+    {
+     "letra": "E",
+     "distancia": 4.39,
+     "parecido": 70
+    },
+    {
+     "letra": "L",
+     "distancia": 4.43,
+     "parecido": 70
+    }
+   ],
+   "R": [
+    {
+     "letra": "U",
+     "distancia": 1.63,
+     "parecido": 89
+    },
+    {
+     "letra": "N/Ñ",
+     "distancia": 2.06,
+     "parecido": 86
+    },
+    {
+     "letra": "V",
+     "distancia": 3.01,
+     "parecido": 80
+    },
+    {
+     "letra": "K",
+     "distancia": 4.12,
+     "parecido": 72
+    }
+   ],
+   "S": [
+    {
+     "letra": "E",
+     "distancia": 1.4,
+     "parecido": 91
+    },
+    {
+     "letra": "T",
+     "distancia": 3.03,
+     "parecido": 79
+    },
+    {
+     "letra": "A",
+     "distancia": 3.29,
+     "parecido": 78
+    },
+    {
+     "letra": "Q",
+     "distancia": 4.71,
+     "parecido": 68
+    }
+   ],
+   "T": [
+    {
+     "letra": "A",
+     "distancia": 1.18,
+     "parecido": 92
+    },
+    {
+     "letra": "S",
+     "distancia": 3.03,
+     "parecido": 79
+    },
+    {
+     "letra": "E",
+     "distancia": 3.25,
+     "parecido": 78
+    },
+    {
+     "letra": "Q",
+     "distancia": 3.98,
+     "parecido": 73
+    }
+   ],
+   "U": [
+    {
+     "letra": "N/Ñ",
+     "distancia": 1.39,
+     "parecido": 91
+    },
+    {
+     "letra": "V",
+     "distancia": 1.57,
+     "parecido": 89
+    },
+    {
+     "letra": "R",
+     "distancia": 1.63,
+     "parecido": 89
+    },
+    {
+     "letra": "K",
+     "distancia": 3.07,
+     "parecido": 79
+    }
+   ],
+   "V": [
+    {
+     "letra": "U",
+     "distancia": 1.57,
+     "parecido": 89
+    },
+    {
+     "letra": "N/Ñ",
+     "distancia": 2.08,
+     "parecido": 86
+    },
+    {
+     "letra": "R",
+     "distancia": 3.01,
+     "parecido": 80
+    },
+    {
+     "letra": "K",
+     "distancia": 3.17,
+     "parecido": 79
+    }
+   ],
+   "W": [
+    {
+     "letra": "M",
+     "distancia": 1.99,
+     "parecido": 87
+    },
+    {
+     "letra": "V",
+     "distancia": 5.18,
+     "parecido": 65
+    },
+    {
+     "letra": "U",
+     "distancia": 5.34,
+     "parecido": 64
+    },
+    {
+     "letra": "N/Ñ",
+     "distancia": 5.37,
+     "parecido": 64
+    }
+   ],
+   "X": [
+    {
+     "letra": "E",
+     "distancia": 10.12,
+     "parecido": 31
+    },
+    {
+     "letra": "Q",
+     "distancia": 10.32,
+     "parecido": 30
+    },
+    {
+     "letra": "S",
+     "distancia": 10.33,
+     "parecido": 30
+    },
+    {
+     "letra": "A",
+     "distancia": 10.37,
+     "parecido": 30
+    }
+   ],
+   "Y": [
+    {
+     "letra": "I/J",
+     "distancia": 4.28,
+     "parecido": 71
+    },
+    {
+     "letra": "A",
+     "distancia": 6.14,
+     "parecido": 58
+    },
+    {
+     "letra": "T",
+     "distancia": 6.51,
+     "parecido": 56
+    },
+    {
+     "letra": "Q",
+     "distancia": 6.8,
+     "parecido": 54
+    }
+   ],
+   "Z": [
+    {
+     "letra": "L",
+     "distancia": 4.52,
+     "parecido": 69
+    },
+    {
+     "letra": "Q",
+     "distancia": 4.53,
+     "parecido": 69
+    },
+    {
+     "letra": "U",
+     "distancia": 4.88,
+     "parecido": 67
+    },
+    {
+     "letra": "G",
+     "distancia": 4.91,
+     "parecido": 67
+    }
+   ]
+  },
+  "reparto": {
+   "A": [
+    {
+     "grupo": 4,
+     "porcentaje": 1.0
+    }
+   ],
+   "B": [
+    {
+     "grupo": 8,
+     "porcentaje": 1.0
+    }
+   ],
+   "C": [
+    {
+     "grupo": 1,
+     "porcentaje": 0.687
+    },
+    {
+     "grupo": 3,
+     "porcentaje": 0.313
+    }
+   ],
+   "D": [
+    {
+     "grupo": 0,
+     "porcentaje": 0.867
+    },
+    {
+     "grupo": 2,
+     "porcentaje": 0.127
+    }
+   ],
+   "E": [
+    {
+     "grupo": 4,
+     "porcentaje": 0.98
+    }
+   ],
+   "F": [
+    {
+     "grupo": 0,
+     "porcentaje": 1.0
+    }
+   ],
+   "G": [
+    {
+     "grupo": 2,
+     "porcentaje": 1.0
+    }
+   ],
+   "H": [
+    {
+     "grupo": 6,
+     "porcentaje": 1.0
+    }
+   ],
+   "I/J": [
+    {
+     "grupo": 7,
+     "porcentaje": 0.974
+    }
+   ],
+   "K": [
+    {
+     "grupo": 6,
+     "porcentaje": 0.98
+    }
+   ],
+   "L": [
+    {
+     "grupo": 2,
+     "porcentaje": 1.0
+    }
+   ],
+   "M": [
+    {
+     "grupo": 8,
+     "porcentaje": 1.0
+    }
+   ],
+   "N/Ñ": [
+    {
+     "grupo": 6,
+     "porcentaje": 0.993
+    }
+   ],
+   "O": [
+    {
+     "grupo": 1,
+     "porcentaje": 0.633
+    },
+    {
+     "grupo": 3,
+     "porcentaje": 0.367
+    }
+   ],
+   "P": [
+    {
+     "grupo": 1,
+     "porcentaje": 0.613
+    },
+    {
+     "grupo": 3,
+     "porcentaje": 0.22
+    },
+    {
+     "grupo": 6,
+     "porcentaje": 0.167
+    }
+   ],
+   "Q": [
+    {
+     "grupo": 4,
+     "porcentaje": 0.56
+    },
+    {
+     "grupo": 2,
+     "porcentaje": 0.44
+    }
+   ],
+   "R": [
+    {
+     "grupo": 6,
+     "porcentaje": 1.0
+    }
+   ],
+   "S": [
+    {
+     "grupo": 4,
+     "porcentaje": 1.0
+    }
+   ],
+   "T": [
+    {
+     "grupo": 4,
+     "porcentaje": 1.0
+    }
+   ],
+   "U": [
+    {
+     "grupo": 6,
+     "porcentaje": 1.0
+    }
+   ],
+   "V": [
+    {
+     "grupo": 6,
+     "porcentaje": 1.0
+    }
+   ],
+   "W": [
+    {
+     "grupo": 8,
+     "porcentaje": 0.993
+    }
+   ],
+   "X": [
+    {
+     "grupo": 5,
+     "porcentaje": 0.62
+    },
+    {
+     "grupo": 2,
+     "porcentaje": 0.333
+    }
+   ],
+   "Y": [
+    {
+     "grupo": 7,
+     "porcentaje": 1.0
+    }
+   ],
+   "Z": [
+    {
+     "grupo": 2,
+     "porcentaje": 1.0
+    }
+   ]
+  }
  }
 }

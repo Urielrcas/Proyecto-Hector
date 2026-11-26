@@ -1,16 +1,23 @@
 /*
- * IA POR DENTRO → SEÑAS PARECIDAS (prácticas 07, 08 y 09)
+ * IA POR DENTRO → SEÑAS PARECIDAS (prácticas 07, 08, 08b y 09)
  *   1. Práctica 07 · K-Means: agrupa las manos SIN decirle la letra; método del codo y silueta para elegir K;
  *      qué letras cayeron en cada grupo y cómo están los dedos.
- *   2. Práctica 09 · PCA: las 57 medidas resumidas en 2 para dibujar cada mano como un punto.
- *   3. Práctica 08 · Análisis: estabilidad (ARI), K-Means++ contra random, escaladores y manos atípicas.
- * Los datos salen de ml/p07_kmeans_manos.py, ml/p08_analisis_clusters.py y ml/p09_pca_manos.py.
+ *   2. Práctica 08b · Familias: agrupamiento jerárquico de las letras (dendrograma) para juntar los grupos en
+ *      familias más grandes; detalle de cada letra y cuántas personas confunden cada par (FamiliasSenas.tsx).
+ *   3. Práctica 09 · PCA: las 57 medidas resumidas en 2 para dibujar cada mano como un punto, con el nombre de
+ *      cada letra, color por grupo o por familia y qué mide cada eje.
+ *   4. Práctica 08 · Análisis: estabilidad (ARI), K-Means++ contra random, escaladores y manos atípicas.
+ * Los datos salen de ml/p07_kmeans_manos.py, ml/p08_analisis_clusters.py, ml/p08b_familias_senas.py y ml/p09_pca_manos.py.
  */
-import { useState } from 'react'
-import { COLORES_GRUPO, GRUPOS as G, PCA } from '../../lib/ia/grupos/grupos'
+import { useEffect, useMemo, useState } from 'react'
+import { DEMO } from '../../lib/ia/demo/demo'
+import { claseDeLetra, COLORES_FAMILIA, COLORES_GRUPO, describirMedida, familiaDeLetra, familiasDe, GRUPOS as G, PCA } from '../../lib/ia/grupos/grupos'
+import { obtenerConfusiones, type ConfusionesPersonas } from '../../services/intentos'
+import { DetalleLetra, Dendrograma, ListaFamilias, SelectorFuente, TablaConfusiones } from './FamiliasSenas'
 
 const pct = (v: number) => `${Math.round(v * 100)} %`
 const color = (g: number) => COLORES_GRUPO[g % COLORES_GRUPO.length]
+const colorFamilia = (f: number) => COLORES_FAMILIA[f % COLORES_FAMILIA.length]
 
 /** Silueta según K: la línea y el K elegido resaltado. */
 function GraficaSilueta() {
@@ -47,41 +54,114 @@ function GraficaSilueta() {
   )
 }
 
-/** Mapa PCA: cada punto es una mano; el color es su grupo de K-Means. */
-function MapaPCA({ activo }: { activo: number | null }) {
-  const { x: xs, y: ys, grupo } = PCA.puntos
+type ColorPor = 'grupo' | 'familia'
+
+/**
+ * Mapa PCA detallado: cada punto es una mano y cada círculo con letra es el centro de las manos de esa letra.
+ * Se colorea por grupo de K-Means o por familia; al elegir una letra se resaltan sus manos.
+ * Pasa el cursor (o toca) un punto o una letra para ver de qué es.
+ */
+function MapaPCA({ activo, colorPor, n, elegida, alElegir }: { activo: number | null; colorPor: ColorPor; n: number; elegida: string | null; alElegir: (l: string) => void }) {
+  const { x: xs, y: ys, grupo, letra } = PCA.puntos
   const minX = Math.min(...xs)
   const maxX = Math.max(...xs)
   const minY = Math.min(...ys)
   const maxY = Math.max(...ys)
-  const W = 560
-  const H = 380
-  const m = 14
-  const px = (v: number) => m + ((v - minX) / (maxX - minX)) * (W - 2 * m)
-  const py = (v: number) => H - m - ((v - minY) / (maxY - minY)) * (H - 2 * m)
+  const W = 600
+  const H = 420
+  const m = 30
+  const px = (v: number) => m + ((v - minX) / (maxX - minX)) * (W - m - 10)
+  const py = (v: number) => H - m - ((v - minY) / (maxY - minY)) * (H - m - 10)
+  const familiaDe = (i: number) => familiaDeLetra(PCA.letras[letra[i]], n)
+  const colorPunto = (i: number) => (colorPor === 'grupo' ? color(grupo[i]) : colorFamilia(familiaDe(i)))
+  // Centro de cada letra en el mapa (promedio de sus manos de muestra).
+  const centrosLetra = useMemo(
+    () =>
+      PCA.letras.map((l, li) => {
+        const idx = letra.map((v, i) => (v === li ? i : -1)).filter((i) => i >= 0)
+        return { letra: l, x: idx.reduce((s, i) => s + xs[i], 0) / idx.length, y: idx.reduce((s, i) => s + ys[i], 0) / idx.length, manos: idx.length }
+      }),
+    [letra, xs, ys],
+  )
+  const marcas = (min: number, max: number) => {
+    const paso = Math.max(1, Math.round((max - min) / 5))
+    const lista: number[] = []
+    for (let v = Math.ceil(min / paso) * paso; v <= max; v += paso) lista.push(v)
+    return lista
+  }
+  const fuera = (i: number) => (elegida !== null && claseDeLetra(PCA.letras[letra[i]]) !== elegida) || (activo !== null && grupo[i] !== activo)
+
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-2xl bg-stone-50" role="img" aria-label="Mapa de las manos en dos dimensiones, coloreadas por grupo">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full rounded-2xl bg-stone-50" role="img" aria-label="Mapa de las manos en dos dimensiones, con el centro de cada letra">
+      {marcas(minX, maxX).map((v) => (
+        <g key={`x${v}`}>
+          <line x1={px(v)} x2={px(v)} y1={10} y2={H - m} className="stroke-stone-200" strokeDasharray="2 4" />
+          <text x={px(v)} y={H - m + 12} textAnchor="middle" className="fill-stone-400 text-[9px]">
+            {v}
+          </text>
+        </g>
+      ))}
+      {marcas(minY, maxY).map((v) => (
+        <g key={`y${v}`}>
+          <line x1={m} x2={W - 10} y1={py(v)} y2={py(v)} className="stroke-stone-200" strokeDasharray="2 4" />
+          <text x={m - 4} y={py(v) + 3} textAnchor="end" className="fill-stone-400 text-[9px]">
+            {v}
+          </text>
+        </g>
+      ))}
       {xs.map((v, i) => {
-        const fuera = activo !== null && grupo[i] !== activo
-        return <circle key={i} cx={px(v)} cy={py(ys[i])} r={fuera ? 1.6 : 2.4} fill={fuera ? '#d6d3d1' : color(grupo[i])} opacity={fuera ? 0.5 : 0.7} />
+        const f = fuera(i)
+        return (
+          <circle key={i} cx={px(v)} cy={py(ys[i])} r={f ? 1.6 : 2.6} fill={f ? '#d6d3d1' : colorPunto(i)} opacity={f ? 0.45 : 0.75}>
+            <title>{`Una mano de la ${PCA.letras[letra[i]]} · grupo ${grupo[i] + 1} · familia ${familiaDe(i) + 1}`}</title>
+          </circle>
+        )
       })}
-      {PCA.centros.map((c) =>
-        activo === null || activo === c.grupo ? (
-          <g key={c.grupo}>
-            <circle cx={px(c.x)} cy={py(c.y)} r={11} fill={color(c.grupo)} stroke="white" strokeWidth={2.5} />
-            <text x={px(c.x)} y={py(c.y) + 4} textAnchor="middle" className="fill-white text-[11px] font-bold">
-              {c.grupo + 1}
+      {centrosLetra.map((c) => {
+        const clase = claseDeLetra(c.letra)
+        const activa = elegida === clase
+        const apagada = elegida !== null && !activa
+        const fam = familiaDeLetra(c.letra, n)
+        const g = G.letras[clase]?.grupo ?? 0
+        return (
+          <g key={c.letra} className="cursor-pointer" opacity={apagada ? 0.35 : 1} onClick={() => alElegir(clase)}>
+            <title>{`${c.letra}: familia ${fam + 1}, grupo ${g + 1} (${c.manos} manos en el mapa). Toca para ver su detalle.`}</title>
+            <circle cx={px(c.x)} cy={py(c.y)} r={activa ? 14 : 10.5} fill={colorPor === 'grupo' ? color(g) : colorFamilia(fam)} stroke="white" strokeWidth={activa ? 3 : 2} />
+            <text x={px(c.x)} y={py(c.y) + (activa ? 4.5 : 3.5)} textAnchor="middle" className={`fill-white font-bold ${activa ? 'text-[12px]' : 'text-[9px]'}`}>
+              {c.letra}
             </text>
           </g>
-        ) : null,
-      )}
-      <text x={W - m} y={H - 4} textAnchor="end" className="fill-stone-500 text-[10px]">
+        )
+      })}
+      <text x={W - 10} y={H - 4} textAnchor="end" className="fill-stone-600 text-[10px] font-bold">
         CP1 → ({pct(PCA.varianza[0])} de la información)
       </text>
-      <text x={m} y={12} className="fill-stone-500 text-[10px]">
+      <text x={m} y={9} className="fill-stone-600 text-[10px] font-bold">
         ↑ CP2 ({pct(PCA.varianza[1])})
       </text>
     </svg>
+  )
+}
+
+/** Qué mide cada eje del mapa: las medidas que más pesan en cada componente, en palabras. */
+function QueMideCadaEje() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {(['CP1', 'CP2'] as const).map((cp, i) => (
+        <div key={cp} className="rounded-xl bg-stone-50 p-3 text-sm">
+          <p className="font-bold">
+            {cp} ({i === 0 ? 'eje horizontal' : 'eje vertical'}) mide sobre todo:
+          </p>
+          <ul className="mt-1 list-disc space-y-0.5 pl-5 text-stone-700">
+            {PCA.cargas[cp].slice(0, 3).map((c) => (
+              <li key={c.medida}>
+                {describirMedida(c.medida)} <span className="text-xs text-stone-500">({c.medida})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -111,6 +191,35 @@ function BarrasVarianza() {
 
 export function GruposSenas() {
   const [activo, setActivo] = useState<number | null>(null)
+  const [n, setN] = useState(G.familias.defecto)
+  const [elegida, setElegida] = useState<string | null>('X')
+  const [colorPor, setColorPor] = useState<ColorPor>('familia')
+  const [reales, setReales] = useState<ConfusionesPersonas | null>(null)
+  const [fuente, setFuente] = useState<'real' | 'demo'>('demo')
+  const hayReales = !!reales?.pares.length
+  const datosPersonas = fuente === 'demo' ? DEMO.confusiones : reales
+
+  useEffect(() => {
+    let vigente = true
+    obtenerConfusiones('LSM')
+      .then((c) => {
+        if (!vigente) return
+        setReales(c)
+        // Si ya hay suficientes datos reales, se muestran primero.
+        if (c.personas >= 10 && c.pares.length) setFuente('real')
+      })
+      .catch(() => vigente && setReales(null))
+    return () => {
+      vigente = false
+    }
+  }, [])
+
+  const elegir = (l: string) => {
+    setElegida((actual) => (actual === l ? null : l))
+    setActivo(null)
+  }
+  const familiaX = familiaDeLetra('X', n)
+  const companerasX = familiasDe(n)[familiaX]?.letras.filter((l) => l !== 'X') ?? []
   const A = G.analisis
   const reconstruccion90 = PCA.reconstruccion.find((r) => r.componentes === PCA.necesarias['90'])
   const xAtipicas = A.atipicas.porLetra[0]
@@ -147,7 +256,7 @@ export function GruposSenas() {
               <li key={g.id}>
                 <button
                   type="button"
-                  onClick={() => setActivo(activo === g.id ? null : g.id)}
+                  onClick={() => (setActivo(activo === g.id ? null : g.id), setElegida(null), setColorPor('grupo'))}
                   aria-pressed={activo === g.id}
                   className={`w-full rounded-2xl border-2 p-3 text-left transition-colors ${activo === g.id ? 'border-marca-600 bg-marca-50' : 'border-transparent bg-stone-50 hover:bg-stone-100'}`}
                 >
@@ -176,17 +285,138 @@ export function GruposSenas() {
         </div>
       </div>
 
+      {/* Práctica 08b: familias (agrupamiento jerárquico) */}
+      <div className="rounded-2xl border border-stone-200 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 max-w-3xl">
+            <h3 className="font-bold">Familias de señas: agrupar los grupos (práctica 08b)</h3>
+            <p className="mt-1 text-sm text-stone-600">
+              K-Means dejó algunas letras casi solas, como la <b>X</b>. Con el <b>agrupamiento jerárquico</b> (método de Ward) empezamos con cada
+              letra sola y vamos juntando, paso a paso, las dos más parecidas, hasta que todas quedan juntas. El árbol muestra ese proceso: entre más
+              abajo se unen dos letras, más se parecen. Al <b>cortar</b> el árbol salen las familias.
+            </p>
+          </div>
+          <label className="flex min-w-48 flex-col text-sm font-bold">
+            Número de familias: {n}
+            <input type="range" min={2} max={9} value={n} onChange={(e) => setN(Number(e.target.value))} className="mt-1 accent-marca-700" />
+            <span className="flex justify-between text-xs font-normal text-stone-500">
+              <span>2 · muy generales</span>
+              <span>9 · muy finas</span>
+            </span>
+          </label>
+        </div>
+        <div className="mt-3 grid gap-4 xl:grid-cols-[3fr_2fr] [&>*]:min-w-0">
+          <Dendrograma n={n} elegida={elegida} alElegir={elegir} />
+          <ListaFamilias n={n} elegida={elegida} alElegir={elegir} />
+        </div>
+        <p className="mt-3 rounded-xl bg-marca-50/60 p-3 text-sm text-stone-700">
+          <b>¿Y la X?</b> Es la letra cuyas manos varían más (la mayoría de las manos atípicas son X), por eso K-Means la dejó aparte. En el árbol
+          es de las últimas en unirse, y con {n} familias queda en la familia {familiaX + 1}
+          {companerasX.length ? (
+            <>
+              {' '}
+              junto con <b>{companerasX.join(', ')}</b>
+            </>
+          ) : (
+            ' todavía sola (prueba con menos familias)'
+          )}
+          . Sus letras más parecidas son {G.familias.parecidas.X.slice(0, 3).map((p) => p.letra).join(', ')}: dedos doblados como en un puño, con
+          el índice en gancho.
+        </p>
+
+        {/* Detalle de la letra elegida */}
+        <div className="mt-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h4 className="font-bold">Detalle de una letra</h4>
+            <SelectorFuente fuente={fuente} alCambiar={setFuente} hayReales={hayReales} />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1" role="group" aria-label="Elegir letra">
+            {G.familias.letras.map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => elegir(l)}
+                aria-pressed={elegida === l}
+                className={`min-h-9 min-w-9 rounded-lg border-2 px-1.5 text-sm font-bold ${elegida === l ? 'text-white' : 'bg-white hover:bg-stone-100'}`}
+                style={{ borderColor: colorFamilia(familiaDeLetra(l, n)), background: elegida === l ? colorFamilia(familiaDeLetra(l, n)) : undefined }}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3">
+            {elegida ? (
+              <DetalleLetra letra={elegida} n={n} datos={datosPersonas} fuente={fuente} />
+            ) : (
+              <p className="text-sm text-stone-500">Elige una letra para ver con cuáles se parece y cuántas personas la confunden.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Confusiones por personas */}
+        <div className="mt-6">
+          <h4 className="font-bold">¿Cuántas personas confunden cada letra?</h4>
+          <p className="mb-3 text-sm text-stone-600">
+            Cada vez que alguien practica y falla, se guarda qué letra vio la IA. Aquí se cuenta cuántas personas <b>distintas</b> confundieron cada par
+            de letras, de las que practicaron esa letra. Si la mayoría de las confusiones son dentro de la misma familia, las familias sí explican los
+            errores.
+          </p>
+          <TablaConfusiones n={n} datos={datosPersonas} fuente={fuente} alElegir={elegir} />
+        </div>
+      </div>
+
       {/* Práctica 09: PCA */}
-      <div className="grid gap-5 lg:grid-cols-[3fr_2fr] [&>*]:min-w-0">
+      <div className="grid gap-5 2xl:grid-cols-[3fr_2fr] [&>*]:min-w-0">
         <div>
           <h3 className="font-bold">El mapa de las manos (PCA, práctica 09)</h3>
           <p className="mt-1 mb-3 text-sm text-stone-600">
             {PCA.dimensiones} medidas no se pueden dibujar. <b>PCA</b> las resume en 2 «componentes» que guardan lo más posible de la información.
-            Cada punto es una mano ({PCA.puntos.x.length.toLocaleString('es-MX')} de muestra) y el círculo grande es el centro de su grupo.
+            Cada punto es una mano ({PCA.puntos.x.length.toLocaleString('es-MX')} de muestra) y cada círculo con letra es el centro de las manos de esa
+            letra: <b>letras cercanas en el mapa = señas parecidas</b>. Pasa el cursor sobre un punto o una letra para ver de qué es, y toca una letra
+            para resaltar sus manos.
           </p>
-          <MapaPCA activo={activo} />
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm">
+            <span className="font-bold">Colorear por</span>
+            <div role="group" aria-label="Colorear por" className="flex rounded-xl border-2 border-stone-200 p-0.5">
+              {(['familia', 'grupo'] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  aria-pressed={colorPor === c}
+                  onClick={() => setColorPor(c)}
+                  className={`min-h-9 rounded-lg px-3 font-bold ${colorPor === c ? 'bg-marca-700 text-white' : 'text-stone-600 hover:bg-stone-100'}`}
+                >
+                  {c === 'familia' ? `Familia (${n})` : `Grupo K-Means (${G.k})`}
+                </button>
+              ))}
+            </div>
+            {(elegida || activo !== null) && (
+              <button type="button" onClick={() => (setElegida(null), setActivo(null))} className="min-h-9 rounded-xl px-3 font-bold text-marca-800 hover:bg-marca-50">
+                Ver todas las manos
+              </button>
+            )}
+          </div>
+          <MapaPCA activo={activo} colorPor={colorPor} n={n} elegida={elegida} alElegir={elegir} />
+          <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-600">
+            {colorPor === 'familia'
+              ? familiasDe(n).map((f) => (
+                  <li key={f.id} className="flex items-center gap-1.5">
+                    <span className="inline-block size-3 rounded-full" style={{ background: colorFamilia(f.id) }} aria-hidden />
+                    Familia {f.id + 1}: {f.letras.join(' ')}
+                  </li>
+                ))
+              : G.grupos.map((g) => (
+                  <li key={g.id} className="flex items-center gap-1.5">
+                    <span className="inline-block size-3 rounded-full" style={{ background: color(g.id) }} aria-hidden />
+                    {g.id + 1}: {g.letras.map((l) => l.letra).join(' ') || 'mezcla'}
+                  </li>
+                ))}
+          </ul>
+          <div className="mt-3">
+            <QueMideCadaEje />
+          </div>
         </div>
-        <div className="space-y-4">
+        <div className="grid content-start gap-4 md:grid-cols-2 2xl:grid-cols-1">
           <div className="rounded-2xl bg-stone-50 p-4">
             <h4 className="font-bold">¿Cuánta información guarda?</h4>
             <BarrasVarianza />

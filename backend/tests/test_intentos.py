@@ -147,3 +147,35 @@ def test_prediccion_igual_que_pytorch():
     alto = prediccion.predecir_siguiente([{"puntaje": 80, "segundos": 4, "acierto": False}, {"puntaje": 100, "segundos": 3, "acierto": True}])
     bajo = prediccion.predecir_siguiente([{"puntaje": 0, "segundos": 25, "acierto": False}, {"puntaje": 20, "segundos": 25, "acierto": False}])
     assert alto > bajo
+
+
+def test_dominio_confusiones_y_dedos(cliente, admin):
+    _, ana = crear_usuario(cliente, admin, "ana@correo.com")
+    _, luis = crear_usuario(cliente, admin, "luis@correo.com")
+    # Ana: la E le cuesta (20 % y 40 %), la IA ve una A y casi siempre falla el pulgar.
+    mandar(cliente, ana, [intento("E", 20, detectada="A", dedos=["pulgar"]), intento("E", 40, detectada="A", dedos=["pulgar", "indice"]),
+                          intento("E", 20, detectada="S", dedos=["pulgar"])])
+    # Luis: la E le sale (80 y 100) y una vez también la confundió con la A.
+    mandar(cliente, luis, [intento("E", 80, detectada="A", dedos=["indice"]), intento("E", 100, True)])
+
+    # Expediente: en qué % de los fallidos falló cada dedo.
+    exp = cliente.get("/api/intentos/expediente", params={"lengua": "LSM"}, headers=ana).json()
+    e = next(l for l in exp["letras"] if l["letra"] == "E")
+    assert e["fallidos"] == 3
+    assert e["dedos_fallados"][0] == {"dedo": "pulgar", "veces": 3, "porcentaje": 1.0}
+    assert e["dedos_fallados"][1]["dedo"] == "indice" and e["dedos_fallados"][1]["porcentaje"] == round(1 / 3, 3)
+
+    # Tablero: Ana queda en 20–40 % (promedio 26.7) y Luis en 80–100 % (90).
+    t = cliente.get("/api/intentos/tablero", params={"lengua": "LSM"}, headers=cabeceras(admin)).json()
+    d = next(x for x in t["dominio"] if x["letra"] == "E")
+    assert d["personas"] == 2 and d["rangos"] == [0, 1, 0, 0, 1] and d["promedio"] == round((80 / 3 + 90) / 2, 1)
+
+    # Confusiones: la E → A la confundieron 2 personas (3 veces); la E → S, 1 persona.
+    r = cliente.get("/api/intentos/confusiones", params={"lengua": "LSM"}, headers=cabeceras(admin))
+    assert r.status_code == 200, r.text
+    c = r.json()
+    assert c["personas"] == 2 and c["practicaron"] == {"E": 2}
+    assert c["pares"][0] == {"letra": "E", "con": "A", "veces": 3, "personas": 2}
+    assert {"letra": "E", "con": "S", "veces": 1, "personas": 1} in c["pares"]
+    # Solo el administrador.
+    assert cliente.get("/api/intentos/confusiones", params={"lengua": "LSM"}, headers=ana).status_code == 403

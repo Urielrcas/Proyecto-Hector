@@ -438,6 +438,12 @@ class PrediccionSalida(BaseModel):
 
 
 # El resumen de una letra en el expediente.
+class DedoFallado(BaseModel):
+    dedo: Dedo
+    veces: int
+    porcentaje: float  # de los intentos fallidos de la letra (0 a 1)
+
+
 class LetraExpediente(BaseModel):
     letra: str
     intentos: int
@@ -450,6 +456,8 @@ class LetraExpediente(BaseModel):
     tendencia: Literal["mejorando", "estable", "bajando"]
     confundida_con: list[ConfusionSalida]
     dedo_mas_fallado: Dedo | None
+    fallidos: int = 0  # intentos sin lograrla
+    dedos_fallados: list[DedoFallado] = []  # en qué % de los fallidos falló cada dedo (del que más al que menos)
     ultima_vez: datetime | None
     prediccion: PrediccionSalida | None
 
@@ -531,6 +539,27 @@ class DedoTablero(BaseModel):
     veces: int
 
 
+class DominioLetra(BaseModel):
+    """Cuántas personas hay en cada nivel de una letra (promedio de sus últimos 5 intentos)."""
+    letra: str
+    personas: int
+    rangos: list[int]  # personas en 0–20, 20–40, 40–60, 60–80 y 80–100 %
+    promedio: float
+
+
+class ParConfusion(BaseModel):
+    letra: str
+    con: str  # la letra que vio la IA
+    veces: int
+    personas: int  # personas distintas que la confundieron así
+
+
+class ConfusionesPersonas(BaseModel):
+    personas: int  # personas con intentos en la lengua
+    practicaron: dict[str, int]  # letra → personas que la practicaron
+    pares: list[ParConfusion]  # de la confusión con más personas a la de menos
+
+
 class TableroIntentos(BaseModel):
     intentos: int
     aciertos: int
@@ -544,3 +573,4 @@ class TableroIntentos(BaseModel):
     grupos: list[GrupoTablero]
     por_dia: list[DiaTablero]
     dedos: list[DedoTablero]  # qué dedo se falla más
+    dominio: list[DominioLetra] = []  # cómo se reparten las personas por nivel en cada letra
