@@ -9,7 +9,7 @@
 
 // ▸ Desde Lucide (librería de íconos; catálogo en lucide.dev):
 //     íconos: BookOpen (libro abierto), Brain (cerebro), Check (palomita ✓), Gamepad2 (control de videojuego), HeartHandshake (corazón con manos), MessageCircle (globo de mensaje), Move (flechas de movimiento), Route (ruta), Siren (sirena), LucideIcon (tipo: cualquier ícono de Lucide)
-import { BookOpen, Brain, Check, ClipboardList, Gamepad2, HeartHandshake, MessageCircle, Move, Route, Siren, type LucideIcon } from 'lucide-react'
+import { BookOpen, Brain, Check, ClipboardList, Gamepad2, HeartHandshake, MessageCircle, Move, Route, Siren, SpellCheck, type LucideIcon } from 'lucide-react'
 // ▸ Desde React Router (navegación entre pantallas según la dirección: /login, /inicio...):
 //     Link → enlace para ir a otra pantalla sin recargar la página
 import { Link } from 'react-router-dom'
@@ -167,6 +167,17 @@ export default function Aprender() {
               <span>
                 <span className="block font-bold">Mi expediente</span>
                 <span className="block text-sm text-stone-600">Cómo vas en cada letra y consejos de la IA.</span>
+              </span>
+            </Link>
+            {/* Deletrear tu nombre (o cualquier palabra) letra por letra con la cámara */}
+            <Link
+              to="/aprender/deletrear"
+              className="group col-span-2 flex items-center gap-3 rounded-3xl border border-marca-200 bg-marca-50/60 p-4 transition-colors hover:bg-marca-100/70"
+            >
+              <SpellCheck className="size-7 shrink-0 text-marca-700 transition-transform group-hover:-translate-y-0.5" aria-hidden />
+              <span>
+                <span className="block font-bold">Deletrea tu nombre</span>
+                <span className="block text-sm text-stone-600">Aprende tu nombre (o cualquier palabra) letra por letra.</span>
               </span>
             </Link>
           </div>

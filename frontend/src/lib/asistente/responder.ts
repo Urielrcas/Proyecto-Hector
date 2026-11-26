@@ -14,6 +14,7 @@
 import type { Animo } from '../../components/Mascota'
 import type { Letra } from '../aprendizaje/alfabeto'
 import { palabraPorNombre, type Palabra } from '../aprendizaje/palabras'
+import { limpiarPalabra, pasosDeletreo, primerNombre } from '../aprendizaje/deletreoGuiado'
 import { COLORES_PRINCIPALES, PALETAS } from '../colores'
 import { ESCALA_TEXTO, CONFIGURACION_INICIAL, type Configuracion, type TamanoTexto } from '../configuracion'
 import type { Recomendacion } from '../ia/dominio'
@@ -27,6 +28,8 @@ export interface ContextoMani {
   recomendaciones: Recomendacion[]
   /** ¿Hay un cambio anterior que se pueda deshacer? */
   puedeDeshacer: boolean
+  /** Nombre de la persona con sesión (para «deletrear mi nombre»). */
+  nombre?: string | null
 }
 
 export interface Respuesta {
@@ -54,7 +57,7 @@ export interface Respuesta {
 
 /** Frases de ejemplo para empezar. */
 export function sugerenciasIniciales(lengua: Lengua): string[] {
-  return ['¿Qué practico hoy?', 'Pon la app en azul', lengua === 'LSM' ? '¿Cómo se hace la Ñ?' : '¿Cómo se hace la J?', 'No me prende la cámara']
+  return ['Quiero deletrear mi nombre', '¿Qué practico hoy?', 'Pon la app en azul', lengua === 'LSM' ? '¿Cómo se hace la Ñ?' : '¿Cómo se hace la J?', 'No me prende la cámara']
 }
 
 const ORDEN_TEXTO: TamanoTexto[] = ['normal', 'grande', 'muy-grande']
@@ -193,10 +196,31 @@ export function responder(intencion: Intencion, ctx: ContextoMani): Respuesta {
     case 'gracias':
       return { texto: '¡De nada! Aquí estoy si me necesitas. 🙌', animo: 'fiesta' }
 
+    case 'deletrear': {
+      const pedida = intencion.palabra ?? primerNombre(ctx.nombre)
+      if (!pedida) {
+        return {
+          texto: '¿Qué nombre quieres aprender a deletrear? Escríbeme, por ejemplo: «deletrear Sofía».',
+          animo: 'pensando',
+          sugerencias: ['Deletrear Sofía', 'Deletrear hola'],
+          enlace: { ruta: '/aprender/deletrear', titulo: 'Deletrear una palabra' },
+        }
+      }
+      const palabra = limpiarPalabra(pedida)
+      const pasos = pasosDeletreo(palabra, ctx.letras)
+      if (!pasos.length) return { texto: `No encontré letras de ${ctx.lengua} en «${pedida}». Prueba con otra palabra.`, animo: 'pensando' }
+      const propio = !intencion.palabra
+      return {
+        texto: `¡Vamos! ${propio ? 'Tu nombre, ' : ''}«${palabra}», se deletrea ${pasos.map((p) => p.letra.letra).join(' - ')}. Te llevo a practicarlo letra por letra con la cámara.`,
+        animo: 'fiesta',
+        irA: { ruta: `/aprender/deletrear?palabra=${encodeURIComponent(palabra)}`, titulo: `Deletrear ${palabra}` },
+      }
+    }
+
     case 'presentacion':
       return {
         texto:
-          'Soy Mani, tu asistente. Puedo enseñarte cómo se hace una letra, decirte qué practicar, contestar dudas de la app, llevarte a cualquier pantalla y cambiar ajustes como el color, el tamaño de la letra o la voz.',
+          'Soy Mani, tu asistente. Puedo enseñarte cómo se hace una letra, enseñarte a deletrear tu nombre o cualquier palabra con la cámara, decirte qué practicar, contestar dudas de la app, llevarte a cualquier pantalla y cambiar ajustes como el color, el tamaño de la letra o la voz.',
         animo: 'hola',
         sugerencias: sugerenciasIniciales(ctx.lengua),
       }

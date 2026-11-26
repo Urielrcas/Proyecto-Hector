@@ -45,7 +45,7 @@ const esPantallaGrande = () => typeof window !== 'undefined' && window.matchMedi
 
 export default function PanelMani({ alCerrar }: { alCerrar: () => void }) {
   const navegar = useNavigate()
-  const { lengua: lenguaElegida, elegirLengua } = useApp()
+  const { lengua: lenguaElegida, elegirLengua, usuario } = useApp()
   const lengua = lenguaElegida ?? 'LSM'
   const { config, cambiar } = useConfiguracion()
   const ia = useModeloIA()
@@ -72,7 +72,7 @@ export default function PanelMani({ alCerrar }: { alCerrar: () => void }) {
   const enviar = (texto: string, porVoz = false) => {
     const frase = texto.trim()
     if (!frase) return
-    const r = responder(entender(frase), { config, lengua, letras: ia.letras, recomendaciones: ia.recomendaciones, puedeDeshacer: cambios.length > 0 })
+    const r = responder(entender(frase), { config, lengua, letras: ia.letras, recomendaciones: ia.recomendaciones, puedeDeshacer: cambios.length > 0, nombre: usuario?.nombre })
     const idTu = siguienteId.current++
     const idMani = siguienteId.current++
 

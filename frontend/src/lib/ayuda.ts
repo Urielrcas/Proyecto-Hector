@@ -140,6 +140,11 @@ export const TEMAS: Tema[] = [
     ruta: '/aprender',
     preguntas: [
       {
+        pregunta: '¿Cómo aprendo a deletrear mi nombre?',
+        respuesta:
+          'En Aprendizaje toca «Deletrea tu nombre», o dile a Mani «quiero aprender a deletrear mi nombre». Verás tu nombre letra por letra: haz cada una frente a la cámara y, si te atoras, Mani te dice qué dedo corregir. También sirve para cualquier palabra.',
+      },
+      {
         pregunta: '¿Cuándo se marca una letra como «lograda»?',
         respuesta:
           'Cuando la cámara ve la forma correcta de tu mano durante un momento y, si la letra lleva movimiento (como la J o la Z), también el movimiento.',

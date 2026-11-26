@@ -101,3 +101,25 @@ describe('pista: la letra más cercana', () => {
     expect(pista?.consejos).toEqual([])
   })
 })
+
+describe('deletrear (Mani)', () => {
+  it('entiende cuando quieres deletrear tu nombre o una palabra', () => {
+    expect(entender('Quiero aprender a deletrear mi nombre')).toEqual({ tipo: 'deletrear', palabra: null })
+    expect(entender('¿Cómo hago mi nombre en señas?')).toEqual({ tipo: 'deletrear', palabra: null })
+    expect(entender('deletrea Sofía')).toEqual({ tipo: 'deletrear', palabra: 'sofia' })
+    expect(entender('quiero deletrear la palabra hola')).toEqual({ tipo: 'deletrear', palabra: 'hola' })
+    expect(entender('Me llamo Ana, ¿cómo lo deletreo?')).toEqual({ tipo: 'deletrear', palabra: 'ana' })
+    // «Cambiar mi nombre» es del perfil, no de deletrear.
+    expect(entender('¿Cómo cambio mi nombre?').tipo).not.toBe('deletrear')
+  })
+
+  it('te lleva a practicar letra por letra (con tu nombre si no dices otro)', () => {
+    const r = responder({ tipo: 'deletrear', palabra: null }, { ...ctx, nombre: 'Sofía López' })
+    expect(r.texto).toContain('S - O - F - I - A')
+    expect(r.irA?.ruta).toBe('/aprender/deletrear?palabra=SOFIA')
+    const sinNombre = responder({ tipo: 'deletrear', palabra: null }, ctx)
+    expect(sinNombre.irA).toBeUndefined()
+    expect(sinNombre.texto).toMatch(/Qué nombre quieres/)
+  })
+})
+

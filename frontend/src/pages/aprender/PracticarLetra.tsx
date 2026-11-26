@@ -404,10 +404,11 @@ export default function PracticarLetra() {
           <h2 id="titulo-intento" className="font-bold">
             Tu intento
           </h2>
-          <div className="relative mt-3">
-            <CamaraManos alDetectar={alDetectar} borde={evaluacion?.correcto || porMemoria || grabando ? 'exito' : 'neutro'} />
-            {/* Mani en la esquina superior derecha de la cámara: da los consejos de esta letra uno por uno */}
-            <PanelConsejosLetra letra={letra.letra} expediente={expediente} conCuenta={conCuenta} />
+          <div className="mt-3">
+            {/* Mani en la esquina de la cámara; sus consejos salen arriba de ella, uno por uno */}
+            <PanelConsejosLetra letra={letra.letra} expediente={expediente} conCuenta={conCuenta}>
+              <CamaraManos alDetectar={alDetectar} borde={evaluacion?.correcto || porMemoria || grabando ? 'exito' : 'neutro'} />
+            </PanelConsejosLetra>
           </div>
 
           <div className="mt-4" aria-live="polite">

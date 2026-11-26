@@ -53,6 +53,8 @@ export type Intencion =
   | { tipo: 'ir'; destino: Destino }
   | { tipo: 'letra'; letra: string; leCuesta: boolean }
   | { tipo: 'palabra'; nombre: string }
+  /** Deletrear una palabra letra por letra con la cámara; palabra null = tu propio nombre. */
+  | { tipo: 'deletrear'; palabra: string | null }
   | { tipo: 'practicar' }
   | { tipo: 'deshacer' }
   | { tipo: 'saludo' }
@@ -211,6 +213,29 @@ const VACIAS = new Set(
 // Las palabras largas primero, para que «buenas noches» gane sobre «noches».
 const PALABRAS_ORDENADAS = [...NOMBRES_PALABRAS].sort((a, b) => b.length - a.length)
 
+// Palabras que acompañan al verbo y no son la palabra a deletrear («quiero deletrear LA palabra hola»).
+const RELLENO_DELETREO = new Set('a la el lo las los una un palabra palabras nombre de del mi mis en con senas sena manos mano por favor como se me te le que quiero puedo ayudame ensename aprender hacer'.split(' '))
+
+/**
+ * «Quiero aprender a deletrear mi nombre», «deletrea Sofía», «¿cómo hago mi nombre en señas?», «me llamo Ana»:
+ * aprender a deletrear una palabra letra por letra. Sin palabra (solo «mi nombre») se usa el nombre de tu cuenta.
+ */
+function deletreoPedido(f: Frase): Intencion | null {
+  const nombrePropio = f.texto.match(/\b(?:me llamo|mi nombre es) ([a-zñ]+)/)
+  const hablaDeNombre = f.dice('mi nombre', 'me llamo') || !!nombrePropio
+  // «Cambiar mi nombre» es del perfil, no de deletrear.
+  if (f.tiene('cambiar', 'cambio', 'editar', 'perfil', 'correo')) return null
+  const verbo = f.palabras.findIndex((p) => p.startsWith('deletre'))
+  if (verbo < 0 && !(hablaDeNombre && (f.empiezaCon('aprend', 'ensen', 'hace', 'hago', 'escrib', 'practic', 'sena', 'muestr') || f.dice('como se hace', 'en senas') || nombrePropio))) return null
+
+  if (nombrePropio && f.dice('me llamo', 'mi nombre es')) return { tipo: 'deletrear', palabra: nombrePropio[1] }
+  if (verbo >= 0) {
+    const resto = f.palabras.slice(verbo + 1).filter((p) => !RELLENO_DELETREO.has(p))
+    if (resto.length) return { tipo: 'deletrear', palabra: resto.slice(0, 3).join(' ') }
+  }
+  return { tipo: 'deletrear', palabra: null }
+}
+
 /** «¿Cómo se dice agua?», «la seña de baño»: una palabra de «Palabras y frases». */
 function palabraPedida(f: Frase): Intencion | null {
   if (!f.dice('como se dice', 'como digo', 'como se hace', 'como hago', 'sena de', 'seña de', 'ensename', 'muestrame', 'como se senala', 'en senas')) return null
@@ -345,33 +370,37 @@ export function entender(original: string): Intencion {
   // 2. Deshacer el último cambio.
   if (f.tiene('deshaz', 'deshacer', 'deshazlo', 'revierte', 'regresalo', 'vuelvelo') || f.dice('como estaba', 'como antes')) return { tipo: 'deshacer' }
 
-  // 3. Una letra del alfabeto («¿cómo se hace la R?») o una palabra («¿cómo se dice agua?»).
+  // 3. Deletrear una palabra o tu nombre («quiero aprender a deletrear mi nombre», «deletrea Sofía»).
+  const deletreo = deletreoPedido(f)
+  if (deletreo) return deletreo
+
+  // 4. Una letra del alfabeto («¿cómo se hace la R?») o una palabra («¿cómo se dice agua?»).
   //    La letra va primero: en «¿cómo se hace la A? no me sale», el «no» no es la palabra NO.
   const letra = letraPedida(f)
   if (letra) return letra
   const palabra = palabraPedida(f)
   if (palabra) return palabra
 
-  // 4. Ajustes que Mani puede cambiar.
+  // 5. Ajustes que Mani puede cambiar.
   const pedido = colorPedido(f) ?? lenguaPedida(f) ?? ajustePedido(f)
   if (pedido) return pedido
 
-  // 5. Qué practicar.
+  // 6. Qué practicar.
   if (f.empiezaCon('practic', 'recomiend', 'progres', 'estudi') || f.dice('que me falta', 'como voy', 'en que voy', 'que sigue')) return { tipo: 'practicar' }
 
   // «Ayuda» sola: Mani explica lo que sabe hacer.
   if (f.texto === 'ayuda') return { tipo: 'presentacion' }
 
-  // 6. Ir a una pantalla.
+  // 7. Ir a una pantalla.
   const destino = destinoPedido(f)
   if (destino) return destino
 
-  // 7. Plática.
+  // 8. Plática.
   if (f.dice('quien eres', 'como te llamas', 'que eres', 'que puedes hacer', 'que sabes hacer', 'que haces', 'tu nombre') || f.tiene('ayudame')) return { tipo: 'presentacion' }
   if (f.tiene('gracias', 'grax', 'genial', 'excelente')) return { tipo: 'gracias' }
   if (f.palabras.length <= 4 && (f.tiene('hola', 'buenas', 'buenos', 'hey', 'saludos') || f.dice('que onda', 'que tal'))) return { tipo: 'saludo' }
 
-  // 8. Una pregunta de la Ayuda.
+  // 9. Una pregunta de la Ayuda.
   const preguntas = buscarEnAyuda(original)
   if (preguntas.length) return { tipo: 'pregunta', preguntas }
 
