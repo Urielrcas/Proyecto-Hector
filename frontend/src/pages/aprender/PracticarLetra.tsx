@@ -88,7 +88,7 @@ import { DEDOS, NOMBRE_DEDO, evaluar, type Evaluacion, type Punto } from '../../
 //     SeguidorIntentos → decide cuándo empieza y termina cada intento (lib/aprendizaje/seguidorIntentos.ts)
 //     registrarIntento → guarda el intento en el servidor (services/intentos.ts)
 //     useExpediente → trae el expediente con los consejos (hooks/useExpediente.ts)
-//     PanelConsejosLetra → «Consejos de tu IA» para esta letra
+//     PanelConsejosLetra → Mani en la esquina de la cámara con los consejos de esta letra
 //     predecirConCnn1d → la red 1D: con qué letra confunde tu intento (solo LSM)
 import { SeguidorIntentos, type ResultadoIntento } from '../../lib/aprendizaje/seguidorIntentos'
 import { registrarIntento } from '../../services/intentos'
@@ -404,8 +404,10 @@ export default function PracticarLetra() {
           <h2 id="titulo-intento" className="font-bold">
             Tu intento
           </h2>
-          <div className="mt-3">
+          <div className="relative mt-3">
             <CamaraManos alDetectar={alDetectar} borde={evaluacion?.correcto || porMemoria || grabando ? 'exito' : 'neutro'} />
+            {/* Mani en la esquina superior derecha de la cámara: da los consejos de esta letra uno por uno */}
+            <PanelConsejosLetra letra={letra.letra} expediente={expediente} conCuenta={conCuenta} />
           </div>
 
           <div className="mt-4" aria-live="polite">
@@ -486,8 +488,6 @@ export default function PracticarLetra() {
               setAvisoForma(`La IA olvidó tu forma de la ${letra.letra}: ahora se pide como en el dibujo.`)
             }}
           />
-
-          <PanelConsejosLetra letra={letra.letra} expediente={expediente} conCuenta={conCuenta} />
 
           <p className="mt-4 text-sm text-stone-500">
             Evaluación aproximada según la posición de tus dedos{letra.movimiento ? ' y el movimiento de tu mano' : ''}. Cada intento le
