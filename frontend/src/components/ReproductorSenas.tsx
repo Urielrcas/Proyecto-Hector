@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw } from 'lucide-react'
 //     useEffect → ejecuta código después de dibujar (aquí: el temporizador que avanza las señas)
 //     useMemo → recuerda un cálculo y solo lo repite cuando cambian sus datos
 //     useState → guarda datos que, al cambiar, vuelven a dibujar la pantalla
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 // ▸ Desde nuestro proyecto: src/lib/tipos.ts:
 //     Lengua → tipo: 'LSM' o 'ASL'
 // ▸ Desde nuestro proyecto: src/lib/configuracion.ts:
@@ -33,8 +33,10 @@ import { Boton } from './Boton'
 // ▸ Desde nuestro proyecto: src/components/ManoIlustrada.tsx:
 //     ManoIlustrada → dibujo de la mano de una letra
 import { ManoIlustrada } from './ManoIlustrada'
-// ▸ Desde nuestro proyecto: el avatar 3D (components/Avatar3D.tsx) y la preferencia guardada de la vista
-import { Avatar3D } from './Avatar3D'
+// ▸ Desde nuestro proyecto: el avatar 3D de cuerpo completo (components/AvatarCuerpo.tsx, se carga aparte con
+//   Three.js solo si se usa) y lo que hace con cada seña (lib/avatar/cuerpo.ts)
+import { pasoDeSena } from '../lib/avatar/cuerpo'
+const AvatarCuerpo = lazy(() => import('./AvatarCuerpo'))
 // ▸ Desde nuestro proyecto: la seña de una palabra hecha por el avatar (lib/avatar/palabras3d.ts)
 import { formaAvatarDePalabra, notaDePalabra } from '../lib/avatar/palabras3d'
 import { guardar, leer } from '../lib/almacenamiento'
@@ -109,6 +111,8 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
   const total = senas.length
   const actual = posicion < total ? senas[posicion] : senas[total - 1]
   const enReproduccion = reproduciendo && posicion < total
+  // Lo que hace el avatar: al terminar el mensaje vuelve a reposo.
+  const pasoActual = useMemo(() => pasoDeSena(posicion < total ? actual : undefined, lengua), [actual, posicion, total, lengua])
 
   // Avanzar a la siguiente seña cuando se cumple su tiempo.
   useEffect(() => {
@@ -158,16 +162,18 @@ export function ReproductorSenas({ texto, lengua, compacto = false }: { texto: s
         </div>
         {vista === '3d' && total > 0 ? (
           <div className="flex w-full items-center justify-center gap-3 sm:gap-5">
-            {/* El avatar no se vuelve a montar: así pasa suave de una letra a otra */}
-            <Avatar3D
-              forma={actual.tipo === 'letra' ? actual.letra.forma : actual.tipo === 'palabra' ? formaAvatarDePalabra(actual.entrada, lengua, actual.parte) : null}
-              clave={posicion}
-              msMovimiento={duracion(actual, velocidad)}
-              className={compacto ? 'h-44 w-40' : 'h-56 w-44 shrink-0 sm:h-64 sm:w-52'}
-              etiqueta={
-                actual.tipo === 'letra' ? `Avatar haciendo la letra ${actual.letra.letra}` : actual.tipo === 'palabra' ? `Avatar haciendo la seña de ${actual.entrada.palabra}` : 'Avatar en reposo'
-              }
-            />
+            {/* El avatar no se vuelve a montar: así pasa suave de una seña a otra */}
+            <Suspense fallback={<div className={`grid place-items-center text-sm text-stone-500 ${compacto ? 'h-60 w-48' : 'h-80 w-56 sm:h-96 sm:w-72'}`}>Cargando el avatar…</div>}>
+              <AvatarCuerpo
+                paso={pasoActual}
+                clave={posicion}
+                msMovimiento={duracion(actual, velocidad)}
+                className={compacto ? 'h-60 w-48 shrink-0' : 'h-80 w-56 shrink-0 sm:h-96 sm:w-72'}
+                etiqueta={
+                  actual.tipo === 'letra' ? `Avatar haciendo la letra ${actual.letra.letra}` : actual.tipo === 'palabra' ? `Avatar haciendo la seña de ${actual.entrada.palabra}` : 'Avatar en reposo'
+                }
+              />
+            </Suspense>
             <div key={posicion} className="animate-aparecer min-w-16 shrink">
               {actual.tipo === 'letra' ? (
                 <>
