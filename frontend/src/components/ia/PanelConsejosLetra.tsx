@@ -1,105 +1,155 @@
 /*
- * COMPONENTE: CONSEJOS DE LA IA PARA LA LETRA QUE SE PRACTICA (en «Practicar letra»)
- * Con los intentos que guarda la app (prácticas 18 y 19) muestra, para ESTA letra:
- *   - cuántos intentos lleva y cuántos logró,
- *   - la predicción de su próximo intento (red neuronal de la práctica 27),
- *   - los consejos del motor de recomendaciones para esta letra (o el más importante en general),
- *   - con qué letra la confunde la IA y el dedo que más falla,
- *   - un consejo personal por dedos: «Llevas 20 intentos fallidos con la E. En el 60 % de ellos falló tu
- *     pulgar. Te aconsejo: …» (lib/aprendizaje/consejoDedos.ts).
- * Los invitados no tienen expediente: se les invita a iniciar sesión.
+ * COMPONENTE: MANI TE AYUDA CON LA LETRA QUE PRACTICAS (en «Practicar letra»)
+ * En lugar de una lista larga de consejos debajo de la cámara, Mani los da uno por uno:
+ *   - Cerrado: Mani pequeño, cuántos intentos llevas y el botón «Pídele ayuda a Mani» (con cuántos consejos tiene).
+ *     Si la letra te está costando, Mani se ofrece solo: «¿Te ayudo con la E?».
+ *   - Abierto: Mani con un globo de diálogo; «Otro consejo» pasa al siguiente, «Leer en voz alta» lo dice
+ *     con la voz del navegador y «Ya entendí» lo cierra.
+ * Los consejos salen de los intentos guardados (prácticas 18, 19 y 27) y del consejo por dedos
+ * (lib/aprendizaje/ayudaMani.ts y consejoDedos.ts). Los invitados no tienen expediente: se les invita a iniciar sesión.
  */
-import { Brain, Hand, TrendingUp } from 'lucide-react'
-import { useMemo } from 'react'
+import { ChevronLeft, ChevronRight, HelpCircle, Volume2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { alfabeto } from '../../lib/aprendizaje/alfabeto'
-import { consejoDedos } from '../../lib/aprendizaje/consejoDedos'
-import { NOMBRE_DEDO_CORTO, type Expediente } from '../../services/intentos'
-import { Consejo } from './VistaExpediente'
+import { globosDeAyuda } from '../../lib/aprendizaje/ayudaMani'
+import { callar, hablar, hayVoz } from '../../lib/voz'
+import type { Expediente } from '../../services/intentos'
+import { Acompanante, Mascota, NOMBRE_MASCOTA } from '../Mascota'
 
 export function PanelConsejosLetra({ letra, expediente, conCuenta }: { letra: string; expediente: Expediente | null; conCuenta: boolean }) {
   const info = expediente?.letras.find((l) => l.letra === letra)
-  const deLetra = expediente?.recomendaciones.filter((c) => c.letra === letra && c.tipo !== 'siguiente') ?? []
-  const general = expediente?.recomendaciones.find((c) => c.tipo !== 'siguiente' && c.letra !== letra)
-  const consejos = deLetra.length ? deLetra : general ? [general] : []
   const lengua = expediente?.lengua
-  const personal = useMemo(() => {
-    if (!lengua || !info) return null
+  const globos = useMemo(() => {
+    if (!lengua) return []
     const letras = alfabeto(lengua)
     const esta = letras.find((l) => l.letra === letra)
-    return esta ? consejoDedos(esta, info, letras) : null
-  }, [lengua, info, letra])
+    return esta ? globosDeAyuda(esta, expediente, letras) : []
+  }, [lengua, letra, expediente])
+  const [abierto, setAbierto] = useState(false)
+  const [paso, setPaso] = useState(0)
 
-  return (
-    <section aria-labelledby="titulo-consejos-letra" className="mt-4 rounded-2xl border border-marca-200 bg-marca-50/50 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="titulo-consejos-letra" className="flex items-center gap-2 font-bold">
-          <Brain className="size-5 text-marca-700" aria-hidden /> Consejos de tu IA
-        </h3>
-        {conCuenta && (
-          <Link to="/aprender/expediente" className="text-sm font-bold text-marca-800 hover:underline">
-            Ver mi expediente →
-          </Link>
-        )}
-      </div>
+  // Al cambiar de letra se cierra y empieza desde el primer consejo (y se deja de leer en voz alta).
+  const [deLetra, setDeLetra] = useState(letra)
+  if (deLetra !== letra) {
+    setDeLetra(letra)
+    setAbierto(false)
+    setPaso(0)
+  }
+  useEffect(() => () => callar(), [letra])
+  // Si llegan menos consejos (se actualizó el expediente), no quedarse fuera de la lista.
+  const actual = globos[Math.min(paso, Math.max(0, globos.length - 1))]
 
-      {!conCuenta ? (
-        <p className="mt-2 text-sm text-stone-700">
+  const cerrar = () => {
+    setAbierto(false)
+    callar()
+  }
+
+  if (!conCuenta) {
+    return (
+      <section aria-label={`${NOMBRE_MASCOTA} te ayuda`} className="mt-4 flex items-center gap-3 rounded-2xl border border-marca-200 bg-marca-50/50 p-3">
+        <Mascota animo="hola" className="size-12 shrink-0" />
+        <p className="text-sm text-stone-700">
           <Link to="/login" className="font-bold text-marca-800 hover:underline">
             Inicia sesión
           </Link>{' '}
-          para que la IA recuerde tus intentos y te dé consejos personalizados.
+          y {NOMBRE_MASCOTA} recordará tus intentos para darte consejos.
         </p>
-      ) : !info || info.intentos === 0 ? (
-        <p className="mt-2 text-sm text-stone-700">Haz tu primer intento: la IA irá anotando cómo te va para darte consejos.</p>
-      ) : (
-        <>
-          <p className="mt-2 text-sm text-stone-700">
-            Llevas <strong>{info.intentos}</strong> {info.intentos === 1 ? 'intento' : 'intentos'} con la {letra} y la lograste{' '}
-            <strong>{info.aciertos}</strong> {info.aciertos === 1 ? 'vez' : 'veces'} · último puntaje <strong>{info.ultimo_puntaje} %</strong>
-            {info.confundida_con[0] && (
-              <>
-                {' '}
-                · la IA la confunde con la <strong>{info.confundida_con[0].letra}</strong>
-              </>
-            )}
-            {info.dedo_mas_fallado && (
-              <>
-                {' '}
-                · dedo que más fallas: <strong>{NOMBRE_DEDO_CORTO[info.dedo_mas_fallado].toLowerCase()}</strong>
-              </>
-            )}
-            .
-          </p>
-          {personal && (
-            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-stone-800">
-              <p className="flex items-start gap-2 font-bold">
-                <Hand className="mt-0.5 size-4 shrink-0 text-amber-700" aria-hidden />
-                {personal.resumen}
-              </p>
-              <ul className="mt-1 list-disc space-y-1 pl-9">
-                {personal.consejos.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {info.prediccion && (
-            <p className="mt-2 flex items-start gap-2 rounded-xl bg-white p-3 text-sm text-stone-800">
-              <TrendingUp className="mt-0.5 size-4 shrink-0 text-marca-700" aria-hidden />
-              {info.prediccion.mensaje}
-            </p>
-          )}
-        </>
-      )}
+      </section>
+    )
+  }
 
-      {conCuenta && consejos.length > 0 && (
-        <ul className="mt-3 space-y-2">
-          {consejos.slice(0, 2).map((c, i) => (
-            <Consejo key={i} consejo={c} conEnlace={c.letra !== letra} />
-          ))}
-        </ul>
-      )}
+  if (!info || info.intentos === 0) {
+    return (
+      <section aria-label={`${NOMBRE_MASCOTA} te ayuda`} className="mt-4 flex items-center gap-3 rounded-2xl border border-marca-200 bg-marca-50/50 p-3">
+        <Mascota animo="atento" className="size-12 shrink-0" />
+        <p className="text-sm text-stone-700">Haz tu primer intento: voy a ir viendo cómo te va para darte consejos.</p>
+      </section>
+    )
+  }
+
+  const leCuesta = info.estado === 'difícil' || info.fallidos >= 5
+
+  if (!abierto || !actual) {
+    return (
+      <section aria-label={`${NOMBRE_MASCOTA} te ayuda`} className="mt-4 rounded-2xl border border-marca-200 bg-marca-50/50 p-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Mascota animo={leCuesta ? 'pensando' : 'atento'} className="size-12 shrink-0" />
+          <div className="min-w-0 flex-1 basis-40 text-sm text-stone-700">
+            {leCuesta && globos.length ? (
+              <p className="font-bold text-stone-800">¿Te ayudo con la {letra}?</p>
+            ) : null}
+            <p>
+              {info.intentos} {info.intentos === 1 ? 'intento' : 'intentos'} · {info.aciertos} {info.aciertos === 1 ? 'logrado' : 'logrados'} · último{' '}
+              {info.ultimo_puntaje} %
+            </p>
+          </div>
+          {globos.length > 0 && (
+            <button
+              type="button"
+              onClick={() => (setPaso(0), setAbierto(true))}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-4 font-bold ${leCuesta ? 'bg-marca-700 text-white hover:bg-marca-800' : 'border-2 border-marca-300 bg-white text-marca-800 hover:bg-marca-50'}`}
+            >
+              <HelpCircle className="size-5" aria-hidden />
+              Pídele ayuda a {NOMBRE_MASCOTA}
+              <span className={`grid size-6 place-items-center rounded-full text-xs ${leCuesta ? 'bg-white text-marca-800' : 'bg-marca-100'}`} aria-label={`${globos.length} consejos`}>
+                {globos.length}
+              </span>
+            </button>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  const ultimo = paso >= globos.length - 1
+  return (
+    <section aria-label={`${NOMBRE_MASCOTA} te ayuda`} className="mt-4 rounded-2xl border border-marca-200 bg-marca-50/50 p-3">
+      <Acompanante animo={actual.animo} mensaje={actual.texto} tamano="size-16 sm:size-20">
+        {actual.letra && (
+          <Link to={`/aprender/${encodeURIComponent(actual.letra)}`} className="mt-1 block text-sm text-marca-800 hover:underline">
+            Practicar la {actual.letra} →
+          </Link>
+        )}
+      </Acompanante>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        <span className="mr-auto text-sm text-stone-600 tabular-nums" aria-live="polite">
+          Consejo {Math.min(paso, globos.length - 1) + 1} de {globos.length}
+        </span>
+        {hayVoz() && (
+          <button
+            type="button"
+            onClick={() => hablar(actual.texto)}
+            aria-label="Leer en voz alta"
+            title="Leer en voz alta"
+            className="grid size-10 place-items-center rounded-xl text-marca-800 hover:bg-marca-100"
+          >
+            <Volume2 className="size-5" aria-hidden />
+          </button>
+        )}
+        {paso > 0 && (
+          <button type="button" onClick={() => (callar(), setPaso(paso - 1))} className="inline-flex min-h-10 items-center rounded-xl px-2 text-sm font-bold text-stone-600 hover:bg-stone-100" aria-label="Consejo anterior">
+            <ChevronLeft className="size-5" aria-hidden />
+          </button>
+        )}
+        {ultimo ? (
+          <button type="button" onClick={cerrar} className="min-h-10 rounded-xl bg-marca-700 px-4 text-sm font-bold text-white hover:bg-marca-800">
+            ¡Ya entendí!
+          </button>
+        ) : (
+          <>
+            <button type="button" onClick={cerrar} className="min-h-10 rounded-xl px-3 text-sm font-bold text-stone-600 hover:bg-stone-100">
+              Ya entendí
+            </button>
+            <button type="button" onClick={() => (callar(), setPaso(paso + 1))} className="inline-flex min-h-10 items-center gap-1 rounded-xl bg-marca-700 px-4 text-sm font-bold text-white hover:bg-marca-800">
+              Otro consejo <ChevronRight className="size-4" aria-hidden />
+            </button>
+          </>
+        )}
+      </div>
+      <Link to="/aprender/expediente" className="mt-1 inline-block text-xs font-bold text-marca-800 hover:underline">
+        Ver mi expediente completo →
+      </Link>
     </section>
   )
 }
